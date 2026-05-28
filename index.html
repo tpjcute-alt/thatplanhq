@@ -1452,18 +1452,22 @@ textarea.journal:focus { box-shadow: 0 0 0 2px var(--pink-200); }
 
 <script>
 // ══════════════════════════════════════
-//  CLOUD SYNC — zero config, no account
-//  Powered by GitHub Gist (free, no login)
-//  Your gist ID = your sync code
+//  CLOUD SYNC — Supabase backend
+//  Sync ID generated in-app, no login needed.
+//  Paste your two Supabase values below.
 // ══════════════════════════════════════
-const GIST_API = 'https://api.github.com/gists';
-const GIST_HEADERS = {
-  'Accept': 'application/vnd.github+json',
-  'Content-Type': 'application/json',
-  'X-GitHub-Api-Version': '2022-11-28'
-};
+
+const SUPABASE_URL = '';   // e.g. 'https://xxxx.supabase.co'
+const SUPABASE_ANON = '';  // anon/public key from Supabase → Settings → API
+
 let syncId = localStorage.getItem('thatgirlhq_syncId') || null;
 let cloudSyncEnabled = !!syncId;
+let _supaHeaders = () => ({
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_ANON,
+  'Authorization': `Bearer ${SUPABASE_ANON}`,
+  'Prefer': 'return=minimal'
+});
 
 // ══════════════════════════════════════
 //  STATE
@@ -1561,9 +1565,15 @@ function save() {
   }
 }
 
-// ── GitHub Gist cloud functions ──
+// ── Supabase cloud functions ──
 
-// Debounced save — waits 1.5s after last change before hitting API
+function _checkConfig() {
+  if (!SUPABASE_URL || !SUPABASE_ANON) {
+    throw new Error('Paste your Supabase URL and anon key into the HTML first (see SYNC_SETUP.md)');
+  }
+}
+
+// Debounced save — waits 1.5s after last change before hitting Supabase
 let _saveTimer = null;
 function saveToCloud() {
   if (!syncId) return;
@@ -1576,40 +1586,41 @@ async function _doSave() {
   const btn = document.getElementById('cloud-sync-btn');
   try {
     if (btn) btn.textContent = '🔄';
-    const res = await fetch(`${GIST_API}/${syncId}`, {
-      method: 'PATCH',
-      headers: GIST_HEADERS,
-      body: JSON.stringify({
-        files: { 'thatgirlhq.json': { content: JSON.stringify(state) } }
-      })
-    });
+    // PATCH (upsert) the row for this sync_id
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${syncId}`,
+      {
+        method: 'PATCH',
+        headers: { ..._supaHeaders(), 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ data: state, updated_at: new Date().toISOString() })
+      }
+    );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     if (btn) { btn.textContent = '☁️'; btn.style.color = '#3aaa6a'; }
   } catch (e) {
     console.warn('Cloud save failed (local still saved):', e);
     if (btn) { btn.textContent = '☁️'; btn.style.color = '#ff4466'; }
-    setTimeout(() => { if(btn) btn.style.color = '#3aaa6a'; }, 3000);
+    setTimeout(() => { if (btn) btn.style.color = '#3aaa6a'; }, 3000);
   }
 }
 
-// Load: GET gist, parse the file content
+// Load state from Supabase for this sync_id
 async function loadFromCloud() {
   if (!syncId) return false;
   try {
-    const res = await fetch(`${GIST_API}/${syncId}`, { headers: GIST_HEADERS });
-    if (!res.ok) throw new Error('Sync ID not found');
-    const gist = await res.json();
-    const raw = gist.files?.['thatgirlhq.json']?.content;
-    if (!raw) return false;
-    const data = JSON.parse(raw);
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${syncId}&select=data`,
+      { headers: _supaHeaders() }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) return false;
+    const data = rows[0].data;
     if (data && (data.habits || data.xp !== undefined)) {
       state = data;
       localStorage.setItem('thatgirlhq', JSON.stringify(state));
-      renderToday();
-      renderWeeklyPlanner();
-      renderCalendar();
-      renderHabits();
-      updateStats();
+      renderToday(); renderWeeklyPlanner();
+      renderCalendar(); renderHabits(); updateStats();
       return true;
     }
     return false;
@@ -1619,36 +1630,43 @@ async function loadFromCloud() {
   }
 }
 
-// Create: POST a new anonymous gist → returns gist ID as sync code
+// Create a new row with a generated sync_id, return that ID
 async function createCloudBin() {
-  const res = await fetch(GIST_API, {
-    method: 'POST',
-    headers: GIST_HEADERS,
-    body: JSON.stringify({
-      description: 'thatgirlhq planner sync',
-      public: false,
-      files: { 'thatgirlhq.json': { content: JSON.stringify(state) } }
-    })
-  });
+  _checkConfig();
+  // generate a random 32-char hex ID client-side
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  const newId = Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/sync_data`,
+    {
+      method: 'POST',
+      headers: { ..._supaHeaders(), 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        sync_id: newId,
+        data: state,
+        updated_at: new Date().toISOString()
+      })
+    }
+  );
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    const status = res.status;
-    if (status === 403) throw new Error('Rate limit hit — wait a minute and try again');
-    if (status === 422) throw new Error('Could not create gist — try again');
-    throw new Error(err.message || `HTTP ${status}`);
+    const txt = await res.text();
+    throw new Error(`Supabase error ${res.status}: ${txt}`);
   }
-  const gist = await res.json();
-  return gist.id;
+  return newId;
 }
 
-// Verify a sync ID is real and readable
+// Verify a sync ID exists in Supabase before logging in
 async function verifySyncId(id) {
-  const res = await fetch(`${GIST_API}/${id}`, { headers: GIST_HEADERS });
-  if (!res.ok) throw new Error('Sync ID not found');
-  const gist = await res.json();
-  const raw = gist.files?.['thatgirlhq.json']?.content;
-  if (!raw) throw new Error('No planner data found in this sync ID');
-  return JSON.parse(raw);
+  _checkConfig();
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${id}&select=data`,
+    { headers: _supaHeaders() }
+  );
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const rows = await res.json();
+  if (!rows.length) throw new Error('Sync ID not found — check it and try again');
+  return rows[0].data;
 }
 
 function exportData() {
@@ -2569,7 +2587,7 @@ function openSyncLoginModal() {
           color:white;border:none;font-weight:700;font-size:14px;
           cursor:pointer;letter-spacing:0.03em;transition:opacity 0.2s;
         ">✦ &nbsp;Create New Sync ID</button>
-        <p style="text-align:center;font-size:11px;color:var(--text-light);margin:8px 0 0;">Powered by GitHub Gist. Free, no account needed.</p>
+        <p style="text-align:center;font-size:11px;color:var(--text-light);margin:8px 0 0;">Powered by your own Cloudflare Worker. Free forever.</p>
       </div>
 
       <!-- DIVIDER -->
