@@ -1034,6 +1034,8 @@ textarea.journal:focus { box-shadow: 0 0 0 2px var(--pink-200); }
   <div class="topbar-right">
     <div class="streak-badge"><span class="streak-flame">🔥</span> <span id="streak-count">0</span> day streak</div>
     <div class="xp-badge">⚡ <span id="xp-count">0</span> XP</div>
+    <button onclick="toggleCloudSync()" title="Enable cloud sync" id="cloud-sync-btn" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:8px;opacity:0.5;">☁️</button>
+    <button onclick="syncNow()" title="Sync now" style="background:transparent;border:none;font-size:16px;cursor:pointer;padding:8px;">🔄</button>
     <button onclick="exportData()" title="Download data as JSON" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:8px;">💾</button>
     <button onclick="document.getElementById('import-file').click()" title="Upload JSON backup" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:8px;">📂</button>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
@@ -1450,6 +1452,15 @@ textarea.journal:focus { box-shadow: 0 0 0 2px var(--pink-200); }
 
 <script>
 // ══════════════════════════════════════
+//  CLOUD SYNC — zero config, no account
+//  Powered by JSONBin.io (free)
+//  Your bin ID = your sync code
+// ══════════════════════════════════════
+const JSONBIN_ROOT = 'https://api.jsonbin.io/v3/b';
+let syncId = localStorage.getItem('thatgirlhq_syncId') || null;
+let cloudSyncEnabled = !!syncId;
+
+// ══════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════
 let state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
@@ -1540,6 +1551,75 @@ if (state.lastActiveDate !== todayKey) {
 function h() { return Math.random().toString(36).substr(2,9); }
 function save() { 
   localStorage.setItem('thatgirlhq', JSON.stringify(state));
+  if (cloudSyncEnabled) {
+    saveToCloud();
+  }
+}
+
+// Save state to JSONBin (PUT to existing bin)
+async function saveToCloud() {
+  if (!syncId) return;
+  try {
+    await fetch(`${JSONBIN_ROOT}/${syncId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+  } catch (e) {
+    console.warn('Cloud save failed (local still saved):', e);
+  }
+}
+
+// Load state from JSONBin (GET bin)
+async function loadFromCloud() {
+  if (!syncId) return false;
+  try {
+    const res = await fetch(`${JSONBIN_ROOT}/${syncId}/latest`, {
+      headers: { 'X-Bin-Meta': 'false' }
+    });
+    if (!res.ok) throw new Error('Sync ID not found');
+    const data = await res.json();
+    if (data && (data.habits || data.xp !== undefined)) {
+      state = data;
+      localStorage.setItem('thatgirlhq', JSON.stringify(state));
+      renderToday();
+      renderWeeklyPlanner();
+      renderCalendar();
+      renderHabits();
+      updateStats();
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('Cloud load error:', e);
+    return false;
+  }
+}
+
+// Create a brand new JSONBin — returns the bin ID as sync code
+async function createCloudBin() {
+  const res = await fetch(JSONBIN_ROOT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Bin-Name': 'thatgirlhq',
+      'X-Bin-Private': 'false'
+    },
+    body: JSON.stringify(state)
+  });
+  if (!res.ok) throw new Error('Could not create sync bin');
+  const json = await res.json();
+  return json.metadata.id;
+}
+
+// Verify a sync ID exists before trusting it
+async function verifySyncId(id) {
+  const res = await fetch(`${JSONBIN_ROOT}/${id}/latest`, {
+    headers: { 'X-Bin-Meta': 'false' }
+  });
+  if (!res.ok) throw new Error('Invalid sync ID');
+  const data = await res.json();
+  return data;
 }
 
 function exportData() {
@@ -2406,6 +2486,290 @@ function toggleAssignPanel() {
   btn.style.background = panel.classList.contains('open') ? 'var(--pink-400)' : 'var(--pink-100)';
   btn.style.color = panel.classList.contains('open') ? 'white' : 'var(--pink-600)';
 }
+
+// ══════════════════════════════════════
+//  CLOUD SYNC MODAL — sync ID login
+// ══════════════════════════════════════
+
+function toggleCloudSync() {
+  if (document.getElementById('sync-modal')) {
+    document.getElementById('sync-modal').remove();
+    return;
+  }
+  if (syncId && cloudSyncEnabled) {
+    openSyncActiveModal();
+  } else {
+    openSyncLoginModal();
+  }
+}
+
+function openSyncLoginModal() {
+  const modal = document.createElement('div');
+  modal.id = 'sync-modal';
+  modal.style.cssText = `
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(30,10,20,0.45);backdrop-filter:blur(6px);
+    z-index:9999;display:flex;align-items:center;justify-content:center;
+  `;
+  modal.innerHTML = `
+    <div style="
+      background:white;border-radius:24px;padding:32px;
+      width:420px;max-width:92vw;box-shadow:0 24px 64px rgba(200,60,100,0.18);
+      position:relative;overflow:hidden;
+    ">
+      <!-- decorative top stripe -->
+      <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ff85a1,#ffa8bb,#ff85a1);"></div>
+
+      <button onclick="document.getElementById('sync-modal').remove()" style="
+        position:absolute;top:16px;right:16px;background:var(--pink-100);
+        border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;
+        font-size:14px;color:var(--text-light);display:flex;align-items:center;justify-content:center;
+      ">✕</button>
+
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:36px;margin-bottom:10px;">☁️</div>
+        <h2 style="margin:0 0 6px;font-family:'Playfair Display',serif;font-size:24px;color:var(--text-dark);">Cloud Sync</h2>
+        <p style="margin:0;font-size:13px;color:var(--text-light);">Your planner, everywhere you go</p>
+      </div>
+
+      <!-- CREATE NEW -->
+      <div style="margin-bottom:20px;">
+        <button id="create-sync-btn" onclick="handleCreateSyncId()" style="
+          width:100%;padding:14px;border-radius:14px;
+          background:linear-gradient(135deg,#ff85a1,#ff5c85);
+          color:white;border:none;font-weight:700;font-size:14px;
+          cursor:pointer;letter-spacing:0.03em;transition:opacity 0.2s;
+        ">✦ &nbsp;Create New Sync ID</button>
+        <p style="text-align:center;font-size:11px;color:var(--text-light);margin:8px 0 0;">
+          Generates a unique code. Save it — it's your login.
+        </p>
+      </div>
+
+      <!-- DIVIDER -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="flex:1;height:1px;background:var(--pink-100);"></div>
+        <span style="font-size:11px;color:var(--text-light);font-weight:600;">already have one?</span>
+        <div style="flex:1;height:1px;background:var(--pink-100);"></div>
+      </div>
+
+      <!-- LOGIN WITH EXISTING -->
+      <div>
+        <div style="position:relative;margin-bottom:10px;">
+          <input id="sync-id-input" type="text" placeholder="Paste your sync ID here…"
+            onkeydown="if(event.key==='Enter')handleLoginSyncId()"
+            style="
+              width:100%;box-sizing:border-box;padding:12px 14px;
+              border:1.5px solid var(--pink-200);border-radius:12px;
+              font-family:monospace;font-size:12px;color:var(--text-dark);
+              outline:none;transition:border-color 0.2s;
+            "
+            onfocus="this.style.borderColor='var(--pink-400)'"
+            onblur="this.style.borderColor='var(--pink-200)'"
+          >
+        </div>
+        <button id="login-sync-btn" onclick="handleLoginSyncId()" style="
+          width:100%;padding:13px;border-radius:14px;
+          background:var(--pink-50);color:var(--pink-600);
+          border:1.5px solid var(--pink-200);font-weight:700;font-size:13px;
+          cursor:pointer;transition:background 0.2s;
+        "
+          onmouseover="this.style.background='var(--pink-100)'"
+          onmouseout="this.style.background='var(--pink-50)'"
+        >Login →</button>
+      </div>
+
+      <div id="sync-modal-status" style="
+        margin-top:14px;text-align:center;font-size:12px;
+        color:var(--text-light);min-height:18px;
+      "></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
+}
+
+function openSyncActiveModal() {
+  const modal = document.createElement('div');
+  modal.id = 'sync-modal';
+  modal.style.cssText = `
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(30,10,20,0.45);backdrop-filter:blur(6px);
+    z-index:9999;display:flex;align-items:center;justify-content:center;
+  `;
+  const masked = syncId.slice(0, 6) + '••••••••••••••••' + syncId.slice(-4);
+  modal.innerHTML = `
+    <div style="
+      background:white;border-radius:24px;padding:32px;
+      width:420px;max-width:92vw;box-shadow:0 24px 64px rgba(200,60,100,0.18);
+      position:relative;overflow:hidden;
+    ">
+      <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#3aaa6a,#5ecb8a,#3aaa6a);"></div>
+
+      <button onclick="document.getElementById('sync-modal').remove()" style="
+        position:absolute;top:16px;right:16px;background:var(--pink-100);
+        border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;
+        font-size:14px;color:var(--text-light);
+      ">✕</button>
+
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:36px;margin-bottom:10px;">✅</div>
+        <h2 style="margin:0 0 6px;font-family:'Playfair Display',serif;font-size:22px;color:var(--text-dark);">Sync Active</h2>
+        <p style="margin:0;font-size:13px;color:var(--text-light);">Changes save to cloud automatically</p>
+      </div>
+
+      <!-- Sync ID display box -->
+      <div style="
+        background:linear-gradient(135deg,#fff5f8,#fff0f4);
+        border:1.5px solid var(--pink-200);border-radius:14px;
+        padding:16px;margin-bottom:20px;
+      ">
+        <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-light);">Your Sync ID</p>
+        <p id="sync-id-display" style="
+          margin:0 0 12px;font-family:monospace;font-size:12px;
+          word-break:break-all;color:var(--text-dark);line-height:1.5;
+          user-select:all;
+        ">${masked}</p>
+        <div style="display:flex;gap:8px;">
+          <button onclick="revealAndCopySyncId()" style="
+            flex:1;padding:10px;background:white;
+            border:1.5px solid var(--pink-300);border-radius:10px;
+            color:var(--pink-600);font-weight:600;font-size:12px;cursor:pointer;
+          ">👁 Reveal &amp; Copy</button>
+          <button onclick="syncNow()" style="
+            flex:1;padding:10px;background:white;
+            border:1.5px solid #3aaa6a;border-radius:10px;
+            color:#1f5c3a;font-weight:600;font-size:12px;cursor:pointer;
+          ">🔄 Sync Now</button>
+        </div>
+      </div>
+
+      <p style="
+        font-size:12px;color:var(--text-light);margin:0 0 16px;
+        background:var(--pink-50);padding:10px 12px;border-radius:10px;
+        border-left:3px solid var(--pink-300);
+      ">
+        📱 <strong>New device?</strong> Click ☁️ → paste your sync ID → login
+      </p>
+
+      <button onclick="logoutSync()" style="
+        width:100%;padding:11px;background:transparent;
+        border:1.5px solid var(--pink-200);border-radius:12px;
+        color:var(--text-light);font-weight:600;font-size:12px;cursor:pointer;
+      ">Logout from sync</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
+}
+
+function setSyncStatus(msg, isError) {
+  const el = document.getElementById('sync-modal-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? '#e05' : 'var(--text-light)';
+}
+
+function setSyncBtnLoading(btnId, loading, label) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.textContent = loading ? '⏳ Please wait…' : label;
+  btn.style.opacity = loading ? '0.7' : '1';
+}
+
+async function handleCreateSyncId() {
+  setSyncBtnLoading('create-sync-btn', true, '✦ Create New Sync ID');
+  setSyncStatus('Creating your sync ID…');
+  try {
+    const newId = await createCloudBin();
+    syncId = newId;
+    localStorage.setItem('thatgirlhq_syncId', syncId);
+    cloudSyncEnabled = true;
+    localStorage.setItem('thatgirlhq_cloud_enabled', 'true');
+    document.getElementById('cloud-sync-btn').style.opacity = '1';
+    document.getElementById('cloud-sync-btn').style.color = '#3aaa6a';
+    document.getElementById('sync-modal').remove();
+    openSyncActiveModal();
+    dopamineHit('Sync ID created! ☁️✦');
+  } catch(e) {
+    setSyncStatus('Failed to create: ' + e.message, true);
+    setSyncBtnLoading('create-sync-btn', false, '✦ Create New Sync ID');
+  }
+}
+
+async function handleLoginSyncId() {
+  const input = document.getElementById('sync-id-input');
+  const id = input ? input.value.trim() : '';
+  if (!id) { setSyncStatus('Paste your sync ID first ↑', true); return; }
+  setSyncBtnLoading('login-sync-btn', true, 'Login →');
+  setSyncStatus('Checking sync ID…');
+  try {
+    const data = await verifySyncId(id);
+    syncId = id;
+    localStorage.setItem('thatgirlhq_syncId', syncId);
+    cloudSyncEnabled = true;
+    localStorage.setItem('thatgirlhq_cloud_enabled', 'true');
+    document.getElementById('cloud-sync-btn').style.opacity = '1';
+    document.getElementById('cloud-sync-btn').style.color = '#3aaa6a';
+    if (data && (data.habits || data.xp !== undefined)) {
+      state = data;
+      localStorage.setItem('thatgirlhq', JSON.stringify(state));
+      renderToday();
+      renderWeeklyPlanner();
+      renderCalendar();
+      renderHabits();
+      updateStats();
+    }
+    document.getElementById('sync-modal').remove();
+    openSyncActiveModal();
+    dopamineHit('Logged in! Data synced 🔄✦');
+  } catch(e) {
+    setSyncStatus('Sync ID not found — check and try again', true);
+    setSyncBtnLoading('login-sync-btn', false, 'Login →');
+  }
+}
+
+function revealAndCopySyncId() {
+  const display = document.getElementById('sync-id-display');
+  if (!display) return;
+  display.textContent = syncId;
+  navigator.clipboard.writeText(syncId).catch(()=>{});
+  dopamineHit('Sync ID copied! Save it somewhere safe 📋✦');
+}
+
+function logoutSync() {
+  syncId = null;
+  cloudSyncEnabled = false;
+  localStorage.removeItem('thatgirlhq_syncId');
+  localStorage.removeItem('thatgirlhq_cloud_enabled');
+  const btn = document.getElementById('cloud-sync-btn');
+  if (btn) { btn.style.opacity = '0.5'; btn.style.color = 'inherit'; }
+  document.getElementById('sync-modal').remove();
+  dopamineHit('Logged out from cloud sync');
+}
+
+async function syncNow() {
+  if (!cloudSyncEnabled || !syncId) {
+    openSyncLoginModal();
+    return;
+  }
+  document.getElementById('sync-modal').remove();
+  await saveToCloud();
+  dopamineHit('Synced! 🔄✦');
+}
+
+// Auto-login on page load if previously synced
+window.addEventListener('load', async () => {
+  const storedId = localStorage.getItem('thatgirlhq_syncId');
+  const wasEnabled = localStorage.getItem('thatgirlhq_cloud_enabled') === 'true';
+  if (storedId && wasEnabled) {
+    syncId = storedId;
+    cloudSyncEnabled = true;
+    const btn = document.getElementById('cloud-sync-btn');
+    if (btn) { btn.style.opacity = '1'; btn.style.color = '#3aaa6a'; }
+    await loadFromCloud();
+  }
+});
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
