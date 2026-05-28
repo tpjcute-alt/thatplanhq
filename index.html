@@ -1453,10 +1453,15 @@ textarea.journal:focus { box-shadow: 0 0 0 2px var(--pink-200); }
 <script>
 // ══════════════════════════════════════
 //  CLOUD SYNC — zero config, no account
-//  Powered by JSONBin.io (free)
-//  Your bin ID = your sync code
+//  Powered by GitHub Gist (free, no login)
+//  Your gist ID = your sync code
 // ══════════════════════════════════════
-const JSONBIN_ROOT = 'https://api.jsonbin.io/v3/b';
+const GIST_API = 'https://api.github.com/gists';
+const GIST_HEADERS = {
+  'Accept': 'application/vnd.github+json',
+  'Content-Type': 'application/json',
+  'X-GitHub-Api-Version': '2022-11-28'
+};
 let syncId = localStorage.getItem('thatgirlhq_syncId') || null;
 let cloudSyncEnabled = !!syncId;
 
@@ -1556,29 +1561,47 @@ function save() {
   }
 }
 
-// Save state to JSONBin (PUT to existing bin)
-async function saveToCloud() {
+// ── GitHub Gist cloud functions ──
+
+// Debounced save — waits 1.5s after last change before hitting API
+let _saveTimer = null;
+function saveToCloud() {
   if (!syncId) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(_doSave, 1500);
+}
+
+async function _doSave() {
+  if (!syncId) return;
+  const btn = document.getElementById('cloud-sync-btn');
   try {
-    await fetch(`${JSONBIN_ROOT}/${syncId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(state)
+    if (btn) btn.textContent = '🔄';
+    const res = await fetch(`${GIST_API}/${syncId}`, {
+      method: 'PATCH',
+      headers: GIST_HEADERS,
+      body: JSON.stringify({
+        files: { 'thatgirlhq.json': { content: JSON.stringify(state) } }
+      })
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (btn) { btn.textContent = '☁️'; btn.style.color = '#3aaa6a'; }
   } catch (e) {
     console.warn('Cloud save failed (local still saved):', e);
+    if (btn) { btn.textContent = '☁️'; btn.style.color = '#ff4466'; }
+    setTimeout(() => { if(btn) btn.style.color = '#3aaa6a'; }, 3000);
   }
 }
 
-// Load state from JSONBin (GET bin)
+// Load: GET gist, parse the file content
 async function loadFromCloud() {
   if (!syncId) return false;
   try {
-    const res = await fetch(`${JSONBIN_ROOT}/${syncId}/latest`, {
-      headers: { 'X-Bin-Meta': 'false' }
-    });
+    const res = await fetch(`${GIST_API}/${syncId}`, { headers: GIST_HEADERS });
     if (!res.ok) throw new Error('Sync ID not found');
-    const data = await res.json();
+    const gist = await res.json();
+    const raw = gist.files?.['thatgirlhq.json']?.content;
+    if (!raw) return false;
+    const data = JSON.parse(raw);
     if (data && (data.habits || data.xp !== undefined)) {
       state = data;
       localStorage.setItem('thatgirlhq', JSON.stringify(state));
@@ -1596,30 +1619,36 @@ async function loadFromCloud() {
   }
 }
 
-// Create a brand new JSONBin — returns the bin ID as sync code
+// Create: POST a new anonymous gist → returns gist ID as sync code
 async function createCloudBin() {
-  const res = await fetch(JSONBIN_ROOT, {
+  const res = await fetch(GIST_API, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Bin-Name': 'thatgirlhq',
-      'X-Bin-Private': 'false'
-    },
-    body: JSON.stringify(state)
+    headers: GIST_HEADERS,
+    body: JSON.stringify({
+      description: 'thatgirlhq planner sync',
+      public: false,
+      files: { 'thatgirlhq.json': { content: JSON.stringify(state) } }
+    })
   });
-  if (!res.ok) throw new Error('Could not create sync bin');
-  const json = await res.json();
-  return json.metadata.id;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const status = res.status;
+    if (status === 403) throw new Error('Rate limit hit — wait a minute and try again');
+    if (status === 422) throw new Error('Could not create gist — try again');
+    throw new Error(err.message || `HTTP ${status}`);
+  }
+  const gist = await res.json();
+  return gist.id;
 }
 
-// Verify a sync ID exists before trusting it
+// Verify a sync ID is real and readable
 async function verifySyncId(id) {
-  const res = await fetch(`${JSONBIN_ROOT}/${id}/latest`, {
-    headers: { 'X-Bin-Meta': 'false' }
-  });
-  if (!res.ok) throw new Error('Invalid sync ID');
-  const data = await res.json();
-  return data;
+  const res = await fetch(`${GIST_API}/${id}`, { headers: GIST_HEADERS });
+  if (!res.ok) throw new Error('Sync ID not found');
+  const gist = await res.json();
+  const raw = gist.files?.['thatgirlhq.json']?.content;
+  if (!raw) throw new Error('No planner data found in this sync ID');
+  return JSON.parse(raw);
 }
 
 function exportData() {
@@ -2529,7 +2558,7 @@ function openSyncLoginModal() {
       <div style="text-align:center;margin-bottom:28px;">
         <div style="font-size:36px;margin-bottom:10px;">☁️</div>
         <h2 style="margin:0 0 6px;font-family:'Playfair Display',serif;font-size:24px;color:var(--text-dark);">Cloud Sync</h2>
-        <p style="margin:0;font-size:13px;color:var(--text-light);">Your planner, everywhere you go</p>
+        <p style="margin:0;font-size:13px;color:var(--text-light);">No account · No setup · Works everywhere</p>
       </div>
 
       <!-- CREATE NEW -->
@@ -2540,9 +2569,7 @@ function openSyncLoginModal() {
           color:white;border:none;font-weight:700;font-size:14px;
           cursor:pointer;letter-spacing:0.03em;transition:opacity 0.2s;
         ">✦ &nbsp;Create New Sync ID</button>
-        <p style="text-align:center;font-size:11px;color:var(--text-light);margin:8px 0 0;">
-          Generates a unique code. Save it — it's your login.
-        </p>
+        <p style="text-align:center;font-size:11px;color:var(--text-light);margin:8px 0 0;">Powered by GitHub Gist. Free, no account needed.</p>
       </div>
 
       <!-- DIVIDER -->
