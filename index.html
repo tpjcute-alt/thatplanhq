@@ -464,6 +464,8 @@ body {
   <div class="topbar-right">
     <div class="streak-badge" title="Every action is a vote for who you are becoming"><span style="font-size:16px;">🌸</span> <span id="streak-count">0</span> Votes</div>
     <div class="xp-badge">⚡ <span id="xp-count">0</span> XP</div>
+    <button onclick="toggleCloudSync()" title="Enable cloud sync" id="cloud-sync-btn" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:8px;opacity:0.5;">☁️</button>
+    <button onclick="syncNow()" title="Sync now" style="background:transparent;border:none;font-size:16px;cursor:pointer;padding:8px;">🔄</button>
     <button onclick="exportData()" title="Download data as JSON" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:8px;">💾</button>
     <button onclick="document.getElementById('import-file').click()" title="Upload JSON backup" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:8px;">📂</button>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
@@ -634,7 +636,6 @@ body {
     <div class="form-group"><label>Theme</label><select id="area-theme-input"><option value="productivity">🧠 Productivity</option><option value="health">❤️ Health</option><option value="wealth">💰 Wealth</option><option value="content">📱 Content</option><option value="hobbies">🎨 Hobbies</option><option value="general">✦ General</option></select></div>
     <div class="form-group"><label>Emoji & City Name</label><div style="display:flex;gap:8px;"><input type="text" id="area-emoji-input" style="width:60px;"><input type="text" id="area-title-input" style="flex:1;"></div></div>
     <div class="form-group"><label>Identities (One per line)</label><textarea id="area-identity-input" rows="3"></textarea></div>
-    <!-- Removed Target/Current reps inputs -->
     <div class="form-group"><label>Macro-Outcome (Vault)</label><input type="text" id="area-outcome-input" placeholder="e.g. 55kg..."></div>
     <input type="hidden" id="area-id-input">
     <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('life-area-modal')">Cancel</button><button class="btn-primary" onclick="saveLifeArea()">Save</button></div>
@@ -662,6 +663,24 @@ body {
 </div>
 
 <script>
+// ══════════════════════════════════════
+//  CLOUD SYNC — Supabase backend
+// ══════════════════════════════════════
+const SUPABASE_URL = '';   // e.g. 'https://xxxx.supabase.co'
+const SUPABASE_ANON = '';  // anon/public key
+
+let syncId = localStorage.getItem('thatgirlhq_syncId') || null;
+let cloudSyncEnabled = !!syncId;
+let _supaHeaders = () => ({
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_ANON,
+  'Authorization': `Bearer ${SUPABASE_ANON}`,
+  'Prefer': 'return=minimal'
+});
+
+// ══════════════════════════════════════
+//  STATE & REPAIR
+// ══════════════════════════════════════
 let state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
   xp: 0, totalVotes: 0, lastActiveDate: null, xpToday: 0,
   habits: [], todayTasks: { high: [], med: [], low: [] },
@@ -689,43 +708,72 @@ if(state.xp === undefined)          state.xp          = 0;
 if(state.totalVotes === undefined)  state.totalVotes  = 0;
 if(state.xpToday === undefined)     state.xpToday     = 0;
 
-// Remove volumeTarget and volumeCurrent from existing areas if present, ensure array
-state.lifeAreas.forEach(a => {
-  if (a.volumeTarget !== undefined) delete a.volumeTarget;
-  if (a.volumeCurrent !== undefined) delete a.volumeCurrent;
-  if (!a.outcomeLogs) a.outcomeLogs = [];
-});
-
-if (state.lifeAreas.length === 0) {
+// THE FULL SEED: 16 Life Areas
+if (state.lifeAreas.length <= 5) {
   state.lifeAreas = [
     { id: 'city_study', theme: 'productivity', title: 'Studying', emoji: '📚', identity: 'I make desired action feel easy.\nI create active recall instead of re-reading.', outcome: 'Pass exams confidently', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_tidy', theme: 'productivity', title: 'Tidy & Environment', emoji: '🧹', identity: 'I respect my space.\nI clear it for my future self.', outcome: 'Permanently serene room', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_uni', theme: 'productivity', title: 'Extracurricular / Uni', emoji: '🎓', identity: 'I am open to interesting conversations.\nRelatedness is fuel.', outcome: 'Build a strong network', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_adhd', theme: 'health', title: 'ADHD Diagnosis Path', emoji: '🧠', identity: 'My brain works differently.\nI am learning its manual.', outcome: 'Secure official diagnosis', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_skin', theme: 'health', title: 'Skin & Hair Routine', emoji: '✨', identity: 'I tend to my vessel because it feels good.', outcome: 'Clear skin and healthy hair', outcomeLogs: [], evidenceLogs: [] },
     { id: 'city_gym', theme: 'health', title: 'Gym & Movement', emoji: '🏋️', identity: 'I follow through on movement commitments.\nI move for joy.', outcome: 'Be 55kg, master compound lift', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_content', theme: 'content', title: 'Content Creation', emoji: '📱', identity: 'I publish before perfect.\nVolume beats polish.', outcome: 'Hit 10k views, build brand', outcomeLogs: [], evidenceLogs: [] }
+    { id: 'city_mental', theme: 'health', title: 'Mental Resilience', emoji: '🧘', identity: 'I prime my seeking system toward positive anticipation.', outcome: 'Reduce limbic loop anxiety', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_save', theme: 'wealth', title: 'Save Money', emoji: '🏦', identity: 'I build a generous relationship with money.\nI align purchases with my future self.', outcome: 'Grow the Future Me Fund', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_earn', theme: 'wealth', title: 'Earn Money', emoji: '💸', identity: 'I create value naturally.\nI raise my earning power.', outcome: 'Earn £50 via weird brainstorms', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_content', theme: 'content', title: 'Content Creation', emoji: '📱', identity: 'I publish before perfect.\nVolume beats polish.', outcome: 'Hit 10k views, build brand', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_magic', theme: 'hobbies', title: 'Magic Tricks', emoji: '🎩', identity: 'I play for the sheer joy of it.\nI share awe.', outcome: 'Master 5 close-up routines', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_yugi', theme: 'hobbies', title: 'Yu-Gi-Oh!', emoji: '🃏', identity: 'I build thematic decks for intrinsic fun.', outcome: 'Win a local casual duel', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_skate', theme: 'hobbies', title: 'Roller Skating', emoji: '🛼', identity: 'I focus on how movement feels in my body.', outcome: 'Nail forward-to-backward transition', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_dance', theme: 'hobbies', title: 'Dancing', emoji: '💃', identity: 'I discharge stress.\nI reconnect to my body.', outcome: 'Learn full K-Pop choreo', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_art', theme: 'hobbies', title: 'Diamond Painting', emoji: '💎', identity: 'I use slow art as a deliberate calming transition.', outcome: 'Finish a display piece', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_anime', theme: 'hobbies', title: 'Anime / K-Drama', emoji: '📺', identity: 'I turn passive consumption into mindful appreciation.', outcome: 'Create an aesthetic vision board', outcomeLogs: [], evidenceLogs: [] }
   ];
   save();
 }
 
-// Auto-repair
+// BULLETPROOF AUTO-REPAIR
 let repaired = false;
 state.habits.forEach(habit => {
   if(!habit.tweaks) habit.tweaks = [];
   const cityExists = state.lifeAreas.some(a => a.id === habit.areaId);
   if (!cityExists || !habit.areaId) {
-    const match = state.lifeAreas.find(a => a.theme === habit.cat) || state.lifeAreas[0];
-    if (match) { habit.areaId = match.id; habit.cat = match.theme; repaired = true; }
+    let match = state.lifeAreas.find(a => a.theme === habit.cat);
+    if (!match) {
+      match = { id: h(), theme: habit.cat || 'general', title: 'General ' + (habit.cat||''), emoji: '✦', identity: '', outcomeLogs: [], evidenceLogs: [] };
+      state.lifeAreas.push(match);
+    }
+    habit.areaId = match.id;
+    habit.cat = match.theme;
+    repaired = true;
   }
 });
 if (repaired) save();
 
 if (state.habits.length === 0) {
   state.habits = [
-    { id: h(), name: 'Make bed', cat: 'productivity', areaId: 'city_study', freq: 'daily', energy: 'high', tweaks: [], active: true },
+    { id: h(), name: 'Make bed', cat: 'productivity', areaId: 'city_tidy', freq: 'daily', energy: 'high', tweaks: [], active: true },
+    { id: h(), name: 'Morning skincare', cat: 'health', areaId: 'city_skin', freq: 'daily', energy: 'high', tweaks: [], active: true },
+    { id: h(), name: 'Water before caffeine', cat: 'health', areaId: 'city_skin', freq: 'daily', energy: 'high', tweaks: [], active: true },
+    { id: h(), name: 'Grounding breath', cat: 'health', areaId: 'city_mental', freq: 'daily', energy: 'high', tweaks: [], active: true },
+    { id: h(), name: 'Anki / Active recall study', cat: 'productivity', areaId: 'city_study', freq: 'daily', energy: 'high', tweaks: [], active: true },
+    { id: h(), name: '2 Pomodoro study sessions', cat: 'productivity', areaId: 'city_study', freq: 'weekdays', energy: 'high', tweaks: [], active: true },
+    { id: h(), name: 'Content engagement (3 comments)', cat: 'content', areaId: 'city_content', freq: 'weekdays', energy: 'med', tweaks: [], active: true },
     { id: h(), name: 'Post TikTok', cat: 'content', areaId: 'city_content', freq: 'daily', energy: 'med', tweaks: [], active: true },
-    { id: h(), name: 'Joyful movement', cat: 'health', areaId: 'city_gym', freq: '3x', energy: 'med', tweaks: [], active: true }
+    { id: h(), name: 'Skill builder', cat: 'wealth', areaId: 'city_earn', freq: '2x', energy: 'med', tweaks: [], active: true },
+    { id: h(), name: 'Joyful movement', cat: 'health', areaId: 'city_gym', freq: '3x', energy: 'med', tweaks: [], active: true },
+    { id: h(), name: 'Expense log', cat: 'wealth', areaId: 'city_save', freq: 'daily', energy: 'low', tweaks: [], active: true },
+    { id: h(), name: 'Evening tidy (10 min)', cat: 'productivity', areaId: 'city_tidy', freq: 'daily', energy: 'low', tweaks: [], active: true },
+    { id: h(), name: 'Bedtime win journal', cat: 'health', areaId: 'city_mental', freq: 'daily', energy: 'low', tweaks: [], active: true },
+    { id: h(), name: 'Update Discord (evening)', cat: 'content', areaId: 'city_content', freq: 'daily', energy: 'low', tweaks: [], active: true },
+    { id: h(), name: 'Manga chapter', cat: 'hobbies', areaId: 'city_anime', freq: '3x', energy: 'low', tweaks: [], active: true },
+    { id: h(), name: 'YuGiOh session', cat: 'hobbies', areaId: 'city_yugi', freq: '3x', energy: 'med', tweaks: [], active: true },
+    { id: h(), name: 'Hair mask / deep condition', cat: 'health', areaId: 'city_skin', freq: '1x', energy: 'low', tweaks: [], active: true },
+    { id: h(), name: 'ADHD appointment step', cat: 'health', areaId: 'city_adhd', freq: '1x', energy: 'high', tweaks: [], active: true },
   ];
   save();
 }
 
+// Check new day to spawn daily/weekday habits
 function checkNewDay() {
   const todayKey = new Date().toDateString();
   if (state.lastActiveDate === todayKey) return; 
@@ -743,7 +791,113 @@ function checkNewDay() {
 }
 
 function h() { return Math.random().toString(36).substr(2,9); }
-function save() { localStorage.setItem('thatgirlhq', JSON.stringify(state)); }
+function save() { 
+  localStorage.setItem('thatgirlhq', JSON.stringify(state)); 
+  if(cloudSyncEnabled) saveToCloud();
+}
+
+// ══════════════════════════════════════
+//  CLOUD SYNC FUNCTIONS
+// ══════════════════════════════════════
+function _checkConfig() {
+  if (!SUPABASE_URL || !SUPABASE_ANON) throw new Error('Missing Supabase Config');
+}
+let _saveTimer = null;
+function saveToCloud() {
+  if (!syncId) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(_doSave, 1500);
+}
+async function _doSave() {
+  if (!syncId) return;
+  const btn = document.getElementById('cloud-sync-btn');
+  try {
+    if (btn) btn.textContent = '🔄';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${syncId}`, {
+      method: 'PATCH', headers: { ..._supaHeaders() },
+      body: JSON.stringify({ data: state, updated_at: new Date().toISOString() })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (btn) { btn.textContent = '☁️'; btn.style.color = '#3aaa6a'; }
+  } catch (e) {
+    if (btn) { btn.textContent = '☁️'; btn.style.color = '#ff4466'; }
+    setTimeout(() => { if (btn) btn.style.color = '#3aaa6a'; }, 3000);
+  }
+}
+async function loadFromCloud() {
+  if (!syncId) return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${syncId}&select=data`, { headers: _supaHeaders() });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) return false;
+    const data = rows[0].data;
+    if (data && (data.habits || data.xp !== undefined)) {
+      state = data; localStorage.setItem('thatgirlhq', JSON.stringify(state));
+      checkNewDay(); renderToday(); renderWeeklyPlanner(); renderCalendar(); renderHabits(); updateStats();
+      return true;
+    }
+    return false;
+  } catch (e) { return false; }
+}
+async function createCloudBin() {
+  _checkConfig();
+  const arr = new Uint8Array(16); crypto.getRandomValues(arr);
+  const newId = Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_data`, {
+    method: 'POST', headers: { ..._supaHeaders() },
+    body: JSON.stringify({ sync_id: newId, data: state, updated_at: new Date().toISOString() })
+  });
+  if (!res.ok) throw new Error(`Supabase error ${res.status}`);
+  return newId;
+}
+async function verifySyncId(id) {
+  _checkConfig();
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${id}&select=data`, { headers: _supaHeaders() });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const rows = await res.json();
+  if (!rows.length) throw new Error('Sync ID not found');
+  return rows[0].data;
+}
+function toggleCloudSync() {
+  if (document.getElementById('sync-modal')) { document.getElementById('sync-modal').remove(); return; }
+  if (syncId && cloudSyncEnabled) openSyncActiveModal(); else openSyncLoginModal();
+}
+function openSyncLoginModal() {
+  const modal = document.createElement('div'); modal.id = 'sync-modal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(30,10,20,0.45);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;`;
+  modal.innerHTML = `<div style="background:white;border-radius:24px;padding:32px;width:420px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ff85a1,#ffa8bb,#ff85a1);"></div><button onclick="document.getElementById('sync-modal').remove()" style="position:absolute;top:16px;right:16px;background:var(--pink-100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;">✕</button><div style="text-align:center;margin-bottom:28px;"><h2 style="font-family:'Playfair Display',serif;font-size:24px;color:var(--text-dark);">Cloud Sync</h2></div><button id="create-sync-btn" onclick="handleCreateSyncId()" style="width:100%;padding:14px;border-radius:14px;background:var(--pink-400);color:white;border:none;font-weight:700;font-size:14px;cursor:pointer;">✦ Create New Sync ID</button><div style="margin:20px 0;text-align:center;font-size:11px;color:var(--text-light)">or</div><input id="sync-id-input" type="text" placeholder="Paste sync ID…" style="width:100%;padding:12px 14px;border:1.5px solid var(--pink-200);border-radius:12px;margin-bottom:10px;"><button id="login-sync-btn" onclick="handleLoginSyncId()" style="width:100%;padding:13px;border-radius:14px;background:var(--pink-50);color:var(--pink-600);border:1.5px solid var(--pink-200);font-weight:700;cursor:pointer;">Login →</button><div id="sync-modal-status" style="margin-top:14px;text-align:center;font-size:12px;color:var(--text-light);min-height:18px;"></div></div>`;
+  document.body.appendChild(modal); modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+function openSyncActiveModal() {
+  const modal = document.createElement('div'); modal.id = 'sync-modal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(30,10,20,0.45);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;`;
+  modal.innerHTML = `<div style="background:white;border-radius:24px;padding:32px;width:420px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:4px;background:#3aaa6a;"></div><button onclick="document.getElementById('sync-modal').remove()" style="position:absolute;top:16px;right:16px;background:var(--pink-100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;">✕</button><div style="text-align:center;margin-bottom:24px;"><h2 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--text-dark);">✅ Sync Active</h2></div><div style="background:#fff0f4;border:1.5px solid var(--pink-200);border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;"><p style="font-family:monospace;font-size:12px;word-break:break-all;">${syncId}</p></div><button onclick="logoutSync()" style="width:100%;padding:11px;background:transparent;border:1.5px solid var(--pink-200);border-radius:12px;color:var(--text-light);font-weight:600;font-size:12px;cursor:pointer;">Logout from sync</button></div>`;
+  document.body.appendChild(modal); modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+async function handleCreateSyncId() {
+  try {
+    const newId = await createCloudBin(); syncId = newId; cloudSyncEnabled = true;
+    localStorage.setItem('thatgirlhq_syncId', syncId); localStorage.setItem('thatgirlhq_cloud_enabled', 'true');
+    document.getElementById('sync-modal').remove(); openSyncActiveModal(); dopamineHit('Sync ID created! ☁️✦');
+  } catch(e) { document.getElementById('sync-modal-status').textContent = 'Failed: ' + e.message; }
+}
+async function handleLoginSyncId() {
+  const id = document.getElementById('sync-id-input').value.trim(); if (!id) return;
+  try {
+    const data = await verifySyncId(id); syncId = id; cloudSyncEnabled = true;
+    localStorage.setItem('thatgirlhq_syncId', syncId); localStorage.setItem('thatgirlhq_cloud_enabled', 'true');
+    if (data && data.habits) { state = data; save(); location.reload(); }
+  } catch(e) { document.getElementById('sync-modal-status').textContent = 'Error: ' + e.message; }
+}
+function logoutSync() { syncId=null; cloudSyncEnabled=false; localStorage.removeItem('thatgirlhq_syncId'); localStorage.removeItem('thatgirlhq_cloud_enabled'); document.getElementById('sync-modal').remove(); dopamineHit('Logged out'); }
+async function syncNow() { if(!cloudSyncEnabled) return toggleCloudSync(); await saveToCloud(); dopamineHit('Synced! 🔄✦'); }
+
+window.addEventListener('load', async () => {
+  const storedId = localStorage.getItem('thatgirlhq_syncId');
+  const wasEnabled = localStorage.getItem('thatgirlhq_cloud_enabled') === 'true';
+  if (storedId && wasEnabled) { syncId = storedId; cloudSyncEnabled = true; await loadFromCloud(); }
+});
 
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
@@ -901,8 +1055,8 @@ function logActionHistory(habitId, areaId, name, isDone) {
   } else {
     state.actionHistory = state.actionHistory.filter(h => h.id !== key);
   }
-  const ninetyAgo = new Date(); ninetyAgo.setDate(ninetyAgo.getDate() - 90); 
-  state.actionHistory = state.actionHistory.filter(h => new Date(h.date) >= ninetyAgo);
+  const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 90); 
+  state.actionHistory = state.actionHistory.filter(h => new Date(h.date) >= thirtyDaysAgo);
 }
 
 function catEmoji(cat) { const map = { productivity:'🧠', health:'❤️', wealth:'💰', hobbies:'🎨', content:'📱' }; return map[cat] || '✦'; }
@@ -1074,9 +1228,24 @@ function renderHabits() {
   document.getElementById('lib-cats').innerHTML = cats.map(c => `<div class="cat-pill ${activeLibCat===c?'active':''}" onclick="activeLibCat='${c}';renderHabits()">${c==='all'?'All ✦':catEmoji(c)+' '+c}</div>`).join('');
   const filtered = activeLibCat === 'all' ? state.habits : state.habits.filter(h => h.cat === activeLibCat);
   
+  // Group life areas for the dropdown
+  const grouped = {};
+  state.lifeAreas.forEach(a => { if(!grouped[a.theme]) grouped[a.theme] = []; grouped[a.theme].push(a); });
+  let optionsHtml = '';
+  for (let theme in grouped) {
+    optionsHtml += `<optgroup label="${theme.toUpperCase()}">`;
+    grouped[theme].forEach(a => {
+      optionsHtml += `<option value="${a.id}">${a.emoji} ${a.title}</option>`;
+    });
+    optionsHtml += `</optgroup>`;
+  }
+
   document.getElementById('habits-list').innerHTML = filtered.map(habit => {
+    // Inject options and mark selected
+    const updatedOptions = optionsHtml.replace(`value="${habit.areaId}"`, `value="${habit.areaId}" selected`);
+
     return `<div class="habit-card ${habit.cat}"><div class="habit-info"><h4>${habit.name}</h4><div class="freq-selector" style="margin-top:6px;gap:8px">
-      <select onchange="updateArea('${habit.id}', this.value)" style="max-width:130px;font-size:11px;padding:3px 8px">${state.lifeAreas.map(a => `<option value="${a.id}" ${a.id === habit.areaId ? 'selected' : ''}>${a.emoji} ${a.title}</option>`).join('')}</select>
+      <select onchange="updateArea('${habit.id}', this.value)" style="max-width:130px;font-size:11px;padding:3px 8px">${updatedOptions}</select>
       <select onchange="updateFreq('${habit.id}', this.value)" style="font-size:11px;padding:3px 8px">${['daily','weekdays','3x','2x','1x','monthly'].map(f => `<option value="${f}" ${habit.freq===f?'selected':''}>${f}</option>`).join('')}</select>
     </div></div><div class="habit-actions"><button class="btn-icon" onclick="openTweakModal('${habit.id}')" title="Tweak/Iterate Habit">🧪</button><button class="btn-icon ${habit.active?'active':''}" onclick="toggleHabitActive('${habit.id}')">${habit.active?'✓':'○'}</button><button class="btn-icon" onclick="deleteHabit('${habit.id}')">🗑</button></div></div>`
   }).join('');
@@ -1128,9 +1297,10 @@ function saveTweak() {
 let weekOffset = 0;
 function getWeekDates(offset) { const now = new Date(); const dayOfWeek = now.getDay(); const monday = new Date(now); monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7) + offset * 7); monday.setHours(0,0,0,0); const days = []; for (let i = 0; i < 7; i++) { const d = new Date(monday); d.setDate(monday.getDate() + i); days.push(d); } return days; }
 function changeWeek(dir) { weekOffset = dir === 0 ? 0 : weekOffset + dir; renderWeeklyPlanner(); }
+function getWeekKey(offset) { return localDateStr(getWeekDates(offset)[0]); }
 
 function renderWeeklyPlanner() {
-  const days = getWeekDates(weekOffset); const wk = localDateStr(days[0]); const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const days = getWeekDates(weekOffset); const wk = getWeekKey(weekOffset); const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   document.getElementById('week-nav-title').textContent = `${days[0].toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${days[6].toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`;
   
   const sidebarEl = document.getElementById('sidebar-habits'); sidebarEl.innerHTML = '';
@@ -1168,7 +1338,6 @@ function renderWeeklyPlanner() {
       });
       itemsEl.appendChild(chip);
     });
-    // Add calendar events
     const evs = (state.calendarEvents[dateStr] || []).slice().sort((a,b) => (a.startTime||'zzz').localeCompare(b.startTime||'zzz'));
     evs.forEach(ev => {
       const evType = ev.type || 'one-time';
@@ -1188,7 +1357,7 @@ function renderWeeklyPlanner() {
 }
 
 function syncTodayFromAssignments() {
-  const dayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1; const wk = localDateStr(getWeekDates(0)[0]);
+  const dayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1; const wk = getWeekKey(0);
   const sIds = new Set(state.habits.filter(h => ['3x','2x','1x'].includes(h.freq)).map(h => h.id));
   ['high','med','low'].forEach(tier => state.todayTasks[tier] = (state.todayTasks[tier] || []).filter(t => !sIds.has(t.habitId)));
   state.habits.filter(h => h.active && ['3x','2x','1x'].includes(h.freq)).forEach(habit => {
@@ -1202,7 +1371,7 @@ function toggleAssignPanel() { document.getElementById('week-assign-panel').clas
 
 function calcTweakPerformance(habitId, tweakDate) {
   const tweakTime = new Date(tweakDate).getTime();
-  let preTotal = 0; let preDone = 0; let postTotal = 0; let postDone = 0;
+  let preDone = 0; let postDone = 0;
   state.actionHistory.forEach(h => {
      if(h.habitId === habitId) {
         const d = new Date(h.date).getTime();
@@ -1213,15 +1382,11 @@ function calcTweakPerformance(habitId, tweakDate) {
   return { preDone, postDone };
 }
 
-function getWeekKey(offset) {
-  return localDateStr(getWeekDates(offset)[0]);
-}
-
 function openWeeklyDashboard() {
   const now = new Date(); const past7 = Array.from({length:7}, (_,i)=>localDateStr(new Date(now.getTime() - i*86400000)));
+  const prev7 = Array.from({length:7}, (_,i)=>localDateStr(new Date(now.getTime() - (i+7)*86400000)));
   
   const themeStats = { productivity: 0, health: 0, wealth: 0, content: 0, hobbies: 0, general: 0 };
-  
   let totalThisWeek = 0;
   (state.actionHistory || []).forEach(a => {
     const city = state.lifeAreas.find(x => x.id === a.areaId); const theme = city ? city.theme : 'general';
@@ -1245,13 +1410,11 @@ function openWeeklyDashboard() {
   ['productivity','health','wealth','content','hobbies'].forEach(t => {
     const count = themeStats[t]; 
     if (count > maxCount) { maxCount = count; maxTheme = t; }
-    // NO TRENDS. Just neutral data.
     macroHtml += `<div class="theme-breakdown-card"><div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--text-dark);text-transform:capitalize">${t}</div></div><div style="font-size:12px;font-weight:700;color:var(--pink-600);background:var(--pink-100);padding:4px 10px;border-radius:10px;">${count} actions</div></div>`;
   });
 
   let topFocusHtml = maxCount > 0 ? `<div style="text-align:center; padding:12px; background:rgba(255,255,255,0.1); border-radius:12px; margin-top:12px;"><span style="color:var(--pink-200);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px;">🏆 Top Focus</span><strong>${themeNames[maxTheme]}</strong></div>` : '';
 
-  // Grab Unscheduled Wins
   let winsHtml = '';
   state.lifeAreas.forEach(a => {
     (a.evidenceLogs || []).filter(l => past7.includes(l.date)).forEach(w => {
@@ -1301,7 +1464,6 @@ function openWeeklyDashboard() {
 
           <div class="dash-panel">
             <div class="dash-panel-title">🧪 Habit Experiments (A/B Tests)</div>
-            <p style="font-size:12px;color:var(--text-light);margin-top:-10px;margin-bottom:12px;">Did your friction tweaks improve consistency?</p>
             <div style="max-height:160px;overflow-y:auto;padding-right:10px;">${tweakHtml}</div>
           </div>
         </div>
@@ -1463,10 +1625,6 @@ function renderReviewVault() {
     </div>`).join('') : '<div style="font-size:12px;color:var(--text-light)">No 90-day snapshots archived yet.</div>';
 }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
-
 function openLifeAreaModal(id) {
   const a = id ? state.lifeAreas.find(x=>x.id===id) : null;
   document.getElementById('area-id-input').value = a ? a.id : '';
@@ -1488,12 +1646,6 @@ function saveLifeArea() {
   save(); closeModal('life-area-modal'); renderLifeAreas();
 }
 
-function launchConfetti() { const canvas=document.getElementById('confetti-canvas');canvas.width=window.innerWidth;canvas.height=window.innerHeight;const ctx=canvas.getContext('2d');const pieces=[];const colors=['#ff85a1','#ffb3c6','#d4a843','#b084cc','#7bb88c'];for(let i=0;i<60;i++){pieces.push({x:Math.random()*canvas.width,y:-10,vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,r:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],rot:Math.random()*Math.PI*2,vrot:(Math.random()-0.5)*0.2});}let frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);pieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.vrot;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.color;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);ctx.restore();});frame++;if(frame<80)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate(); }
-function dopamineHit(msg) { const el=document.getElementById('dopamine-message');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200); }
-function spawnXP(el) { const rect=el.getBoundingClientRect();const xpEl=document.createElement('div');xpEl.className='xp-float';xpEl.textContent='+10 XP';xpEl.style.left=rect.left+'px';xpEl.style.top=rect.top+'px';document.body.appendChild(xpEl);setTimeout(()=>xpEl.remove(),1500); }
-function exportData() { const d=JSON.stringify(state,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`thatgirlhq-${localDateStr()}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a); }
-function importData(e) { const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(e)=>{try{const i=JSON.parse(e.target.result);if(i.habits){state=i;save();location.reload();}}catch(err){dopamineHit('Error! ❌');}};r.readAsText(f);e.target.value=''; }
-
 function logEvidence(cityId) {
   const input = document.getElementById('ev-input-' + cityId); const val = input.value.trim(); if (!val) return;
   const city = state.lifeAreas.find(a => a.id === cityId);
@@ -1513,7 +1665,6 @@ function generateAIPrompt() {
   
   prompt += `\nPlease review my data from the last 7 days and act as my analytical coach. Answer:\n1. How is my macro life balance doing based on the 5 life areas? Are there any concerning patterns?\n2. What specific environmental tweaks or habit pivots should I make based on my Reflections & Friction log?\n\n### MY DATA (Last 7 Days):\n`;
   
-  // Macro Trends
   prompt += `\n**Macro Theme Actions:**\n`;
   const counts = { productivity: 0, health: 0, wealth: 0, content: 0, hobbies: 0 };
   (state.actionHistory || []).filter(h => past7Days.includes(h.date)).forEach(a => {
@@ -1522,7 +1673,6 @@ function generateAIPrompt() {
   });
   for (let theme in counts) { prompt += `- ${theme.toUpperCase()}: ${counts[theme]} actions\n`; }
   
-  // Reflections & Friction
   const hard = document.getElementById('reflect-hard').value;
   const easy = document.getElementById('reflect-easy').value;
   const liked = document.getElementById('reflect-liked').value;
@@ -1536,12 +1686,10 @@ function generateAIPrompt() {
   if (disliked) prompt += `- What I didn't like doing: ${disliked}\n`;
   if (fix) prompt += `- Proposed Environmental Fix: ${fix}\n`;
   
-  // Unscheduled Wins
   let wins = [];
   state.lifeAreas.forEach(a => { (a.evidenceLogs || []).filter(l => past7Days.includes(l.date)).forEach(w => wins.push(`${a.title}: ${w.value}`)); });
   if (wins.length) { prompt += `\n**Unscheduled Wins (Evidence):**\n` + wins.map(w => `- ${w}`).join('\n') + `\n`; }
 
-  // Habit Tweaks / A/B Tests
   let tweaksText = [];
   state.habits.forEach(h => {
      if(h.tweaks && h.tweaks.length > 0) {
@@ -1554,7 +1702,6 @@ function generateAIPrompt() {
   });
   if(tweaksText.length > 0) { prompt += `\n**Active Habit Experiments (A/B Tests):**\n` + tweaksText.join('\n') + `\n`; }
 
-  // Closing Shifts
   prompt += `\n**Nightly Closing Shifts (What I was proud of):**\n`;
   let hasShifts = false;
   past7Days.forEach(date => { if (state.closingShifts && state.closingShifts[date]) { prompt += `- ${date}: "${state.closingShifts[date]}"\n`; hasShifts = true; } });
@@ -1562,6 +1709,10 @@ function generateAIPrompt() {
 
   navigator.clipboard.writeText(prompt).then(() => { dopamineHit('Copied! Paste this to your AI Coach ✨'); }).catch(err => { dopamineHit('Oops, failed to copy! ❌'); });
 }
+
+function launchConfetti() { const canvas=document.getElementById('confetti-canvas');canvas.width=window.innerWidth;canvas.height=window.innerHeight;const ctx=canvas.getContext('2d');const pieces=[];const colors=['#ff85a1','#ffb3c6','#d4a843','#b084cc','#7bb88c'];for(let i=0;i<60;i++){pieces.push({x:Math.random()*canvas.width,y:-10,vx:(Math.random()-0.5)*4,vy:Math.random()*3+2,r:Math.random()*6+3,color:colors[Math.floor(Math.random()*colors.length)],rot:Math.random()*Math.PI*2,vrot:(Math.random()-0.5)*0.2});}let frame=0;function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);pieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.vrot;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.color;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);ctx.restore();});frame++;if(frame<80)requestAnimationFrame(animate);else ctx.clearRect(0,0,canvas.width,canvas.height);}animate(); }
+function dopamineHit(msg) { const el=document.getElementById('dopamine-message');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200); }
+function spawnXP(el) { const rect=el.getBoundingClientRect();const xpEl=document.createElement('div');xpEl.className='xp-float';xpEl.textContent='+10 XP';xpEl.style.left=rect.left+'px';xpEl.style.top=rect.top+'px';document.body.appendChild(xpEl);setTimeout(()=>xpEl.remove(),1500); }
 </script>
 </body>
 </html>
