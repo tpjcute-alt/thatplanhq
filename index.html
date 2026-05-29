@@ -666,6 +666,7 @@ body {
   margin-bottom: 8px;
   box-shadow: var(--shadow-card);
   border-left: 3px solid transparent;
+  cursor: default;
 }
 .today-timed-event.ev-timed   { background: #fff8e1; border-color: #f0a500; }
 .today-timed-event.ev-one-time { background: #e8f0fe; border-color: #4a7cf0; }
@@ -2426,11 +2427,17 @@ function renderWeeklyPlanner() {
     dayEvents.forEach(ev => {
       hasItems = true;
       const evChip = document.createElement('div');
-      const evClass = `week-event-chip ev-${ev.type || 'one-time'}`;
-      evChip.className = evClass;
+      const evType = ev.type || 'one-time';
+      evChip.className = `week-event-chip ev-${evType}${ev.done ? ' ev-done' : ''}`;
       const timeLabel = ev.startTime ? `<span class="ev-time">${fmt12(ev.startTime)}</span>` : '';
-      const typeIcon = { timed:'📅', 'one-time':'✅', habit:'🔁', review:'📊' }[ev.type] || '✦';
-      evChip.innerHTML = `${timeLabel}<span class="ev-title">${typeIcon} ${ev.title}</span>`;
+      const typeIcon = { timed:'📅', 'one-time':'✅', habit:'🔁', review:'📊' }[evType] || '✦';
+      evChip.innerHTML = `
+        <button class="ev-tick-btn${ev.done ? ' ticked' : ''}" title="${ev.done ? 'Undo' : 'Mark done'}"></button>
+        ${timeLabel}<span class="ev-title">${typeIcon} ${ev.title}</span>`;
+      evChip.querySelector('.ev-tick-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        tickEvent(dateStr, ev.id, e.currentTarget);
+      });
       itemsEl.appendChild(evChip);
     });
 
@@ -2684,19 +2691,26 @@ function renderTodayTimedEvents() {
   section.style.display = 'block';
   const typeLabel = { timed:'Meeting', 'one-time':'Task', habit:'Habit block', review:'Review' };
   const typeIcon  = { timed:'📅', 'one-time':'✅', habit:'🔁', review:'📊' };
-  list.innerHTML = events.map(ev => {
+  list.innerHTML = '';
+  events.forEach(ev => {
     const evType = ev.type || 'one-time';
     const timeStr = ev.startTime ? fmtTimeRange(ev.startTime, ev.endTime) : (typeLabel[evType] || 'Event');
-    return `
-    <div class="today-timed-event ev-${evType}">
+    const el = document.createElement('div');
+    el.className = `today-timed-event ev-${evType}${ev.done ? ' ev-done' : ''}`;
+    el.innerHTML = `
       <div class="ev-priority-dot"></div>
       <div class="today-timed-time">${timeStr}</div>
-      <div>
+      <div style="flex:1">
         <div class="today-timed-name">${typeIcon[evType] || '✦'} ${ev.title}</div>
         <div class="today-timed-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div>
       </div>
-    </div>`;
-  }).join('');
+      <button class="ev-tick-btn${ev.done ? ' ticked' : ''}" title="${ev.done ? 'Undo' : 'Mark done — opens reflection'}"></button>`;
+    el.querySelector('.ev-tick-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      tickEvent(dateKey, ev.id, e.currentTarget);
+    });
+    list.appendChild(el);
+  });
 }
 
 // ══════════════════════════════════════
