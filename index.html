@@ -456,6 +456,159 @@ body {
   font-style: italic;
 }
 
+/* ── EVENT TICK + REFLECTION ── */
+.ev-tick-btn {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  transition: all 0.15s;
+  opacity: 0.6;
+}
+.ev-tick-btn:hover { opacity: 1; transform: scale(1.1); }
+.ev-tick-btn.ticked { background: currentColor; opacity: 1; }
+.ev-tick-btn.ticked::after { content: '✓'; filter: invert(1) brightness(2); font-size: 12px; font-weight: 900; }
+.today-timed-event.ev-done { opacity: 0.45; }
+.today-timed-event.ev-done .today-timed-name { text-decoration: line-through; }
+.week-event-chip.ev-done { opacity: 0.35; }
+.week-event-chip.ev-done .ev-title { text-decoration: line-through; }
+
+/* Reflection modal overlay */
+#reflection-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,4,12,0.6);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+  padding: 16px;
+}
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+#reflection-box {
+  background: white;
+  border-radius: 28px;
+  padding: 0 0 24px;
+  width: 460px; max-width: 96vw;
+  box-shadow: 0 40px 100px rgba(150,30,70,0.25);
+  position: relative; overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(.34,1.4,.64,1);
+}
+@keyframes slideUp { from { transform: translateY(30px) scale(0.97); opacity:0 } to { transform: none; opacity:1 } }
+.reflection-top-bar {
+  height: 5px;
+  position: absolute; top: 0; left: 0; right: 0;
+}
+/* Header */
+.reflection-header {
+  display: flex; align-items: center; gap: 16px;
+  padding: 32px 28px 20px;
+}
+.reflection-emoji-wrap {
+  width: 56px; height: 56px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.reflection-emoji { font-size: 28px; }
+.reflection-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700;
+  color: var(--text-dark); margin-bottom: 3px;
+}
+.reflection-event-name {
+  font-size: 12px; color: var(--text-light);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 280px;
+}
+.reflection-divider {
+  height: 1px; background: var(--pink-100); margin: 0 28px 20px;
+}
+/* Core message strip */
+.reflection-core-msg {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 28px 20px;
+  background: linear-gradient(135deg, #fff5f8, #fff0f5);
+  border-radius: 12px; padding: 12px 14px;
+}
+.reflection-core-label {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--pink-400);
+  background: var(--pink-100); border-radius: 6px;
+  padding: 3px 7px; white-space: nowrap; flex-shrink: 0;
+}
+.reflection-core-text {
+  font-size: 13px; font-weight: 700; color: var(--text-dark);
+  font-style: italic;
+}
+/* Prompt */
+.reflection-prompt-wrap {
+  margin: 0 28px 10px;
+  border-left: 3px solid var(--pink-300);
+  padding-left: 14px;
+}
+.reflection-prompt-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--pink-400); margin-bottom: 5px;
+}
+.reflection-prompt-text {
+  font-size: 14px; font-weight: 600; color: var(--text-dark);
+  line-height: 1.45;
+}
+.reflection-textarea {
+  display: block;
+  width: calc(100% - 56px);
+  margin: 0 28px 18px;
+  border: 1.5px solid var(--pink-200);
+  border-radius: 14px; padding: 12px 14px;
+  font-size: 13px; font-family: inherit;
+  resize: vertical; min-height: 76px;
+  color: var(--text-dark); outline: none;
+  transition: border-color 0.2s; background: #fffbfc;
+  box-sizing: border-box;
+}
+.reflection-textarea:focus { border-color: var(--pink-400); background: white; }
+/* Affirmation card */
+.reflection-affirmation-card {
+  margin: 0 28px 12px;
+  background: #f9f5ff;
+  border-left: 3px solid var(--pink-300);
+  border-radius: 0 12px 12px 0;
+  padding: 12px 14px;
+}
+.reflection-affirmation-main {
+  font-size: 14px; font-weight: 700; color: var(--text-dark);
+  margin-bottom: 3px;
+}
+.reflection-affirmation-sub {
+  font-size: 12px; color: var(--text-light); line-height: 1.4;
+}
+/* XP badge */
+.reflection-xp-badge {
+  text-align: center; font-size: 12px; font-weight: 700;
+  color: var(--pink-500); margin-bottom: 18px;
+  letter-spacing: 0.04em;
+}
+/* Actions */
+.reflection-actions { display: flex; gap: 10px; padding: 0 28px; }
+.reflection-skip {
+  flex: 1; padding: 12px;
+  background: var(--pink-50); border: 1.5px solid var(--pink-100);
+  border-radius: 14px; color: var(--text-light);
+  font-weight: 600; font-size: 13px; cursor: pointer;
+  transition: background 0.15s;
+}
+.reflection-skip:hover { background: var(--pink-100); }
+.reflection-save {
+  flex: 2; padding: 12px;
+  border: none; border-radius: 14px; color: white;
+  font-weight: 700; font-size: 13px; cursor: pointer;
+  letter-spacing: 0.03em; transition: opacity 0.15s;
+}
+.reflection-save:hover { opacity: 0.88; }
+
 /* ── CALENDAR EVENT CHIPS in weekly/today ── */
 .week-event-chip {
   padding: 9px 12px;
@@ -1457,8 +1610,8 @@ textarea.journal:focus { box-shadow: 0 0 0 2px var(--pink-200); }
 //  Paste your two Supabase values below.
 // ══════════════════════════════════════
 
-const SUPABASE_URL = 'https://crexidqsmiqsqrgbnusa.supabase.co';   
-const SUPABASE_ANON = 'sb_publishable_RmAZfJpE0mTUUnoupNCiPw_jbk7oO8c'; 
+const SUPABASE_URL = '';   // e.g. 'https://xxxx.supabase.co'
+const SUPABASE_ANON = '';  // anon/public key from Supabase → Settings → API
 
 let syncId = localStorage.getItem('thatgirlhq_syncId') || null;
 let cloudSyncEnabled = !!syncId;
@@ -1527,15 +1680,21 @@ if (state.habits.length === 0) {
   save();
 }
 
-// Seed today tasks if new day
-const todayKey = new Date().toDateString();
-if (state.lastActiveDate !== todayKey) {
-  // Check streak
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-  if (state.lastActiveDate === yesterday.toDateString()) {
-    state.streak++;
-  } else if (state.lastActiveDate !== todayKey) {
-    state.streak = 1;
+// Seed today tasks if new day — called after state is settled (local or cloud)
+// skipStreakUpdate = true when called after cloud load (streak already in cloud state)
+function checkNewDay(skipStreakUpdate = false) {
+  const todayKey = new Date().toDateString();
+  if (state.lastActiveDate === todayKey) return; // already done today
+  if (!skipStreakUpdate) {
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    if (state.lastActiveDate === yesterday.toDateString()) {
+      state.streak++;
+    } else if (!state.lastActiveDate) {
+      // Brand new — don't gift a streak day
+      state.streak = 0;
+    } else {
+      state.streak = 1;
+    }
   }
   state.lastActiveDate = todayKey;
   state.xpToday = 0;
@@ -1619,6 +1778,8 @@ async function loadFromCloud() {
     if (data && (data.habits || data.xp !== undefined)) {
       state = data;
       localStorage.setItem('thatgirlhq', JSON.stringify(state));
+      checkNewDay();
+      checkNewDay(true); // don't re-increment streak — cloud state already has it
       renderToday(); renderWeeklyPlanner();
       renderCalendar(); renderHabits(); updateStats();
       return true;
@@ -1724,6 +1885,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('wake-time-input').value = state.wakeTime || '07:00';
   setWakeTime(true);
   syncTodayFromAssignments();
+  checkNewDay();
   renderToday();
   renderTodayTimedEvents();
   renderCalendar();
@@ -1873,6 +2035,177 @@ function updateStats() {
 // ══════════════════════════════════════
 //  WIN MESSAGES
 // ══════════════════════════════════════
+// ══════════════════════════════════════
+//  EVENT COMPLETION + REFLECTION
+// ══════════════════════════════════════
+
+const reflectionPrompts = {
+  timed: [
+    { q: "What was one action you took in there that was 100% yours to control?", placeholder: "Something I chose to do, say, or bring..." },
+    { q: "How did you show up — not how did it go?", placeholder: "My energy, presence, preparation..." },
+    { q: "What would you do the same next time, regardless of outcome?", placeholder: "The action I'm keeping..." },
+    { q: "What did you bring to the table that no outcome can take away?", placeholder: "My effort, my prep, my presence..." },
+  ],
+  'one-time': [
+    { q: "What action actually got this done? Name the move.", placeholder: "I started by... / The thing that worked was..." },
+    { q: "What does completing this say about who you're becoming?", placeholder: "This tells me I'm someone who..." },
+    { q: "What was fully in your control here — and did you show up for it?", placeholder: "I controlled... and I chose to..." },
+    { q: "If you forget every outcome from today, what action would you still be proud of?", placeholder: "I showed up when I..." },
+  ],
+  habit: [
+    { q: "You did the thing. What got you to start?", placeholder: "The action that unlocked it was..." },
+    { q: "Forget whether it felt good. Did you do the action? What was it?", placeholder: "I did... even though..." },
+    { q: "What's one tiny thing about HOW you showed up today that you want to remember?", placeholder: "I noticed I..." },
+    { q: "The habit is the vote. What were you voting for today?", placeholder: "I'm becoming someone who..." },
+    { q: "No metrics, no results — just: did you control what you could control?", placeholder: "What I controlled today was..." },
+  ],
+  review: [
+    { q: "Looking at this period — what actions are you most proud of, unattached to outcome?", placeholder: "The actions I showed up for were..." },
+    { q: "What process are you building, not what results did you get?", placeholder: "My process is becoming..." },
+    { q: "What one action pattern do you want to carry into the next period?", placeholder: "I'm keeping the habit of..." },
+    { q: "Where did you control what you could, even when outcomes didn't match?", placeholder: "I kept showing up when..." },
+  ],
+};
+
+const reflectionAffirmations = [
+  { text: "The action is the win. Full stop.", sub: "Outcomes are noise. Actions are signal." },
+  { text: "You showed up. That's the whole job.", sub: "Everything else is outside your control." },
+  { text: "That's a vote for your best self.", sub: "Votes compound. Keep casting them." },
+  { text: "Process over perfection, always.", sub: "You're building something real, one action at a time." },
+  { text: "Your future self felt that.", sub: "She's being built right now, by you." },
+  { text: "Consistency is quiet power.", sub: "Nobody sees it building — until it's built." },
+  { text: "The doing IS the becoming.", sub: "You don't find that girl. You become her through action." },
+  { text: "You controlled what you could control.", sub: "That's literally the whole game. Nothing else counts." },
+  { text: "One action at a time, she's becoming.", sub: "This was one of those actions. ✦" },
+  { text: "Results are a lagging indicator.", sub: "The lead indicator is right here — you showing up." },
+];
+
+function getReflectionPrompt(type) {
+  const pool = reflectionPrompts[type] || reflectionPrompts['one-time'];
+  return pool[Math.floor(Math.random() * pool.length)]; // returns {q, placeholder}
+}
+
+function getAffirmation() {
+  return reflectionAffirmations[Math.floor(Math.random() * reflectionAffirmations.length)]; // returns {text, sub}
+}
+
+const typeColours = {
+  timed: '#f0a500', 'one-time': '#4a7cf0', habit: '#3aaa6a', review: '#9b5de5'
+};
+const typeEmojis = {
+  timed: '📅', 'one-time': '✅', habit: '🔁', review: '📊'
+};
+
+function tickEvent(dateKey, evId, sourceEl) {
+  // Toggle done state
+  const evList = state.calendarEvents[dateKey] || [];
+  const ev = evList.find(e => e.id === evId);
+  if (!ev) return;
+
+  if (ev.done) {
+    // un-tick — no prompt, just undo
+    ev.done = false;
+    delete ev.reflection;
+    save();
+    renderTodayTimedEvents();
+    renderWeeklyPlanner();
+    return;
+  }
+
+  // Mark done optimistically
+  ev.done = true;
+  save();
+  renderTodayTimedEvents();
+  renderWeeklyPlanner();
+
+  // Show reflection modal
+  openReflectionModal(ev, dateKey);
+}
+
+function openReflectionModal(ev, dateKey) {
+  // Remove any existing
+  document.getElementById('reflection-overlay')?.remove();
+
+  const colour = typeColours[ev.type] || '#ff85a1';
+  const emoji  = typeEmojis[ev.type]  || '✦';
+  const prompt = getReflectionPrompt(ev.type);
+  const affirmation = getAffirmation();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'reflection-overlay';
+  overlay.innerHTML = `
+    <div id="reflection-box">
+      <div class="reflection-top-bar" style="background:linear-gradient(135deg,${colour},${colour}99)"></div>
+
+      <!-- Header -->
+      <div class="reflection-header">
+        <div class="reflection-emoji-wrap" style="background:${colour}18;border:2px solid ${colour}33">
+          <span class="reflection-emoji">${emoji}</span>
+        </div>
+        <div>
+          <div class="reflection-title">You did it ✦</div>
+          <div class="reflection-event-name">${ev.title}</div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="reflection-divider"></div>
+
+      <!-- Core message -->
+      <div class="reflection-core-msg">
+        <span class="reflection-core-label">Remember</span>
+        <span class="reflection-core-text">Actions are yours. Outcomes aren't.</span>
+      </div>
+
+      <!-- Prompt -->
+      <div class="reflection-prompt-wrap">
+        <div class="reflection-prompt-label">Reflect ↓</div>
+        <div class="reflection-prompt-text">${prompt.q}</div>
+      </div>
+      <textarea class="reflection-textarea" id="reflection-input"
+        placeholder="${prompt.placeholder}" rows="3"></textarea>
+
+      <!-- Affirmation card -->
+      <div class="reflection-affirmation-card" style="border-left-color:${colour}">
+        <div class="reflection-affirmation-main">${affirmation.text}</div>
+        <div class="reflection-affirmation-sub">${affirmation.sub}</div>
+      </div>
+
+      <!-- XP badge -->
+      <div class="reflection-xp-badge">+15 XP earned ⚡</div>
+
+      <div class="reflection-actions">
+        <button class="reflection-skip" onclick="closeReflection()">Skip for now</button>
+        <button class="reflection-save" style="background:linear-gradient(135deg,${colour},${colour}cc)"
+          onclick="saveReflection('${dateKey}','${ev.id}')">Save ✦</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeReflection(); });
+  setTimeout(() => document.getElementById('reflection-input')?.focus(), 280);
+
+  state.xp = (state.xp || 0) + 15;
+  state.xpToday = (state.xpToday || 0) + 15;
+  updateStats();
+  dopamineHit(`${emoji} +15 XP — action taken ✦`);
+}
+
+function saveReflection(dateKey, evId) {
+  const text = document.getElementById('reflection-input')?.value?.trim();
+  const ev = (state.calendarEvents[dateKey] || []).find(e => e.id === evId);
+  if (ev && text) {
+    ev.reflection = text;
+    save();
+  }
+  closeReflection();
+}
+
+function closeReflection() {
+  document.getElementById('reflection-overlay')?.remove();
+}
+
 const wins = [
   "That's the one! ✨","Action > outcome. Always. 🌸","You showed up. That's everything. 💖",
   "THAT GIRL behaviour! 🔥","Building the life, one action at a time ✦","Your future self is smiling 🌟",
