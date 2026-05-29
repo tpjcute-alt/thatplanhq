@@ -1836,7 +1836,7 @@ function exportData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `thatgirlhq-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `thatgirlhq-backup-${localDateStr()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1893,7 +1893,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateStats();
 
   // Set default event date
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   document.getElementById('event-date-input').value = today;
 });
 
@@ -2280,6 +2280,15 @@ function launchConfetti() {
 let weekOffset = 0;
 let sidebarCat = 'all';
 
+// Build YYYY-MM-DD from LOCAL time — never use toISOString() for date keys
+// (toISOString is UTC, which gives the wrong date for UK/non-UTC timezones)
+function localDateStr(d) {
+  const dt = d || new Date();
+  return dt.getFullYear() + '-' +
+    String(dt.getMonth() + 1).padStart(2, '0') + '-' +
+    String(dt.getDate()).padStart(2, '0');
+}
+
 function getWeekDates(offset) {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0=Sun
@@ -2297,7 +2306,7 @@ function getWeekDates(offset) {
 
 function getWeekKey(offset) {
   const days = getWeekDates(offset);
-  return days[0].toISOString().split('T')[0];
+  return localDateStr(days[0]);
 }
 
 function changeWeek(dir) {
@@ -2344,7 +2353,7 @@ function renderWeeklyPlanner() {
 
     const picker = card.querySelector('.day-picker');
     days.forEach((date, i) => {
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = localDateStr(date);
       const assignKey = `assign_${wk}_${habit.id}_${i}`;
       const dot = document.createElement('div');
       dot.className = 'day-dot';
@@ -2374,8 +2383,8 @@ function renderWeeklyPlanner() {
   colsEl.innerHTML = '';
 
   days.forEach((date, i) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const isToday = date.getTime() === today.getTime();
+    const dateStr = localDateStr(date);
+    const isToday = localDateStr(date) === localDateStr(today);
     const col = document.createElement('div');
     col.className = 'week-col' + (isToday ? ' is-today' : '');
     col.innerHTML = `
@@ -2441,7 +2450,7 @@ function setSidebarCat(cat) {
 // ══════════════════════════════════════
 function syncTodayFromAssignments() {
   const todayDate = new Date();
-  const todayDateStr = todayDate.toISOString().split('T')[0];
+  const todayDateStr = localDateStr(todayDate);
   const wk = getWeekKey(0); // always current week for today sync
   // Day index: Mon=0…Sun=6
   const dayJs = todayDate.getDay(); // 0=Sun,1=Mon…
@@ -2483,7 +2492,7 @@ function toggleAssign(key, dot, habit, dateStr, dayIdx) {
   dot.classList.toggle('selected');
   renderWeeklyPlanner();
   // If this assignment is for today, sync Today tab immediately
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localDateStr();
   if (dateStr === todayStr) syncTodayFromAssignments();
   if (state.weeklyAssign[key]) dopamineHit(`${habit.name} → ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][dayIdx]} ✦`);
 }
@@ -2664,7 +2673,7 @@ function saveEvent() {
 // ── Render calendar events in Today ──
 function renderTodayTimedEvents() {
   const todayDate = new Date();
-  const dateKey = `${todayDate.getFullYear()}-${String(todayDate.getMonth()+1).padStart(2,'0')}-${String(todayDate.getDate()).padStart(2,'0')}`;
+  const dateKey = localDateStr(todayDate);
   // Show ALL events for today, sorted: timed ones first by time, then untimed
   const timed = (state.calendarEvents[dateKey] || []).filter(e => e.startTime).sort((a,b) => a.startTime.localeCompare(b.startTime));
   const untimed = (state.calendarEvents[dateKey] || []).filter(e => !e.startTime);
