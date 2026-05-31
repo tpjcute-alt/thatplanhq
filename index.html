@@ -315,6 +315,36 @@ body {
   .energy-cols { grid-template-columns: 1fr; }
 }
 
+/* ── Action Ladder ── */
+.action-ladder-section { margin-bottom: 20px; }
+.action-ladder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.action-ladder-title { font-size: 11px; font-weight: 800; color: var(--pink-400); text-transform: uppercase; letter-spacing: 0.1em; }
+.btn-add-ladder-step { background: var(--pink-100); border: none; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--pink-600); cursor: pointer; transition: all 0.2s; }
+.btn-add-ladder-step:hover { background: var(--pink-200); }
+.ladder-track { position: relative; padding-left: 20px; }
+.ladder-track::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(to bottom, var(--pink-300), var(--pink-100)); border-radius: 2px; }
+.ladder-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px 8px 0; position: relative; cursor: pointer; border-radius: 10px; transition: background 0.15s; margin-bottom: 4px; }
+.ladder-step:hover { background: var(--pink-50); }
+.ladder-step-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--pink-300); background: white; flex-shrink: 0; margin-top: 2px; position: absolute; left: -17px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 8px; }
+.ladder-step.completed .ladder-step-dot { background: var(--pink-400); border-color: var(--pink-400); color: white; }
+.ladder-step.current .ladder-step-dot { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 8px rgba(212,168,67,0.5); animation: pulse-dot 1.5s infinite; }
+.ladder-step-content { flex: 1; min-width: 0; }
+.ladder-step-label { font-size: 13px; font-weight: 600; color: var(--text-dark); line-height: 1.3; }
+.ladder-step.completed .ladder-step-label { text-decoration: line-through; color: var(--text-light); }
+.ladder-step.current .ladder-step-label { color: var(--pink-600); }
+.ladder-step-meta { font-size: 10px; color: var(--text-light); margin-top: 2px; display: flex; gap: 6px; align-items: center; }
+.step-badge { padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 700; }
+.step-badge.once { background: #e8f0ff; color: #3a5bd0; }
+.step-badge.repeat { background: #e8fff0; color: #1a7d45; }
+.step-badge.milestone { background: #fff8e0; color: #9a6f00; }
+.ladder-step-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
+.ladder-step:hover .ladder-step-actions { opacity: 1; }
+.ladder-step-btn { background: none; border: none; font-size: 12px; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: background 0.15s; color: var(--text-light); }
+.ladder-step-btn:hover { background: var(--pink-100); }
+.ladder-current-badge { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, var(--gold), #f0c060); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 10px; }
+.ladder-empty { font-size: 12px; color: var(--text-light); font-style: italic; padding: 8px 0; }
+@keyframes pulse-dot { 0%,100% { box-shadow: 0 0 6px rgba(212,168,67,0.4); } 50% { box-shadow: 0 0 14px rgba(212,168,67,0.8); } }
+
 @media (max-width: 768px) {
   body { padding-bottom: 80px; }
   .topbar { padding: 12px 16px; justify-content: center; flex-direction: column; }
@@ -446,7 +476,7 @@ body {
       <div class="assign-panel-header"><span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700">Assign Days ✦</span><div class="sidebar-filter" id="sidebar-filter" style="margin-left:auto"></div></div>
       <div id="sidebar-habits" class="assign-habits-grid"></div>
       <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
-        <button onclick="promptScheduleNote()" style="background:var(--pink-400);color:white;border:none;padding:10px 24px;border-radius:var(--radius-pill);font-weight:700;cursor:pointer;font-size:13px;transition:0.2s;">Done / Save Schedule ✦</button>
+        <button onclick="toggleAssignPanel(); dopamineHit('Schedule saved! 🗓️');" style="background:var(--pink-400);color:white;border:none;padding:10px 24px;border-radius:var(--radius-pill);font-weight:700;cursor:pointer;font-size:13px;transition:0.2s;">Done / Save Schedule ✦</button>
       </div>
     </div>
   </div>
@@ -572,8 +602,16 @@ body {
     <p id="del-modal-desc" style="font-size:13px;color:var(--text-light);margin-bottom:24px;">This action cannot be undone.</p>
     
     <div id="delete-reason-box" style="display:none; text-align:left; margin-bottom:20px;">
+      
+      <!-- Skip Type Dropdown (Only for Tasks) -->
+      <select id="skip-type-select" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--pink-200); outline:none; font-family:inherit; font-size:13px; display:none; background:white;">
+        <option value="intentional">⏸️ Intentional Skip (Rest / Listening to body)</option>
+        <option value="circumstance">🌪️ Circumstance (Something came up / Out of my control)</option>
+        <option value="friction">⚠️ Missed (Too much friction / Procrastinated)</option>
+      </select>
+
       <label id="del-modal-reason-lbl" style="font-size:12px;font-weight:700;display:block;margin-bottom:6px;color:var(--text-dark);">Why are you removing this habit?</label>
-      <textarea id="delete-reason-input" class="reflection-textarea" rows="2" placeholder="e.g. Too much friction right now..."></textarea>
+      <textarea id="delete-reason-input" class="reflection-textarea" rows="2" placeholder="e.g. Needs to be adjusted..."></textarea>
       <p style="font-size:11px;color:var(--text-light);margin-top:6px;">This will be saved to your Weekly Dashboard for the AI.</p>
     </div>
 
@@ -600,19 +638,55 @@ body {
   </div>
 </div>
 
-<!-- Schedule Note Modal -->
-<div class="modal-overlay" id="schedule-note-modal">
-  <div class="modal">
-    <h2>🗓️ Schedule Log</h2>
-    <p style="font-size:13px;color:var(--text-light);margin-bottom:20px;">You customized this week's schedule! Drop a quick note for your AI Coach so it understands your flexibility.</p>
-    <div class="form-group">
-      <label>What shifted and why?</label>
-      <textarea id="schedule-note-input" class="reflection-textarea" rows="2" placeholder="e.g. Moved Skill Builder to Tuesday because Monday is busy..."></textarea>
+<!-- Action Ladder Step Modal -->
+<div class="modal-overlay" id="ladder-step-modal">
+  <div class="modal" style="width:480px;">
+    <h2>🪜 Action Ladder Step</h2>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:20px;">Build your progression from tiny first action → big goal. Unlock each rung as you conquer it.</p>
+    <div class="form-group"><label>Step Name</label><input type="text" id="ls-name-input" placeholder="e.g. Buy gym clothes, Do home workout once…"></div>
+    <div class="form-group"><label>Type</label>
+      <select id="ls-type-input">
+        <option value="once">🔵 One-time (do it once & tick off)</option>
+        <option value="repeat">🟢 Repeating habit (unlock after doing it consistently)</option>
+        <option value="milestone">🏆 Milestone (big achievement to celebrate)</option>
+      </select>
     </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('schedule-note-modal'); toggleAssignPanel();">Skip</button>
-      <button class="btn-primary" onclick="saveScheduleNote()">Save Log ✦</button>
+    <div class="form-group"><label>Energy Tier</label>
+      <select id="ls-energy-input">
+        <option value="high">⚡ High energy</option>
+        <option value="med" selected>🌤 Medium energy</option>
+        <option value="low">🌙 Low energy</option>
+      </select>
     </div>
+    <div class="form-group"><label>How often per week?</label>
+      <select id="ls-freq-input" onchange="updateLsDaysSection()">
+        <option value="daily">Every day</option>
+        <option value="weekdays">Weekdays only</option>
+        <option value="1x">1× a week</option>
+        <option value="2x">2× a week</option>
+        <option value="3x" selected>3× a week</option>
+        <option value="4x">4× a week</option>
+        <option value="5x">5× a week</option>
+        <option value="6x">6× a week</option>
+        <option value="custom">Specific days…</option>
+      </select>
+    </div>
+    <div class="form-group" id="ls-days-section" style="display:none;">
+      <label>Which days?</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer;"><input type="checkbox" class="ls-day-cb" value="0"> Mon</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer;"><input type="checkbox" class="ls-day-cb" value="1"> Tue</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer;"><input type="checkbox" class="ls-day-cb" value="2"> Wed</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer;"><input type="checkbox" class="ls-day-cb" value="3"> Thu</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer;"><input type="checkbox" class="ls-day-cb" value="4"> Fri</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer;"><input type="checkbox" class="ls-day-cb" value="5"> Sat</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer;"><input type="checkbox" class="ls-day-cb" value="6"> Sun</label>
+      </div>
+    </div>
+    <div class="form-group"><label>Note (optional)</label><input type="text" id="ls-note-input" placeholder="e.g. Just 15 mins, no pressure…"></div>
+    <input type="hidden" id="ls-area-id-input">
+    <input type="hidden" id="ls-step-id-input">
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('ladder-step-modal')">Cancel</button><button class="btn-primary" onclick="saveLadderStep()">Save Step ✦</button></div>
   </div>
 </div>
 
@@ -643,6 +717,10 @@ if(!state.lifeAreas)      state.lifeAreas      = [];
 if(!state.habits)         state.habits         = [];
 if(state.totalVotes === undefined)  state.totalVotes  = 0;
 
+// Ensure every life area has an actionLadder array
+function repairLadders() { (state.lifeAreas || []).forEach(a => { if (!a.actionLadder) a.actionLadder = []; }); }
+repairLadders();
+
 if (state.lifeAreas.length <= 5) {
   state.lifeAreas = [
     { id: 'city_study', theme: 'productivity', title: 'Studying', emoji: '📚', identity: 'I make desired action feel easy.\nI create active recall instead of re-reading.', outcome: 'Pass exams confidently', outcomeLogs: [], evidenceLogs: [] },
@@ -650,7 +728,15 @@ if (state.lifeAreas.length <= 5) {
     { id: 'city_uni', theme: 'productivity', title: 'Extracurricular / Uni', emoji: '🎓', identity: 'I am open to interesting conversations.\nRelatedness is fuel.', outcome: 'Build a strong network', outcomeLogs: [], evidenceLogs: [] },
     { id: 'city_adhd', theme: 'health', title: 'ADHD Diagnosis Path', emoji: '🧠', identity: 'My brain works differently.\nI am learning its manual.', outcome: 'Secure official diagnosis', outcomeLogs: [], evidenceLogs: [] },
     { id: 'city_skin', theme: 'health', title: 'Skin & Hair Routine', emoji: '✨', identity: 'I tend to my vessel because it feels good.', outcome: 'Clear skin and healthy hair', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_gym', theme: 'health', title: 'Gym & Movement', emoji: '🏋️', identity: 'I follow through on movement commitments.\nI move for joy.', outcome: 'Be 55kg, master compound lift', outcomeLogs: [], evidenceLogs: [] },
+    { id: 'city_gym', theme: 'health', title: 'Gym & Movement', emoji: '🏋️', identity: 'I follow through on movement commitments.\nI move for joy.', outcome: 'Be 55kg, master compound lift', outcomeLogs: [], evidenceLogs: [], actionLadder: [
+      { id: 'ls1', name: 'Buy gym clothes & shoes', type: 'once', note: 'Just the kit — no pressure to go yet!', completed: false, completedDate: null },
+      { id: 'ls2', name: 'Do a fun home workout once', type: 'once', note: 'YouTube, dancing, anything goes', completed: false, completedDate: null },
+      { id: 'ls3', name: 'Home workout twice a week', type: 'repeat', note: 'Build the habit at home first', completed: false, completedDate: null },
+      { id: 'ls4', name: 'Walk to the gym — just look inside', type: 'once', note: 'Remove the scary unknown!', completed: false, completedDate: null },
+      { id: 'ls5', name: 'Go to gym for one easy session', type: 'once', note: 'Machines only, no pressure', completed: false, completedDate: null },
+      { id: 'ls6', name: 'Gym twice a week consistently', type: 'repeat', note: '3 weeks in a row = unlocked', completed: false, completedDate: null },
+      { id: 'ls7', name: 'Start a beginner program (e.g. StrongLifts 5×5)', type: 'milestone', note: 'Now you are an athlete 🏆', completed: false, completedDate: null }
+    ] },
     { id: 'city_mental', theme: 'health', title: 'Mental Resilience', emoji: '🧘', identity: 'I prime my seeking system toward positive anticipation.', outcome: 'Reduce limbic loop anxiety', outcomeLogs: [], evidenceLogs: [] },
     { id: 'city_save', theme: 'wealth', title: 'Save Money', emoji: '🏦', identity: 'I build a generous relationship with money.\nI align purchases with my future self.', outcome: 'Grow the Future Me Fund', outcomeLogs: [], evidenceLogs: [] },
     { id: 'city_earn', theme: 'wealth', title: 'Earn Money', emoji: '💸', identity: 'I create value naturally.\nI raise my earning power.', outcome: 'Earn £50 via weird brainstorms', outcomeLogs: [], evidenceLogs: [] },
@@ -681,6 +767,7 @@ state.habits.forEach(habit => {
   }
 });
 if (repaired) save();
+repairLadders();
 
 if (state.habits.length === 0) {
   state.habits = [
@@ -844,6 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   document.getElementById('wake-time-input').value = state.wakeTime || '07:00';
   setWakeTime(true); checkNewDay();
+  syncTodayFromAssignments();
   renderToday(); renderTodayTimedEvents(); renderCalendar(); renderHabits(); renderLifeAreas(); updateStats(); renderReviewVault();
 });
 
@@ -889,7 +977,26 @@ function toggleTask(id, tier, el) {
   task.done = !task.done;
   logActionHistory(task.habitId, task.areaId, task.name, task.done);
   save(); renderToday(); 
-  if (task.done) { state.totalVotes++; save(); dopamineHit('That is a vote for your best self ✨'); launchConfetti(); updateStats(); }
+  if (task.done) {
+    state.totalVotes++; save(); updateStats();
+    // If it's a ladder step, mark it complete on the ladder too
+    if (task.isLadderStep && task.ladderAreaId && task.ladderStepId) {
+      const area = state.lifeAreas.find(a => a.id === task.ladderAreaId);
+      if (area && area.actionLadder) {
+        const step = area.actionLadder.find(s => s.id === task.ladderStepId);
+        if (step && !step.completed) {
+          step.completed = true; step.completedDate = localDateStr();
+          state.totalVotes += 4; save(); // bonus 4 (total 5 with the 1 above)
+          dopamineHit('Rung unlocked! Ladder step complete 🪜✨');
+          renderLifeAreas();
+          // Refresh today so next ladder step appears
+          syncTodayFromAssignments();
+          launchConfetti(); return;
+        }
+      }
+    }
+    dopamineHit('That is a vote for your best self ✨'); launchConfetti();
+  }
   renderLifeAreas();
 }
 
@@ -900,7 +1007,7 @@ function renderToday() {
     if (tasks.length === 0) { container.innerHTML = `<div class="empty-state"><span class="emoji">✨</span>Add your first ${tier} energy task</div>`; return; }
     tasks.forEach(task => {
       const div = document.createElement('div'); div.className = 'task-item' + (task.done ? ' done' : ''); div.dataset.id = task.id;
-      div.innerHTML = `<div class="task-check">${task.done ? '✓' : ''}</div><span class="task-label">${task.name}</span><span class="tag">${catEmoji(task.cat)}</span><button onclick="promptDelete('task', '${task.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-light);font-size:14px;padding:4px;margin-left:auto;" title="Skip for today">⏭️</button>`;
+      div.innerHTML = `<div class="task-check">${task.done ? '✓' : ''}</div><span class="task-label">${task.name}</span><span class="tag">${catEmoji(task.cat)}</span><button onclick="promptDelete('task', '${task.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-light);font-size:14px;padding:4px;margin-left:auto;" title="Skip/Miss for today">⏭️</button>`;
       div.addEventListener('click', e => { if(e.target.tagName !== 'BUTTON') toggleTask(task.id, tier, div); }); container.appendChild(div);
     });
   });
@@ -970,6 +1077,44 @@ function renderLifeAreas() {
     (state.actionHistory || []).forEach(a => { if(a.areaId === city.id) cityVol++; });
     const lvl = Math.floor(cityVol / 10) + 1;
 
+    // ── Action Ladder ──
+    const ladder = city.actionLadder || [];
+    const currentStepIndex = ladder.findIndex(s => !s.completed);
+    let ladderHtml = '';
+    if (ladder.length === 0) {
+      ladderHtml = `<div class="ladder-empty">No steps yet. Build your progression from tiny start → big win!</div>`;
+    } else {
+      if (currentStepIndex > 0) {
+        const doneCount = ladder.filter(s => s.completed).length;
+        ladderHtml += `<div class="ladder-current-badge">🪜 Rung ${doneCount} of ${ladder.length} — keep climbing!</div>`;
+      } else if (currentStepIndex === -1) {
+        ladderHtml += `<div class="ladder-current-badge" style="background:linear-gradient(135deg,#7bb88c,#4a9a5e)">🏆 Ladder complete! Legend.</div>`;
+      }
+      ladderHtml += `<div class="ladder-track">`;
+      ladder.forEach((step, idx) => {
+        const isCurrent = idx === currentStepIndex;
+        const isDone = step.completed;
+        const cls = isDone ? 'completed' : (isCurrent ? 'current' : '');
+        const dotContent = isDone ? '✓' : (isCurrent ? '★' : '');
+        const typeBadge = { once: '<span class="step-badge once">once</span>', repeat: '<span class="step-badge repeat">habit</span>', milestone: '<span class="step-badge milestone">🏆</span>' }[step.type] || '';
+        const dateNote = isDone && step.completedDate ? `<span style="color:var(--pink-400)">✓ ${step.completedDate}</span>` : '';
+        const energyBadge = step.energy ? { high: '<span style="font-size:10px">⚡</span>', med: '<span style="font-size:10px">🌤</span>', low: '<span style="font-size:10px">🌙</span>' }[step.energy] || '' : '';
+        const freqLabel = step.freq ? `<span style="font-size:10px;color:var(--text-light)">${step.freq === 'daily' ? 'daily' : step.freq === 'weekdays' ? 'weekdays' : step.freq === 'custom' ? (step.customDays || []).map(d=>['M','T','W','T','F','S','S'][d]).join('') : step.freq + '/wk'}</span>` : '';
+        ladderHtml += `<div class="ladder-step ${cls}" onclick="toggleLadderStep('${city.id}','${step.id}')">
+          <div class="ladder-step-dot">${dotContent}</div>
+          <div class="ladder-step-content">
+            <div class="ladder-step-label">${step.name}</div>
+            <div class="ladder-step-meta">${typeBadge}${energyBadge}${freqLabel}${step.note ? `<span>${step.note}</span>` : ''}${dateNote}</div>
+          </div>
+          <div class="ladder-step-actions">
+            <button class="ladder-step-btn" onclick="event.stopPropagation();openEditLadderStep('${city.id}','${step.id}')" title="Edit">✏️</button>
+            <button class="ladder-step-btn" onclick="event.stopPropagation();deleteLadderStep('${city.id}','${step.id}')" title="Delete">🗑</button>
+          </div>
+        </div>`;
+      });
+      ladderHtml += `</div>`;
+    }
+
     html += `
       <div class="city-card">
         <div style="position:absolute;top:20px;right:20px;display:flex;gap:6px;">
@@ -986,6 +1131,14 @@ function renderLifeAreas() {
             <input type="text" id="ev-input-${city.id}" style="flex:1;background:var(--pink-50);color:var(--text-dark);border:1px solid var(--pink-200);border-radius:8px;font-size:12px;padding:8px 12px;outline:none;" placeholder="e.g. Chose water over soda...">
             <button onclick="logEvidence('${city.id}')" style="background:var(--pink-400);color:white;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer;transition:all 0.2s;">+</button>
           </div>
+        </div>
+
+        <div class="action-ladder-section">
+          <div class="action-ladder-header">
+            <span class="action-ladder-title">🪜 Action Ladder</span>
+            <button class="btn-add-ladder-step" onclick="openAddLadderStep('${city.id}')">+ Add Step</button>
+          </div>
+          ${ladderHtml}
         </div>
 
         <div style="margin-bottom:20px;">
@@ -1038,6 +1191,94 @@ function saveOutcomeLog(cityId) {
   const trend = document.getElementById('log-trend-' + cityId).value;
   const city = state.lifeAreas.find(a => a.id === cityId);
   if (city) { if (!city.outcomeLogs) city.outcomeLogs = []; city.outcomeLogs.unshift({ date: localDateStr(), value: val, trend: trend }); save(); renderLifeAreas(); setTimeout(() => { document.getElementById('locker-' + cityId).classList.add('is-open'); document.getElementById('locker-content-' + cityId).classList.add('unlocked'); }, 50); dopamineHit('Outcome logged! 📈'); }
+}
+
+// ── Action Ladder Functions ──
+function updateLsDaysSection() {
+  const freq = document.getElementById('ls-freq-input').value;
+  document.getElementById('ls-days-section').style.display = freq === 'custom' ? '' : 'none';
+}
+
+function openAddLadderStep(areaId) {
+  document.getElementById('ls-area-id-input').value = areaId;
+  document.getElementById('ls-step-id-input').value = '';
+  document.getElementById('ls-name-input').value = '';
+  document.getElementById('ls-type-input').value = 'once';
+  document.getElementById('ls-energy-input').value = 'med';
+  document.getElementById('ls-freq-input').value = '3x';
+  document.querySelectorAll('.ls-day-cb').forEach(cb => cb.checked = false);
+  updateLsDaysSection();
+  document.getElementById('ls-note-input').value = '';
+  openModal('ladder-step-modal');
+}
+
+function openEditLadderStep(areaId, stepId) {
+  const city = state.lifeAreas.find(a => a.id === areaId);
+  if (!city) return;
+  const step = (city.actionLadder || []).find(s => s.id === stepId);
+  if (!step) return;
+  document.getElementById('ls-area-id-input').value = areaId;
+  document.getElementById('ls-step-id-input').value = stepId;
+  document.getElementById('ls-name-input').value = step.name;
+  document.getElementById('ls-type-input').value = step.type || 'once';
+  document.getElementById('ls-energy-input').value = step.energy || 'med';
+  document.getElementById('ls-freq-input').value = step.freq || '3x';
+  const customDays = step.customDays || [];
+  document.querySelectorAll('.ls-day-cb').forEach(cb => { cb.checked = customDays.includes(parseInt(cb.value)); });
+  updateLsDaysSection();
+  document.getElementById('ls-note-input').value = step.note || '';
+  openModal('ladder-step-modal');
+}
+
+function saveLadderStep() {
+  const areaId = document.getElementById('ls-area-id-input').value;
+  const stepId = document.getElementById('ls-step-id-input').value;
+  const name = document.getElementById('ls-name-input').value.trim();
+  if (!name) return;
+  const type = document.getElementById('ls-type-input').value;
+  const energy = document.getElementById('ls-energy-input').value;
+  const freq = document.getElementById('ls-freq-input').value;
+  const customDays = freq === 'custom'
+    ? Array.from(document.querySelectorAll('.ls-day-cb:checked')).map(cb => parseInt(cb.value))
+    : [];
+  const note = document.getElementById('ls-note-input').value.trim();
+  const city = state.lifeAreas.find(a => a.id === areaId);
+  if (!city) return;
+  if (!city.actionLadder) city.actionLadder = [];
+  if (stepId) {
+    const step = city.actionLadder.find(s => s.id === stepId);
+    if (step) { step.name = name; step.type = type; step.energy = energy; step.freq = freq; step.customDays = customDays; step.note = note; }
+  } else {
+    city.actionLadder.push({ id: h(), name, type, energy, freq, customDays, note, completed: false, completedDate: null });
+  }
+  save(); closeModal('ladder-step-modal'); renderLifeAreas();
+  syncTodayFromAssignments();
+  dopamineHit('Step saved! 🪜');
+}
+
+function toggleLadderStep(areaId, stepId) {
+  const city = state.lifeAreas.find(a => a.id === areaId);
+  if (!city || !city.actionLadder) return;
+  const step = city.actionLadder.find(s => s.id === stepId);
+  if (!step) return;
+  step.completed = !step.completed;
+  step.completedDate = step.completed ? localDateStr() : null;
+  save(); renderLifeAreas();
+  // Sync today so completed step disappears and next rung appears
+  syncTodayFromAssignments();
+  if (step.completed) {
+    state.totalVotes += 5; save(); updateStats();
+    dopamineHit('Rung unlocked! You are climbing 🪜✨'); launchConfetti();
+  } else {
+    dopamineHit('Step reopened ↩️');
+  }
+}
+
+function deleteLadderStep(areaId, stepId) {
+  const city = state.lifeAreas.find(a => a.id === areaId);
+  if (!city || !city.actionLadder) return;
+  city.actionLadder = city.actionLadder.filter(s => s.id !== stepId);
+  save(); renderLifeAreas(); dopamineHit('Step removed');
 }
 
 let activeLibCat = 'all';
@@ -1106,7 +1347,7 @@ function saveTweak() {
   }
 }
 
-// ── CUSTOM DELETE SYSTEM ──
+// ── CUSTOM DELETE & SKIP SYSTEM ──
 let pendingDeleteAction = null;
 
 function promptDelete(type, id, dateKey = null) {
@@ -1119,19 +1360,23 @@ function promptDelete(type, id, dateKey = null) {
   const emoji = document.getElementById('del-modal-emoji');
   const lbl = document.getElementById('del-modal-reason-lbl');
   const btn = document.getElementById('del-modal-btn');
+  const skipSelect = document.getElementById('skip-type-select');
   
   if (type === 'habit') {
     emoji.textContent = '🗑'; title.textContent = 'Delete Habit?'; desc.textContent = 'This action cannot be undone.';
     lbl.textContent = 'Why are you removing this habit entirely?'; btn.textContent = 'Delete'; btn.style.background = 'var(--pink-600)';
     reasonBox.style.display = 'block'; reasonInput.value = '';
+    skipSelect.style.display = 'none';
   } else if (type === 'task') {
-    emoji.textContent = '⏭️'; title.textContent = 'Skip today?'; desc.textContent = 'Unplanned things happen. Log it for the AI.';
-    lbl.textContent = 'Why are you skipping this action today?'; btn.textContent = 'Skip Task'; btn.style.background = 'var(--gold)';
+    emoji.textContent = '⏸️'; title.textContent = 'Skip or Miss Action?'; desc.textContent = 'Are you intentionally resting, or did friction get in the way? Log it for the AI.';
+    lbl.textContent = 'Reason:'; btn.textContent = 'Log Action'; btn.style.background = 'var(--gold)';
     reasonBox.style.display = 'block'; reasonInput.value = '';
+    skipSelect.style.display = 'block';
   } else {
     emoji.textContent = '🗑'; title.textContent = 'Delete this?'; desc.textContent = 'This action cannot be undone.';
     btn.textContent = 'Delete'; btn.style.background = 'var(--pink-600)';
     reasonBox.style.display = 'none';
+    skipSelect.style.display = 'none';
   }
   
   openModal('confirm-delete-modal');
@@ -1168,26 +1413,34 @@ function executeDelete() {
     
   } else if (type === 'task') {
     const reason = document.getElementById('delete-reason-input').value.trim();
+    const skipType = document.getElementById('skip-type-select').value;
+    
     let taskName = 'Unknown';
     let taskHabitId = null;
+    let isLadder = false;
+    let ladderAreaId = null;
     ['high', 'med', 'low'].forEach(tier => {
       const t = state.todayTasks[tier].find(x => x.id === id);
-      if (t) { taskName = t.name; taskHabitId = t.habitId; }
+      if (t) { taskName = t.name; taskHabitId = t.habitId; isLadder = !!t.isLadderStep; ladderAreaId = t.ladderAreaId || null; }
       state.todayTasks[tier] = state.todayTasks[tier].filter(x => x.id !== id);
     });
-    
-    const wk = getWeekKey(0);
-    if (taskHabitId) {
+
+    if (isLadder && ladderAreaId) {
+      // Dismiss this ladder step for today only
+      const dismissKey = `ladder_dismiss_${ladderAreaId}_${localDateStr()}`;
+      state.weeklyAssign[dismissKey] = true;
+    } else if (taskHabitId) {
       const dayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-      state.weeklyAssign[`assign_${wk}_${taskHabitId}_${dayIdx}`] = false;
+      state.weeklyAssign[`assign_${getWeekKey(0)}_${taskHabitId}_${dayIdx}`] = false;
     }
 
+    const wk = getWeekKey(0);
     if (reason) {
       if (!state.weeklyFriction[wk]) state.weeklyFriction[wk] = {};
       if (!state.weeklyFriction[wk].skippedTasks) state.weeklyFriction[wk].skippedTasks = [];
-      state.weeklyFriction[wk].skippedTasks.push({ name: taskName, reason: reason, date: localDateStr() });
+      state.weeklyFriction[wk].skippedTasks.push({ name: taskName, reason: reason, type: skipType, date: localDateStr() });
     }
-    save(); renderToday(); renderWeeklyPlanner(); dopamineHit('Task skipped & logged ⏭️');
+    save(); renderToday(); renderWeeklyPlanner(); dopamineHit(skipType === 'intentional' ? 'Rest Day logged ⏸️' : 'Friction logged ⚠️');
     
   } else if (type === 'lifeArea') {
     state.lifeAreas = state.lifeAreas.filter(a => a.id !== id);
@@ -1226,6 +1479,16 @@ function renderWeeklyPlanner() {
       dot.addEventListener('click', () => { 
         const newlyOn = !isAssigned;
         state.weeklyAssign[assignKey] = newlyOn; 
+        
+        // Auto-log the change
+        const wkKey = getWeekKey(weekOffset);
+        if(!state.weeklyFriction[wkKey]) state.weeklyFriction[wkKey] = {};
+        if(!state.weeklyFriction[wkKey].scheduleChanges) state.weeklyFriction[wkKey].scheduleChanges = [];
+        
+        const actionStr = newlyOn ? 'Assigned' : 'Removed';
+        const logNote = `${actionStr} '${habit.name}' for ${dayNames[i]}`;
+        state.weeklyFriction[wkKey].scheduleChanges.push({ note: logNote, date: localDateStr() });
+
         save(); renderWeeklyPlanner(); if(localDateStr(date)===localDateStr()) syncTodayFromAssignments(); 
       });
       picker.appendChild(dot);
@@ -1251,6 +1514,34 @@ function renderWeeklyPlanner() {
         state.weeklyChips[chipKey] = !state.weeklyChips[chipKey]; 
         logActionHistory(habit.id, habit.areaId, habit.name, state.weeklyChips[chipKey]);
         save(); renderWeeklyPlanner(); renderLifeAreas(); if(state.weeklyChips[chipKey]) { state.totalVotes++; save(); launchConfetti(); updateStats(); }
+      });
+      itemsEl.appendChild(chip);
+    });
+
+    // Ladder step chips — show current active step for each area in weekly
+    state.lifeAreas.forEach(area => {
+      const ladder = area.actionLadder || [];
+      const currentStep = ladder.find(s => !s.completed);
+      if (!currentStep) return;
+      const chipKey = `ladder_chip_${wk}_${area.id}_${i}`;
+      const dismissKey = `ladder_dismiss_${area.id}_${dateStr}`;
+      if (state.weeklyAssign[dismissKey]) return; // dismissed for this day
+      const done = state.weeklyChips[chipKey] || currentStep.completed;
+      const chip = document.createElement('div');
+      chip.className = `week-chip chip-${area.theme}${done?' done-chip':''}`;
+      chip.style.borderLeft = '3px solid var(--gold)';
+      chip.innerHTML = `<div class="chip-check">${done?'✓':''}</div><span class="chip-label">🪜 ${currentStep.name}</span>`;
+      chip.addEventListener('click', () => {
+        const nowDone = !state.weeklyChips[chipKey];
+        state.weeklyChips[chipKey] = nowDone;
+        if (nowDone && !currentStep.completed) {
+          currentStep.completed = true; currentStep.completedDate = localDateStr();
+          state.totalVotes += 5; save(); renderWeeklyPlanner(); renderLifeAreas(); launchConfetti(); updateStats();
+          dopamineHit('Rung unlocked! 🪜✨');
+          syncTodayFromAssignments();
+        } else {
+          save(); renderWeeklyPlanner();
+        }
       });
       itemsEl.appendChild(chip);
     });
@@ -1289,7 +1580,61 @@ function syncTodayFromAssignments() {
     } else if (!isAssigned && existingIdx !== -1) {
       state.todayTasks[tier].splice(existingIdx, 1);
     }
-  }); 
+  });
+
+  // Inject current active ladder step for each life area
+  state.lifeAreas.forEach(area => {
+    const ladder = area.actionLadder || [];
+    const currentStep = ladder.find(s => !s.completed);
+    const ladderTaskId = 'ladder_' + area.id;
+    // Remove any stale ladder task for this area first (step may have changed)
+    ['high','med','low'].forEach(tier => {
+      state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.ladderAreaId !== area.id);
+    });
+    if (currentStep) {
+      // Check if manually dismissed today
+      const dismissKey = `ladder_dismiss_${area.id}_${todayStr}`;
+      if (!state.weeklyAssign[dismissKey]) {
+        // Check if step is scheduled for today based on freq & customDays
+        const stepFreq = currentStep.freq || 'daily';
+        let scheduledToday = false;
+        if (stepFreq === 'daily') {
+          scheduledToday = true;
+        } else if (stepFreq === 'weekdays') {
+          scheduledToday = dayIdx < 5;
+        } else if (stepFreq === 'custom') {
+          scheduledToday = (currentStep.customDays || []).includes(dayIdx);
+        } else {
+          // Nx per week — use a deterministic day assignment based on area id + week
+          const n = parseInt(stepFreq) || 3;
+          // Generate n evenly-spaced days for this week using a seed based on area id
+          const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+          const allDays = [0,1,2,3,4,5,6];
+          const chosen = [];
+          const step_size = 7 / n;
+          for (let i = 0; i < n; i++) {
+            chosen.push(allDays[Math.floor(((seed + i * step_size) % 7))]);
+          }
+          scheduledToday = chosen.includes(dayIdx);
+        }
+        if (scheduledToday) {
+          const tier = currentStep.energy || 'med';
+          state.todayTasks[tier].push({
+            id: ladderTaskId + '_' + todayStr,
+            habitId: ladderTaskId,
+            name: '🪜 ' + currentStep.name,
+            done: false,
+            cat: area.theme,
+            areaId: area.id,
+            isLadderStep: true,
+            ladderAreaId: area.id,
+            ladderStepId: currentStep.id
+          });
+        }
+      }
+    }
+  });
+
   save(); renderToday();
 }
 
@@ -1299,25 +1644,6 @@ function toggleAssignPanel() {
   panel.classList.toggle('open');
   btn.style.background = panel.classList.contains('open') ? 'var(--pink-400)' : 'var(--pink-100)';
   btn.style.color = panel.classList.contains('open') ? 'white' : 'var(--pink-600)';
-}
-
-function promptScheduleNote() {
-  openModal('schedule-note-modal');
-}
-
-function saveScheduleNote() {
-  const note = document.getElementById('schedule-note-input').value.trim();
-  if(note) {
-    const wk = getWeekKey(weekOffset);
-    if(!state.weeklyFriction[wk]) state.weeklyFriction[wk] = {};
-    if(!state.weeklyFriction[wk].scheduleChanges) state.weeklyFriction[wk].scheduleChanges = [];
-    state.weeklyFriction[wk].scheduleChanges.push({ note: note, date: localDateStr() });
-    save();
-    dopamineHit('Schedule shift logged! 🗓️');
-  }
-  document.getElementById('schedule-note-input').value = '';
-  closeModal('schedule-note-modal');
-  toggleAssignPanel(); // closes the panel
 }
 
 function calcTweakPerformance(habitId, tweakDate) {
@@ -1390,7 +1716,18 @@ function openWeeklyDashboard() {
   
   let skippedHtml = '';
   if (friction.skippedTasks && friction.skippedTasks.length > 0) {
-    friction.skippedTasks.forEach(s => skippedHtml += `<div style="background:#fff0f3; color:#c94f6d; padding:10px 14px; border-radius:10px; font-size:12px; margin-bottom:8px; border-left:3px solid var(--pink-400);">⏭️ <strong>${s.date} - ${s.name}:</strong> "${s.reason}"</div>`);
+    friction.skippedTasks.forEach(s => {
+      const isIntentional = s.type === 'intentional';
+      const isCirc = s.type === 'circumstance';
+      
+      const bg = isIntentional ? '#f8fafc' : (isCirc ? '#fffbeb' : '#fff0f3');
+      const col = isIntentional ? '#64748b' : (isCirc ? '#b45309' : '#c94f6d');
+      const border = isIntentional ? '#cbd5e1' : (isCirc ? '#fcd34d' : 'var(--pink-400)');
+      const icon = isIntentional ? '⏸️' : (isCirc ? '🌪️' : '⚠️');
+      const label = isIntentional ? 'Intentional Skip' : (isCirc ? 'Circumstance' : 'Friction/Missed');
+      
+      skippedHtml += `<div style="background:${bg}; color:${col}; padding:10px 14px; border-radius:10px; font-size:12px; margin-bottom:8px; border-left:3px solid ${border};">${icon} <strong>${s.date} - ${s.name}</strong> (${label}): "${s.reason}"</div>`;
+    });
   }
   if (friction.deletedHabits && friction.deletedHabits.length > 0) {
     friction.deletedHabits.forEach(d => skippedHtml += `<div style="background:#fdf6f0; color:#904d00; padding:10px 14px; border-radius:10px; font-size:12px; margin-bottom:8px; border-left:3px solid var(--gold);">🗑 <strong>Deleted '${d.name}':</strong> "${d.reason}"</div>`);
@@ -1615,10 +1952,12 @@ function openLifeAreaModal(id) {
 }
 function saveLifeArea() {
   const id = document.getElementById('area-id-input').value;
+  const existing = id ? state.lifeAreas.find(x=>x.id===id) : null;
   const a = {
     id: id || h(), theme: document.getElementById('area-theme-input').value, emoji: document.getElementById('area-emoji-input').value||'✦',
     title: document.getElementById('area-title-input').value, identity: document.getElementById('area-identity-input').value,
-    outcome: document.getElementById('area-outcome-input').value, outcomeLogs: id ? (state.lifeAreas.find(x=>x.id===id)?.outcomeLogs||[]) : [], evidenceLogs: []
+    outcome: document.getElementById('area-outcome-input').value, outcomeLogs: id ? (existing?.outcomeLogs||[]) : [], evidenceLogs: id ? (existing?.evidenceLogs||[]) : [],
+    actionLadder: id ? (existing?.actionLadder||[]) : []
   };
   if(id) { const idx = state.lifeAreas.findIndex(x=>x.id===id); if(idx>-1) state.lifeAreas[idx]=a; } else state.lifeAreas.push(a);
   save(); closeModal('life-area-modal'); renderLifeAreas();
@@ -1669,13 +2008,19 @@ function generateAIPrompt() {
   if (wins.length) { prompt += `\n**Unscheduled Wins (Evidence):**\n` + wins.map(w => `- ${w}`).join('\n') + `\n`; }
 
   const fricLogs = state.weeklyFriction[getWeekKey(0)] || {};
-  prompt += `\n**Skipped Tasks & Deleted Habits:**\n`;
+  prompt += `\n**Skipped Tasks & Missed Habits:**\n`;
   let hasSkips = false;
   if (fricLogs.skippedTasks && fricLogs.skippedTasks.length > 0) {
-    fricLogs.skippedTasks.forEach(s => { prompt += `- Skipped '${s.name}' on ${s.date} because: ${s.reason}\n`; hasSkips = true; });
+    fricLogs.skippedTasks.forEach(s => { 
+      let label = 'Missed due to friction';
+      if (s.type === 'intentional') label = 'Intentionally Skipped (Rest)';
+      else if (s.type === 'circumstance') label = 'Missed due to external circumstances';
+      prompt += `- ${label} '${s.name}' on ${s.date}. Reason: ${s.reason}\n`; 
+      hasSkips = true; 
+    });
   }
   if (fricLogs.deletedHabits && fricLogs.deletedHabits.length > 0) {
-    fricLogs.deletedHabits.forEach(d => { prompt += `- Deleted habit '${d.name}' because: ${d.reason}\n`; hasSkips = true; });
+    fricLogs.deletedHabits.forEach(d => { prompt += `- Deleted habit '${d.name}' entirely because: ${d.reason}\n`; hasSkips = true; });
   }
   if (!hasSkips) prompt += `- None logged.\n`;
 
