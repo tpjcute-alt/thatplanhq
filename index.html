@@ -132,6 +132,10 @@ body {
 .locked-state p { color: var(--text-light); }
 .locked-state .saved-note { background: rgba(0,0,0,0.25); padding: 20px; border-radius: 12px; font-style: italic; margin-top: 24px; color: #fdf6f0; display: inline-block; text-align: left; max-width: 80%; line-height: 1.5; }
 
+/* Reflection Textareas */
+.reflection-textarea { width: 100%; padding: 12px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--pink-200); background: #fffbfc; color: var(--text-dark); font-family: 'DM Sans', sans-serif; font-size: 13px; resize: vertical; outline: none; box-sizing: border-box; transition: all 0.2s; }
+.reflection-textarea:focus { border-color: var(--pink-400); background: white; box-shadow: 0 0 0 3px rgba(255,133,161,0.15); }
+
 .week-top-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
 .week-nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .week-nav-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text-dark); margin: 0 8px; font-weight: 600; }
@@ -202,6 +206,31 @@ body {
 .detail-event-time { font-size: 12px; font-weight: 700; color: var(--pink-600); min-width: 80px; margin-top: 2px; }
 .detail-event-name { font-size: 14px; font-weight: 600; color: var(--text-dark); }
 .detail-event-cat { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+/* ── RESTORED UI STYLES (TITLES & TODAY EVENTS) ── */
+.section-title { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--text-dark); margin-bottom: 6px; line-height: 1.1; }
+.section-sub { font-size: 14px; color: var(--text-light); margin-bottom: 24px; line-height: 1.4; }
+
+.today-timed-event { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-radius: var(--radius-sm); margin-bottom: 8px; box-shadow: var(--shadow-card); border-left: 3px solid transparent; cursor: default; background: white; transition: all 0.2s; }
+.today-timed-event.ev-timed   { background: #fff8e1; border-color: #f0a500; }
+.today-timed-event.ev-one-time { background: #e8f0fe; border-color: #4a7cf0; }
+.today-timed-event.ev-habit   { background: #e8f5ed; border-color: #3aaa6a; }
+.today-timed-event.ev-review  { background: #f3eeff; border-color: #9b5de5; }
+.today-timed-event.ev-obligation { background: #eef1f5; border-color: #6b7a8c; }
+.today-timed-event.ev-uni { background: #e0f5f1; border-color: #14a085; }
+.today-timed-time { font-size: 12px; font-weight: 700; min-width: 80px; color: inherit; opacity: 0.8; }
+.today-timed-name { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+.today-timed-cat  { font-size: 11px; color: var(--text-light); text-transform: capitalize; }
+.today-timed-event.ev-done { opacity: 0.45; }
+.today-timed-event.ev-done .today-timed-name { text-decoration: line-through; }
+
+.ev-priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.ev-timed .ev-priority-dot { background: #f0a500; }
+.ev-one-time .ev-priority-dot { background: #4a7cf0; }
+.ev-habit .ev-priority-dot { background: #3aaa6a; }
+.ev-review .ev-priority-dot { background: #9b5de5; }
+.ev-obligation .ev-priority-dot { background: #6b7a8c; }
+.ev-uni .ev-priority-dot { background: #14a085; }
 
 .reviews-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 32px; }
 .review-card { background: white; border-radius: var(--radius); padding: 32px 28px; box-shadow: var(--shadow-card); cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
@@ -361,6 +390,8 @@ body {
       <div class="xp-badge">⚡ <span id="xp-count">0</span> XP</div>
     </div>
     <div class="actions-group">
+      <button onclick="toggleCloudSync()" title="Enable cloud sync" id="cloud-sync-btn" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:6px;opacity:0.5;">☁️</button>
+      <button onclick="syncNow()" title="Sync now" style="background:transparent;border:none;font-size:16px;cursor:pointer;padding:6px;">🔄</button>
       <button onclick="exportData()" title="Download data as JSON" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:6px;">💾</button>
       <button onclick="document.getElementById('import-file').click()" title="Upload JSON backup" style="background:transparent;border:none;font-size:18px;cursor:pointer;padding:6px;">📂</button>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
@@ -368,6 +399,7 @@ body {
   </div>
 </div>
 
+<!-- TODAY -->
 <section id="today" class="section active">
   <div class="today-header">
     <div>
@@ -560,7 +592,32 @@ body {
   </div>
 </div>
 
+<div class="modal-overlay" id="delete-habit-modal">
+  <div class="modal" style="width: 440px;">
+    <h2>Delete Habit 🗑</h2>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:20px;">Why are you removing this habit? Be honest—this helps your AI coach find the friction!</p>
+    <div class="form-group"><label>Reason for deleting</label><textarea id="delete-habit-reason" rows="2" placeholder="e.g. Takes too much time, changing my routine, doesn't align anymore..."></textarea></div>
+    <input type="hidden" id="delete-habit-id">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('delete-habit-modal')">Cancel</button>
+      <button class="btn-primary" style="background: var(--pink-600);" onclick="executeDeleteHabit()">Delete Habit ✦</button>
+    </div>
+  </div>
+</div>
+
 <script>
+const SUPABASE_URL = '';   
+const SUPABASE_ANON = '';  
+
+let syncId = localStorage.getItem('thatgirlhq_syncId') || null;
+let cloudSyncEnabled = !!syncId;
+let _supaHeaders = () => ({
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_ANON,
+  'Authorization': `Bearer ${SUPABASE_ANON}`,
+  'Prefer': 'return=minimal'
+});
+
 let state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
   xp: 0, totalVotes: 0, lastActiveDate: null, xpToday: 0,
   habits: [], todayTasks: { high: [], med: [], low: [] },
@@ -571,6 +628,7 @@ let state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
 };
 
 if(!state.reviewVault)    state.reviewVault    = { weekly: [], quarterly: [] };
+if(!state.deletedHabitsHistory) state.deletedHabitsHistory = [];
 if(!state.weeklyAssign)   state.weeklyAssign   = {};
 if(!state.weeklyChips)    state.weeklyChips    = {};
 if(!state.calendarEvents) state.calendarEvents = {};
@@ -679,7 +737,105 @@ function checkNewDay() {
 }
 
 function h() { return Math.random().toString(36).substr(2,9); }
-function save() { localStorage.setItem('thatgirlhq', JSON.stringify(state)); }
+function save() { 
+  localStorage.setItem('thatgirlhq', JSON.stringify(state)); 
+  if(cloudSyncEnabled) saveToCloud();
+}
+
+// ── CLOUD SYNC FUNCTIONS ──
+function _checkConfig() { if (!SUPABASE_URL || !SUPABASE_ANON) throw new Error('Missing Supabase Config'); }
+let _saveTimer = null;
+function saveToCloud() { if (!syncId) return; clearTimeout(_saveTimer); _saveTimer = setTimeout(_doSave, 1500); }
+async function _doSave() {
+  if (!syncId) return;
+  const btn = document.getElementById('cloud-sync-btn');
+  try {
+    if (btn) btn.textContent = '🔄';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${syncId}`, {
+      method: 'PATCH', headers: { ..._supaHeaders() },
+      body: JSON.stringify({ data: state, updated_at: new Date().toISOString() })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (btn) { btn.textContent = '☁️'; btn.style.color = '#3aaa6a'; }
+  } catch (e) {
+    if (btn) { btn.textContent = '☁️'; btn.style.color = '#ff4466'; }
+    setTimeout(() => { if (btn) btn.style.color = '#3aaa6a'; }, 3000);
+  }
+}
+async function loadFromCloud() {
+  if (!syncId) return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${syncId}&select=data`, { headers: _supaHeaders() });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) return false;
+    const data = rows[0].data;
+    if (data && (data.habits || data.xp !== undefined)) {
+      state = data; localStorage.setItem('thatgirlhq', JSON.stringify(state));
+      checkNewDay(); renderToday(); renderWeeklyPlanner(); renderCalendar(); renderHabits(); updateStats();
+      return true;
+    }
+    return false;
+  } catch (e) { return false; }
+}
+async function createCloudBin() {
+  _checkConfig();
+  const arr = new Uint8Array(16); crypto.getRandomValues(arr);
+  const newId = Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_data`, {
+    method: 'POST', headers: { ..._supaHeaders() },
+    body: JSON.stringify({ sync_id: newId, data: state, updated_at: new Date().toISOString() })
+  });
+  if (!res.ok) throw new Error(`Supabase error ${res.status}`);
+  return newId;
+}
+async function verifySyncId(id) {
+  _checkConfig();
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_data?sync_id=eq.${id}&select=data`, { headers: _supaHeaders() });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const rows = await res.json();
+  if (!rows.length) throw new Error('Sync ID not found');
+  return rows[0].data;
+}
+function toggleCloudSync() {
+  if (document.getElementById('sync-modal')) { document.getElementById('sync-modal').remove(); return; }
+  if (syncId && cloudSyncEnabled) openSyncActiveModal(); else openSyncLoginModal();
+}
+function openSyncLoginModal() {
+  const modal = document.createElement('div'); modal.id = 'sync-modal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(30,10,20,0.45);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;`;
+  modal.innerHTML = `<div style="background:white;border-radius:24px;padding:32px;width:420px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ff85a1,#ffa8bb,#ff85a1);"></div><button onclick="document.getElementById('sync-modal').remove()" style="position:absolute;top:16px;right:16px;background:var(--pink-100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;">✕</button><div style="text-align:center;margin-bottom:28px;"><h2 style="font-family:'Playfair Display',serif;font-size:24px;color:var(--text-dark);">Cloud Sync</h2></div><button id="create-sync-btn" onclick="handleCreateSyncId()" style="width:100%;padding:14px;border-radius:14px;background:var(--pink-400);color:white;border:none;font-weight:700;font-size:14px;cursor:pointer;">✦ Create New Sync ID</button><div style="margin:20px 0;text-align:center;font-size:11px;color:var(--text-light)">or</div><input id="sync-id-input" type="text" placeholder="Paste sync ID…" style="width:100%;padding:12px 14px;border:1.5px solid var(--pink-200);border-radius:12px;margin-bottom:10px;outline:none;"><button id="login-sync-btn" onclick="handleLoginSyncId()" style="width:100%;padding:13px;border-radius:14px;background:var(--pink-50);color:var(--pink-600);border:1.5px solid var(--pink-200);font-weight:700;cursor:pointer;">Login →</button><div id="sync-modal-status" style="margin-top:14px;text-align:center;font-size:12px;color:var(--text-light);min-height:18px;"></div></div>`;
+  document.body.appendChild(modal); modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+function openSyncActiveModal() {
+  const modal = document.createElement('div'); modal.id = 'sync-modal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(30,10,20,0.45);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;`;
+  modal.innerHTML = `<div style="background:white;border-radius:24px;padding:32px;width:420px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:4px;background:#3aaa6a;"></div><button onclick="document.getElementById('sync-modal').remove()" style="position:absolute;top:16px;right:16px;background:var(--pink-100);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;">✕</button><div style="text-align:center;margin-bottom:24px;"><h2 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--text-dark);">✅ Sync Active</h2></div><div style="background:#fff0f4;border:1.5px solid var(--pink-200);border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;"><p style="font-family:monospace;font-size:12px;word-break:break-all;">${syncId}</p></div><button onclick="logoutSync()" style="width:100%;padding:11px;background:transparent;border:1.5px solid var(--pink-200);border-radius:12px;color:var(--text-light);font-weight:600;font-size:12px;cursor:pointer;">Logout from sync</button></div>`;
+  document.body.appendChild(modal); modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+async function handleCreateSyncId() {
+  try {
+    const newId = await createCloudBin(); syncId = newId; cloudSyncEnabled = true;
+    localStorage.setItem('thatgirlhq_syncId', syncId); localStorage.setItem('thatgirlhq_cloud_enabled', 'true');
+    document.getElementById('sync-modal').remove(); openSyncActiveModal(); dopamineHit('Sync ID created! ☁️✦');
+  } catch(e) { document.getElementById('sync-modal-status').textContent = 'Failed: ' + e.message; }
+}
+async function handleLoginSyncId() {
+  const id = document.getElementById('sync-id-input').value.trim(); if (!id) return;
+  try {
+    const data = await verifySyncId(id); syncId = id; cloudSyncEnabled = true;
+    localStorage.setItem('thatgirlhq_syncId', syncId); localStorage.setItem('thatgirlhq_cloud_enabled', 'true');
+    if (data && data.habits) { state = data; save(); location.reload(); }
+  } catch(e) { document.getElementById('sync-modal-status').textContent = 'Error: ' + e.message; }
+}
+function logoutSync() { syncId=null; cloudSyncEnabled=false; localStorage.removeItem('thatgirlhq_syncId'); localStorage.removeItem('thatgirlhq_cloud_enabled'); document.getElementById('sync-modal').remove(); dopamineHit('Logged out'); }
+async function syncNow() { if(!cloudSyncEnabled) return toggleCloudSync(); await saveToCloud(); dopamineHit('Synced! 🔄✦'); }
+
+window.addEventListener('load', async () => {
+  const storedId = localStorage.getItem('thatgirlhq_syncId');
+  const wasEnabled = localStorage.getItem('thatgirlhq_cloud_enabled') === 'true';
+  if (storedId && wasEnabled) { syncId = storedId; cloudSyncEnabled = true; await loadFromCloud(); }
+});
 
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
@@ -1038,14 +1194,28 @@ function renderHabits() {
 function updateFreq(id, val) { const h = state.habits.find(h => h.id === id); if (h) { h.freq = val; save(); } }
 function updateArea(id, val) { const h = state.habits.find(h => h.id === id); const area = state.lifeAreas.find(a => a.id === val); if (h && area) { h.areaId = val; h.cat = area.theme; save(); renderHabits(); renderLifeAreas(); } }
 function toggleHabitActive(id) { const h = state.habits.find(h => h.id === id); if (h) { h.active = !h.active; save(); renderHabits(); } }
+
 function deleteHabit(id) { 
-  confirmDeletion('Are you sure you want to delete this habit?', () => {
+  document.getElementById('delete-habit-id').value = id;
+  document.getElementById('delete-habit-reason').value = '';
+  openModal('delete-habit-modal');
+}
+
+function executeDeleteHabit() {
+  const id = document.getElementById('delete-habit-id').value;
+  const reason = document.getElementById('delete-habit-reason').value.trim() || 'No reason provided';
+  const habit = state.habits.find(h => h.id === id);
+  if (habit) {
+    if (!state.deletedHabitsHistory) state.deletedHabitsHistory = [];
+    state.deletedHabitsHistory.push({ name: habit.name, date: localDateStr(), reason: reason });
+    
     state.habits = state.habits.filter(h => h.id !== id); 
     ['high', 'med', 'low'].forEach(tier => {
       state.todayTasks[tier] = (state.todayTasks[tier] || []).filter(t => t.habitId !== id);
     });
     save(); renderHabits(); renderLifeAreas(); renderToday(); syncTodayFromAssignments(); dopamineHit('Habit deleted! 🗑'); 
-  });
+  }
+  closeModal('delete-habit-modal');
 }
 
 function openAddHabitModal() {
@@ -1218,7 +1388,14 @@ function openWeeklyDashboard() {
        }
      }
   });
-  if(!tweakHtml) tweakHtml = `<div style="font-size:12px;color:var(--text-light);font-style:italic">No active habit experiments this week.</div>`;
+  if(state.deletedHabitsHistory) {
+    state.deletedHabitsHistory.forEach(dh => {
+      if (new Date(dh.date) >= new Date(now.getTime() - 14*86400000)) {
+        tweakHtml += `<div class="tweak-card" style="border-left-color:var(--pink-600);background:#fffafb;"><div class="tweak-title"><span style="text-decoration:line-through;color:var(--pink-600)">${dh.name}</span> (Deleted)</div><div class="tweak-reason">"${dh.reason}"</div></div>`;
+      }
+    });
+  }
+  if(!tweakHtml) tweakHtml = `<div style="font-size:12px;color:var(--text-light);font-style:italic">No active habit experiments this week. Use the 🧪 button in the library to A/B test a habit!</div>`;
 
   const friction = state.weeklyFriction[getWeekKey(0)] || { hard: '', easy: '', liked: '', disliked: '', fix: '' };
 
@@ -1441,6 +1618,13 @@ function generateAIPrompt() {
        }
      }
   });
+  if (state.deletedHabitsHistory) {
+    state.deletedHabitsHistory.forEach(dh => {
+      if (new Date(dh.date) >= new Date(now.getTime() - 14*86400000)) {
+         tweaksText.push(`- Deleted Habit: "${dh.name}". Reason for dropping: "${dh.reason}".`);
+      }
+    });
+  }
   if(tweaksText.length > 0) { prompt += `\n**Active Habit Experiments (A/B Tests):**\n` + tweaksText.join('\n') + `\n`; }
 
   prompt += `\n**Nightly Closing Shifts (What I was proud of):**\n`;
