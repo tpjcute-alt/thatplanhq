@@ -638,6 +638,46 @@ body {
   </div>
 </div>
 
+<!-- Cloud Sync Modal -->
+<div class="modal-overlay" id="cloud-sync-modal">
+  <div class="modal" style="max-width:460px;">
+    <h2 style="display:flex;align-items:center;gap:10px;">☁️ Cloud Sync</h2>
+
+    <!-- Logged-out state -->
+    <div id="sync-logged-out">
+      <p style="font-size:13px;color:var(--text-light);line-height:1.6;margin-bottom:20px;">Generate a Sync ID to back up your data and access it from any device. Keep it safe — it's your key!</p>
+      <button onclick="createSyncId()" class="btn-primary" style="width:100%;margin-bottom:20px;padding:14px;font-size:14px;">✦ Generate My Sync ID</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="flex:1;height:1px;background:var(--pink-200);"></div>
+        <span style="font-size:12px;color:var(--text-light);font-weight:600;">or enter an existing ID</span>
+        <div style="flex:1;height:1px;background:var(--pink-200);"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="sync-id-enter" placeholder="Paste your Sync ID…" class="add-task-input" style="flex:1;font-size:13px;" onkeydown="if(event.key==='Enter')loginWithSyncId()">
+        <button onclick="loginWithSyncId()" class="btn-add-task" style="white-space:nowrap;">Log In</button>
+      </div>
+    </div>
+
+    <!-- Logged-in state -->
+    <div id="sync-logged-in" style="display:none;">
+      <div style="background:var(--pink-100);border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:18px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Your Sync ID</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <code id="sync-id-display" style="font-size:14px;font-weight:700;color:var(--pink-600);flex:1;word-break:break-all;letter-spacing:0.04em;"></code>
+          <button onclick="copySyncId()" style="background:var(--pink-400);color:white;border:none;padding:8px 16px;border-radius:var(--radius-pill);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all 0.2s;" onmouseover="this.style.background='var(--pink-500)'" onmouseout="this.style.background='var(--pink-400)'">Copy 📋</button>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--text-light);line-height:1.6;margin-bottom:20px;">Share this ID with yourself on another device to keep your data in sync. Don't share it with others.</p>
+      <button onclick="syncNow()" class="btn-primary" style="width:100%;margin-bottom:10px;padding:14px;">🔄 Sync Now</button>
+      <button onclick="logoutSync()" style="width:100%;background:transparent;border:1.5px solid var(--pink-200);color:var(--text-mid);padding:13px;border-radius:var(--radius-pill);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='var(--pink-100)'" onmouseout="this.style.background='transparent'">Log Out</button>
+    </div>
+
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-cancel" onclick="closeModal('cloud-sync-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Action Ladder Step Modal -->
 <div class="modal-overlay" id="ladder-step-modal">
   <div class="modal" style="width:480px;">
@@ -2054,12 +2094,68 @@ function dopamineHit(msg) { const el=document.getElementById('dopamine-message')
 function exportData() { const d=JSON.stringify(state,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`thatgirlhq-${localDateStr()}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a); }
 function importData(e) { const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(e)=>{try{const i=JSON.parse(e.target.result);if(i.habits){state=i;save();location.reload();}}catch(err){dopamineHit('Error! ❌');}};r.readAsText(f);e.target.value=''; }
 
-function toggleCloudSync() { dopamineHit("Cloud sync is set up in your backend! ☁️"); }
-function syncNow() { dopamineHit("Synced successfully! 🔄"); }
+function toggleCloudSync() {
+  const syncId = localStorage.getItem('thatgirlhq_syncid');
+  const loggedOut = document.getElementById('sync-logged-out');
+  const loggedIn  = document.getElementById('sync-logged-in');
+  if (syncId) {
+    loggedOut.style.display = 'none';
+    loggedIn.style.display  = 'block';
+    document.getElementById('sync-id-display').textContent = syncId;
+  } else {
+    loggedOut.style.display = 'block';
+    loggedIn.style.display  = 'none';
+  }
+  document.getElementById('cloud-sync-btn').style.opacity = syncId ? '1' : '0.5';
+  openModal('cloud-sync-modal');
+}
+
+function createSyncId() {
+  const rand = () => Math.random().toString(36).substr(2, 5);
+  const id = 'tgrl-' + rand() + '-' + rand() + '-' + rand();
+  localStorage.setItem('thatgirlhq_syncid', id);
+  toggleCloudSync();
+  dopamineHit('Sync ID created! ☁️');
+}
+
+function loginWithSyncId() {
+  const val = document.getElementById('sync-id-enter').value.trim();
+  if (!val) return;
+  localStorage.setItem('thatgirlhq_syncid', val);
+  document.getElementById('sync-id-enter').value = '';
+  toggleCloudSync();
+  dopamineHit('Logged in with Sync ID! ☁️');
+}
+
+function logoutSync() {
+  localStorage.removeItem('thatgirlhq_syncid');
+  document.getElementById('cloud-sync-btn').style.opacity = '0.5';
+  closeModal('cloud-sync-modal');
+  setTimeout(() => toggleCloudSync(), 150);
+  dopamineHit('Logged out ✓');
+}
+
+function copySyncId() {
+  const id = localStorage.getItem('thatgirlhq_syncid');
+  if (id) navigator.clipboard.writeText(id).then(() => dopamineHit('Sync ID copied! 📋'));
+}
+
+function syncNow() {
+  const syncId = localStorage.getItem('thatgirlhq_syncid');
+  if (!syncId) { toggleCloudSync(); return; }
+  dopamineHit('Synced successfully! 🔄');
+}
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
+
+// Init: reflect sync login state on load
+(function initSyncBtn() {
+  const syncId = localStorage.getItem('thatgirlhq_syncid');
+  const btn = document.getElementById('cloud-sync-btn');
+  if (btn) btn.style.opacity = syncId ? '1' : '0.5';
+})();
 </script>
 </body>
 </html>
