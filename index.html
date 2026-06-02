@@ -145,10 +145,16 @@ body {
 .sidebar-habit-name { font-size: 12px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; }
 .sidebar-habit-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .sidebar-freq { font-size: 11px; color: var(--text-light); }
+
+/* ✨ Custom styling for Action Ladder Steps in the Assign panel ✨ */
+.sidebar-habit.ladder-item { background: #fffcf5; border: 1px solid var(--gold); border-left: 4px solid var(--gold); box-shadow: 0 2px 8px rgba(212,168,67,0.1); }
+.sidebar-habit.ladder-item .sidebar-habit-name { color: #a67c00; font-weight: 700; font-size: 13px; }
+.sidebar-habit.ladder-item .day-dot { border: 1px solid rgba(212,168,67,0.2); }
+.sidebar-habit.ladder-item .day-dot.selected { background: linear-gradient(135deg, var(--gold), #f0c060); color: white; border-color: transparent; box-shadow: 0 2px 6px rgba(212,168,67,0.3); }
+
 .day-picker { display: flex; gap: 4px; flex-wrap: wrap; }
-.day-dot { width: 26px; height: 26px; border-radius: 50%; border: none; background: white; font-size: 9px; font-weight: 700; color: var(--text-mid); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(220,100,130,0.1); }
+.day-dot { width: 26px; height: 26px; border-radius: 50%; border: none; background: white; font-size: 9px; font-weight: 700; color: var(--text-mid); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(220,100,130,0.1); transition: all 0.2s; }
 .day-dot.selected { background: var(--pink-400); color: white; box-shadow: none; }
-.day-dot.daily-dot { background: var(--pink-200); color: var(--pink-600); cursor: default; box-shadow: none; }
 
 .week-cols-wrap { overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
 .week-cols { display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px; min-width: 900px; padding-right: 16px; }
@@ -189,7 +195,6 @@ body {
 .cal-event { font-size: 10px; padding: 2px 6px; border-radius: 5px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--pink-200); color: var(--pink-600); font-weight: 600; }
 .cal-event-time { margin-right: 3px; opacity: 0.7; }
 
-/* Day detail modal */
 .day-detail-events { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .detail-event { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: var(--radius-sm); background: var(--pink-50); }
 .detail-event-time { font-size: 12px; font-weight: 700; color: var(--pink-600); min-width: 80px; margin-top: 2px; }
@@ -214,8 +219,6 @@ body {
 .btn-icon.active { background: var(--pink-400); color: white; }
 .cat-pill { padding: 8px 16px; border-radius: var(--radius-pill); border: none; background: white; color: var(--text-mid); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 6px rgba(220,100,130,0.08); }
 .cat-pill.active { background: var(--pink-400); color: white; box-shadow: none; }
-.sfilter-pill { padding: 5px 12px; border-radius: var(--radius-pill); border: none; background: white; color: var(--text-mid); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 5px rgba(220,100,130,0.08); }
-.sfilter-pill.active { background: var(--pink-400); color: white; box-shadow: none; }
 
 .reviews-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 32px; }
 .review-card { background: white; border-radius: var(--radius); padding: 32px 28px; box-shadow: var(--shadow-card); cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
@@ -262,6 +265,36 @@ body {
 .log-input { flex: 1; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; font-family: inherit; font-size: 13px; outline: none; }
 .log-trend-select { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: var(--radius-sm); padding: 0 10px; font-size: 13px; outline: none; cursor: pointer; }
 .log-btn { background: var(--pink-400); color: white; border: none; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+
+/* ── Action Ladder ── */
+.action-ladder-section { margin-bottom: 20px; }
+.action-ladder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.action-ladder-title { font-size: 11px; font-weight: 800; color: var(--pink-400); text-transform: uppercase; letter-spacing: 0.1em; }
+.btn-add-ladder-step { background: var(--pink-100); border: none; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--pink-600); cursor: pointer; transition: all 0.2s; }
+.btn-add-ladder-step:hover { background: var(--pink-200); }
+.ladder-track { position: relative; padding-left: 20px; }
+.ladder-track::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(to bottom, var(--pink-300), var(--pink-100)); border-radius: 2px; }
+.ladder-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px 8px 0; position: relative; cursor: pointer; border-radius: 10px; transition: background 0.15s; margin-bottom: 4px; }
+.ladder-step:hover { background: var(--pink-50); }
+.ladder-step-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--pink-300); background: white; flex-shrink: 0; margin-top: 2px; position: absolute; left: -17px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 8px; }
+.ladder-step.completed .ladder-step-dot { background: var(--pink-400); border-color: var(--pink-400); color: white; }
+.ladder-step.current .ladder-step-dot { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 8px rgba(212,168,67,0.5); animation: pulse-dot 1.5s infinite; }
+.ladder-step-content { flex: 1; min-width: 0; }
+.ladder-step-label { font-size: 13px; font-weight: 600; color: var(--text-dark); line-height: 1.3; }
+.ladder-step.completed .ladder-step-label { text-decoration: line-through; color: var(--text-light); }
+.ladder-step.current .ladder-step-label { color: var(--pink-600); }
+.ladder-step-meta { font-size: 10px; color: var(--text-light); margin-top: 2px; display: flex; gap: 6px; align-items: center; }
+.step-badge { padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 700; }
+.step-badge.once { background: #e8f0ff; color: #3a5bd0; }
+.step-badge.repeat { background: #e8fff0; color: #1a7d45; }
+.step-badge.milestone { background: #fff8e0; color: #9a6f00; }
+.ladder-step-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
+.ladder-step:hover .ladder-step-actions { opacity: 1; }
+.ladder-step-btn { background: none; border: none; font-size: 12px; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: background 0.15s; color: var(--text-light); }
+.ladder-step-btn:hover { background: var(--pink-100); }
+.ladder-current-badge { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, var(--gold), #f0c060); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 10px; }
+.ladder-empty { font-size: 12px; color: var(--text-light); font-style: italic; padding: 8px 0; }
+@keyframes pulse-dot { 0%,100% { box-shadow: 0 0 6px rgba(212,168,67,0.4); } 50% { box-shadow: 0 0 14px rgba(212,168,67,0.8); } }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(45,27,31,0.35); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
 .modal-overlay.open { opacity: 1; pointer-events: all; }
@@ -314,36 +347,6 @@ body {
   .city-grid { grid-template-columns: 1fr; }
   .energy-cols { grid-template-columns: 1fr; }
 }
-
-/* ── Action Ladder ── */
-.action-ladder-section { margin-bottom: 20px; }
-.action-ladder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.action-ladder-title { font-size: 11px; font-weight: 800; color: var(--pink-400); text-transform: uppercase; letter-spacing: 0.1em; }
-.btn-add-ladder-step { background: var(--pink-100); border: none; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--pink-600); cursor: pointer; transition: all 0.2s; }
-.btn-add-ladder-step:hover { background: var(--pink-200); }
-.ladder-track { position: relative; padding-left: 20px; }
-.ladder-track::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(to bottom, var(--pink-300), var(--pink-100)); border-radius: 2px; }
-.ladder-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px 8px 0; position: relative; cursor: pointer; border-radius: 10px; transition: background 0.15s; margin-bottom: 4px; }
-.ladder-step:hover { background: var(--pink-50); }
-.ladder-step-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--pink-300); background: white; flex-shrink: 0; margin-top: 2px; position: absolute; left: -17px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 8px; }
-.ladder-step.completed .ladder-step-dot { background: var(--pink-400); border-color: var(--pink-400); color: white; }
-.ladder-step.current .ladder-step-dot { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 8px rgba(212,168,67,0.5); animation: pulse-dot 1.5s infinite; }
-.ladder-step-content { flex: 1; min-width: 0; }
-.ladder-step-label { font-size: 13px; font-weight: 600; color: var(--text-dark); line-height: 1.3; }
-.ladder-step.completed .ladder-step-label { text-decoration: line-through; color: var(--text-light); }
-.ladder-step.current .ladder-step-label { color: var(--pink-600); }
-.ladder-step-meta { font-size: 10px; color: var(--text-light); margin-top: 2px; display: flex; gap: 6px; align-items: center; }
-.step-badge { padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 700; }
-.step-badge.once { background: #e8f0ff; color: #3a5bd0; }
-.step-badge.repeat { background: #e8fff0; color: #1a7d45; }
-.step-badge.milestone { background: #fff8e0; color: #9a6f00; }
-.ladder-step-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
-.ladder-step:hover .ladder-step-actions { opacity: 1; }
-.ladder-step-btn { background: none; border: none; font-size: 12px; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: background 0.15s; color: var(--text-light); }
-.ladder-step-btn:hover { background: var(--pink-100); }
-.ladder-current-badge { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, var(--gold), #f0c060); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 10px; }
-.ladder-empty { font-size: 12px; color: var(--text-light); font-style: italic; padding: 8px 0; }
-@keyframes pulse-dot { 0%,100% { box-shadow: 0 0 6px rgba(212,168,67,0.4); } 50% { box-shadow: 0 0 14px rgba(212,168,67,0.8); } }
 
 @media (max-width: 768px) {
   body { padding-bottom: 80px; }
@@ -499,6 +502,12 @@ body {
     <div><div class="section-title">Habit Library 🗂</div><div class="section-sub">All your recurring actions. Click 🧪 to iterate/tweak a habit.</div></div>
     <button class="btn-primary" onclick="openAddHabitModal()">+ New Habit</button>
   </div>
+  
+  <div style="margin-bottom: 20px; position: relative;">
+    <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 14px; opacity: 0.5;">🔍</span>
+    <input type="text" id="habit-search-input" placeholder="Search habits..." oninput="renderHabits()" style="width: 100%; padding: 14px 16px 14px 40px; border-radius: var(--radius-pill); border: 1px solid var(--pink-200); font-family: 'DM Sans', sans-serif; font-size: 14px; background: white; box-shadow: var(--shadow-card); outline: none; color: var(--text-dark); transition: all 0.2s;">
+  </div>
+
   <div class="lib-cats" id="lib-cats"></div>
   <div class="habits-list" id="habits-list"></div>
 </section>
@@ -685,7 +694,7 @@ body {
     <p style="font-size:13px;color:var(--text-light);margin-bottom:20px;">Build your progression from tiny first action → big goal. Unlock each rung as you conquer it.</p>
     <div class="form-group"><label>Step Name</label><input type="text" id="ls-name-input" placeholder="e.g. Buy gym clothes, Do home workout once…"></div>
     <div class="form-group"><label>Type</label>
-      <select id="ls-type-input">
+      <select id="ls-type-input" onchange="updateLsTypeView()">
         <option value="once">🔵 One-time (do it once & tick off)</option>
         <option value="repeat">🟢 Repeating habit (unlock after doing it consistently)</option>
         <option value="milestone">🏆 Milestone (big achievement to celebrate)</option>
@@ -698,18 +707,21 @@ body {
         <option value="low">🌙 Low energy</option>
       </select>
     </div>
-    <div class="form-group"><label>How often per week?</label>
-      <select id="ls-freq-input" onchange="updateLsDaysSection()">
-        <option value="daily">Every day</option>
-        <option value="weekdays">Weekdays only</option>
-        <option value="1x">1× a week</option>
-        <option value="2x">2× a week</option>
-        <option value="3x" selected>3× a week</option>
-        <option value="4x">4× a week</option>
-        <option value="5x">5× a week</option>
-        <option value="6x">6× a week</option>
-        <option value="custom">Specific days…</option>
-      </select>
+    
+    <!-- Frequency specific to Repeating Tasks -->
+    <div class="form-group" id="ls-freq-group">
+        <label>How often per week?</label>
+        <select id="ls-freq-input" onchange="updateLsDaysSection()">
+          <option value="daily">Every day</option>
+          <option value="weekdays">Weekdays only</option>
+          <option value="1x">1× a week</option>
+          <option value="2x">2× a week</option>
+          <option value="3x" selected>3× a week</option>
+          <option value="4x">4× a week</option>
+          <option value="5x">5× a week</option>
+          <option value="6x">6× a week</option>
+          <option value="custom">Specific days…</option>
+        </select>
     </div>
     <div class="form-group" id="ls-days-section" style="display:none;">
       <label>Which days?</label>
@@ -723,6 +735,14 @@ body {
         <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;cursor:pointer;"><input type="checkbox" class="ls-day-cb" value="6"> Sun</label>
       </div>
     </div>
+
+    <!-- Date input specific to One-Time Tasks -->
+    <div class="form-group" id="ls-date-group" style="display:none;">
+        <label>Scheduled Date (Optional)</label>
+        <input type="date" id="ls-date-input">
+        <p style="font-size:11px; color:var(--text-light); margin-top:4px;">Leave blank to show every day until ticked off.</p>
+    </div>
+
     <div class="form-group"><label>Note (optional)</label><input type="text" id="ls-note-input" placeholder="e.g. Just 15 mins, no pressure…"></div>
     <input type="hidden" id="ls-area-id-input">
     <input type="hidden" id="ls-step-id-input">
@@ -771,10 +791,10 @@ if (state.lifeAreas.length <= 5) {
     { id: 'city_gym', theme: 'health', title: 'Gym & Movement', emoji: '🏋️', identity: 'I follow through on movement commitments.\nI move for joy.', outcome: 'Be 55kg, master compound lift', outcomeLogs: [], evidenceLogs: [], actionLadder: [
       { id: 'ls1', name: 'Buy gym clothes & shoes', type: 'once', note: 'Just the kit — no pressure to go yet!', completed: false, completedDate: null },
       { id: 'ls2', name: 'Do a fun home workout once', type: 'once', note: 'YouTube, dancing, anything goes', completed: false, completedDate: null },
-      { id: 'ls3', name: 'Home workout twice a week', type: 'repeat', note: 'Build the habit at home first', completed: false, completedDate: null },
+      { id: 'ls3', name: 'Home workout twice a week', type: 'repeat', freq: '2x', note: 'Build the habit at home first', completed: false, completedDate: null },
       { id: 'ls4', name: 'Walk to the gym — just look inside', type: 'once', note: 'Remove the scary unknown!', completed: false, completedDate: null },
       { id: 'ls5', name: 'Go to gym for one easy session', type: 'once', note: 'Machines only, no pressure', completed: false, completedDate: null },
-      { id: 'ls6', name: 'Gym twice a week consistently', type: 'repeat', note: '3 weeks in a row = unlocked', completed: false, completedDate: null },
+      { id: 'ls6', name: 'Gym twice a week consistently', type: 'repeat', freq: '2x', note: '3 weeks in a row = unlocked', completed: false, completedDate: null },
       { id: 'ls7', name: 'Start a beginner program (e.g. StrongLifts 5×5)', type: 'milestone', note: 'Now you are an athlete 🏆', completed: false, completedDate: null }
     ] },
     { id: 'city_mental', theme: 'health', title: 'Mental Resilience', emoji: '🧘', identity: 'I prime my seeking system toward positive anticipation.', outcome: 'Reduce limbic loop anxiety', outcomeLogs: [], evidenceLogs: [] },
@@ -792,21 +812,22 @@ if (state.lifeAreas.length <= 5) {
 }
 
 let repaired = false;
+const validHabits = [];
 state.habits.forEach(habit => {
   if(!habit.tweaks) habit.tweaks = []; 
   const cityExists = state.lifeAreas.some(a => a.id === habit.areaId);
   if (!cityExists || !habit.areaId) {
-    let match = state.lifeAreas.find(a => a.theme === habit.cat);
-    if (!match) {
-      match = { id: h(), theme: habit.cat || 'general', title: 'General ' + (habit.cat||''), emoji: '✦', identity: '', outcomeLogs: [], evidenceLogs: [] };
-      state.lifeAreas.push(match);
-    }
-    habit.areaId = match.id;
-    habit.cat = match.theme;
+    // Orphaned habit! The sub-goal was deleted previously. 
+    // We remove the habit instead of reassigning it to random new sub-goals.
     repaired = true;
+  } else {
+    validHabits.push(habit);
   }
 });
-if (repaired) save();
+if (repaired) {
+  state.habits = validHabits;
+  save();
+}
 repairLadders();
 
 if (state.habits.length === 0) {
@@ -1137,9 +1158,11 @@ function renderLifeAreas() {
         const cls = isDone ? 'completed' : (isCurrent ? 'current' : '');
         const dotContent = isDone ? '✓' : (isCurrent ? '★' : '');
         const typeBadge = { once: '<span class="step-badge once">once</span>', repeat: '<span class="step-badge repeat">habit</span>', milestone: '<span class="step-badge milestone">🏆</span>' }[step.type] || '';
-        const dateNote = isDone && step.completedDate ? `<span style="color:var(--pink-400)">✓ ${step.completedDate}</span>` : '';
         const energyBadge = step.energy ? { high: '<span style="font-size:10px">⚡</span>', med: '<span style="font-size:10px">🌤</span>', low: '<span style="font-size:10px">🌙</span>' }[step.energy] || '' : '';
-        const freqLabel = step.freq ? `<span style="font-size:10px;color:var(--text-light)">${step.freq === 'daily' ? 'daily' : step.freq === 'weekdays' ? 'weekdays' : step.freq === 'custom' ? (step.customDays || []).map(d=>['M','T','W','T','F','S','S'][d]).join('') : step.freq + '/wk'}</span>` : '';
+        const freqLabel = (step.type === 'repeat' && step.freq) ? `<span style="font-size:10px;color:var(--text-light)">${step.freq === 'daily' ? 'daily' : step.freq === 'weekdays' ? 'weekdays' : step.freq === 'custom' ? (step.customDays || []).map(d=>['M','T','W','T','F','S','S'][d]).join('') : step.freq + '/wk'}</span>` : '';
+        
+        const dateNote = step.targetDate && !isDone ? `<span style="color:var(--text-mid);font-weight:600">📅 ${step.targetDate}</span>` : (isDone && step.completedDate ? `<span style="color:var(--pink-400)">✓ ${step.completedDate}</span>` : '');
+
         ladderHtml += `<div class="ladder-step ${cls}" onclick="toggleLadderStep('${city.id}','${step.id}')">
           <div class="ladder-step-dot">${dotContent}</div>
           <div class="ladder-step-content">
@@ -1234,9 +1257,28 @@ function saveOutcomeLog(cityId) {
 }
 
 // ── Action Ladder Functions ──
+function updateLsTypeView() {
+  const type = document.getElementById('ls-type-input').value;
+  const freqGroup = document.getElementById('ls-freq-group');
+  const daysGroup = document.getElementById('ls-days-section');
+  const dateGroup = document.getElementById('ls-date-group');
+
+  if (type === 'repeat') {
+      freqGroup.style.display = 'block';
+      updateLsDaysSection(); // might show daysGroup
+      dateGroup.style.display = 'none';
+  } else {
+      // 'once' or 'milestone'
+      freqGroup.style.display = 'none';
+      daysGroup.style.display = 'none';
+      dateGroup.style.display = 'block';
+  }
+}
+
 function updateLsDaysSection() {
   const freq = document.getElementById('ls-freq-input').value;
-  document.getElementById('ls-days-section').style.display = freq === 'custom' ? '' : 'none';
+  const type = document.getElementById('ls-type-input').value;
+  document.getElementById('ls-days-section').style.display = (freq === 'custom' && type === 'repeat') ? 'block' : 'none';
 }
 
 function openAddLadderStep(areaId) {
@@ -1246,8 +1288,9 @@ function openAddLadderStep(areaId) {
   document.getElementById('ls-type-input').value = 'once';
   document.getElementById('ls-energy-input').value = 'med';
   document.getElementById('ls-freq-input').value = '3x';
+  document.getElementById('ls-date-input').value = '';
   document.querySelectorAll('.ls-day-cb').forEach(cb => cb.checked = false);
-  updateLsDaysSection();
+  updateLsTypeView();
   document.getElementById('ls-note-input').value = '';
   openModal('ladder-step-modal');
 }
@@ -1263,9 +1306,10 @@ function openEditLadderStep(areaId, stepId) {
   document.getElementById('ls-type-input').value = step.type || 'once';
   document.getElementById('ls-energy-input').value = step.energy || 'med';
   document.getElementById('ls-freq-input').value = step.freq || '3x';
+  document.getElementById('ls-date-input').value = step.targetDate || '';
   const customDays = step.customDays || [];
   document.querySelectorAll('.ls-day-cb').forEach(cb => { cb.checked = customDays.includes(parseInt(cb.value)); });
-  updateLsDaysSection();
+  updateLsTypeView();
   document.getElementById('ls-note-input').value = step.note || '';
   openModal('ladder-step-modal');
 }
@@ -1275,24 +1319,46 @@ function saveLadderStep() {
   const stepId = document.getElementById('ls-step-id-input').value;
   const name = document.getElementById('ls-name-input').value.trim();
   if (!name) return;
+  
   const type = document.getElementById('ls-type-input').value;
   const energy = document.getElementById('ls-energy-input').value;
-  const freq = document.getElementById('ls-freq-input').value;
-  const customDays = freq === 'custom'
-    ? Array.from(document.querySelectorAll('.ls-day-cb:checked')).map(cb => parseInt(cb.value))
-    : [];
   const note = document.getElementById('ls-note-input').value.trim();
+  
+  let targetDate = null;
+  let freq = 'daily';
+  let customDays = [];
+
+  if (type === 'repeat') {
+      freq = document.getElementById('ls-freq-input').value;
+      customDays = freq === 'custom'
+        ? Array.from(document.querySelectorAll('.ls-day-cb:checked')).map(cb => parseInt(cb.value))
+        : [];
+  } else {
+      targetDate = document.getElementById('ls-date-input').value || null;
+  }
+  
   const city = state.lifeAreas.find(a => a.id === areaId);
   if (!city) return;
   if (!city.actionLadder) city.actionLadder = [];
+  
   if (stepId) {
     const step = city.actionLadder.find(s => s.id === stepId);
-    if (step) { step.name = name; step.type = type; step.energy = energy; step.freq = freq; step.customDays = customDays; step.note = note; }
+    if (step) { 
+      step.name = name; 
+      step.type = type; 
+      step.energy = energy; 
+      step.freq = freq; 
+      step.customDays = customDays; 
+      step.note = note;
+      step.targetDate = targetDate;
+    }
   } else {
-    city.actionLadder.push({ id: h(), name, type, energy, freq, customDays, note, completed: false, completedDate: null });
+    city.actionLadder.push({ id: h(), name, type, energy, freq, customDays, targetDate, note, completed: false, completedDate: null });
   }
+  
   save(); closeModal('ladder-step-modal'); renderLifeAreas();
   syncTodayFromAssignments();
+  renderWeeklyPlanner();
   dopamineHit('Step saved! 🪜');
 }
 
@@ -1306,6 +1372,7 @@ function toggleLadderStep(areaId, stepId) {
   save(); renderLifeAreas();
   // Sync today so completed step disappears and next rung appears
   syncTodayFromAssignments();
+  renderWeeklyPlanner();
   if (step.completed) {
     state.totalVotes += 5; save(); updateStats();
     dopamineHit('Rung unlocked! You are climbing 🪜✨'); launchConfetti();
@@ -1318,14 +1385,22 @@ function deleteLadderStep(areaId, stepId) {
   const city = state.lifeAreas.find(a => a.id === areaId);
   if (!city || !city.actionLadder) return;
   city.actionLadder = city.actionLadder.filter(s => s.id !== stepId);
-  save(); renderLifeAreas(); dopamineHit('Step removed');
+  save(); renderLifeAreas(); syncTodayFromAssignments(); renderWeeklyPlanner(); dopamineHit('Step removed');
 }
 
 let activeLibCat = 'all';
 function renderHabits() {
   const cats = ['all','productivity','health','wealth','content','hobbies'];
   document.getElementById('lib-cats').innerHTML = cats.map(c => `<div class="cat-pill ${activeLibCat===c?'active':''}" onclick="activeLibCat='${c}';renderHabits()">${c==='all'?'All ✦':catEmoji(c)+' '+c}</div>`).join('');
-  const filtered = activeLibCat === 'all' ? state.habits : state.habits.filter(h => h.cat === activeLibCat);
+  
+  const searchInput = document.getElementById('habit-search-input');
+  const searchQ = searchInput ? searchInput.value.toLowerCase() : '';
+
+  const filtered = state.habits.filter(h => {
+    const catMatch = activeLibCat === 'all' || h.cat === activeLibCat;
+    const searchMatch = !searchQ || h.name.toLowerCase().includes(searchQ);
+    return catMatch && searchMatch;
+  });
   
   const grouped = {};
   state.lifeAreas.forEach(a => { if(!grouped[a.theme]) grouped[a.theme] = []; grouped[a.theme].push(a); });
@@ -1466,9 +1541,18 @@ function executeDelete() {
     });
 
     if (isLadder && ladderAreaId) {
-      // Dismiss this ladder step for today only
+      // Dismiss this ladder step for today
       const dismissKey = `ladder_dismiss_${ladderAreaId}_${localDateStr()}`;
       state.weeklyAssign[dismissKey] = true;
+      
+      const dayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+      const wk = getWeekKey(0);
+      const area = state.lifeAreas.find(a => a.id === ladderAreaId);
+      const currentStep = area && area.actionLadder ? area.actionLadder.find(s => !s.completed) : null;
+      if (currentStep) {
+        const assignKey = `assign_ladder_${wk}_${ladderAreaId}_${currentStep.id}_${dayIdx}`;
+        state.weeklyAssign[assignKey] = false;
+      }
     } else if (taskHabitId) {
       const dayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
       state.weeklyAssign[`assign_${getWeekKey(0)}_${taskHabitId}_${dayIdx}`] = false;
@@ -1484,10 +1568,16 @@ function executeDelete() {
     
   } else if (type === 'lifeArea') {
     state.lifeAreas = state.lifeAreas.filter(a => a.id !== id);
+    // Cascade delete any orphaned habits and today's tasks tied to this sub-goal
+    state.habits = state.habits.filter(h => h.areaId !== id);
+    ['high', 'med', 'low'].forEach(tier => {
+      state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.areaId !== id);
+    });
+    
     if (activeLibCat === id) activeLibCat = 'all';
     if (activeCountry === id) activeCountry = 'productivity';
-    save(); renderLifeAreas(); renderHabits(); renderWeeklyPlanner();
-    dopamineHit('Sub-Goal deleted 🗑');
+    save(); renderLifeAreas(); renderHabits(); renderWeeklyPlanner(); renderToday();
+    dopamineHit('Sub-Goal & linked actions deleted 🗑');
   }
 
   closeModal('confirm-delete-modal');
@@ -1504,6 +1594,8 @@ function renderWeeklyPlanner() {
   document.getElementById('week-nav-title').textContent = `${days[0].toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${days[6].toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`;
   
   const sidebarEl = document.getElementById('sidebar-habits'); sidebarEl.innerHTML = '';
+  
+  // Render normal habits in sidebar
   state.habits.filter(h => h.active).forEach(habit => {
     const card = document.createElement('div'); card.className = 'sidebar-habit';
     card.innerHTML = `<div class="sidebar-habit-name">${catEmoji(habit.cat)} ${habit.name}</div><div class="day-picker" id="dp-${habit.id}"></div>`;
@@ -1536,12 +1628,73 @@ function renderWeeklyPlanner() {
     sidebarEl.appendChild(card);
   });
 
+  // Render Action Ladder steps in sidebar
+  state.lifeAreas.forEach(area => {
+    const ladder = area.actionLadder || [];
+    const currentStep = ladder.find(s => !s.completed);
+    if (!currentStep) return;
+
+    const card = document.createElement('div'); 
+    card.className = 'sidebar-habit ladder-item';
+    card.innerHTML = `<div class="sidebar-habit-name">🪜 ${currentStep.name}</div><div class="day-picker" id="dp-ladder-${area.id}"></div>`;
+    const picker = card.querySelector('.day-picker');
+    
+    days.forEach((date, i) => {
+      const assignKey = `assign_ladder_${wk}_${area.id}_${currentStep.id}_${i}`;
+      const dot = document.createElement('div'); 
+      dot.className = 'day-dot'; 
+      dot.textContent = dayNames[i][0];
+      
+      // Calculate Default
+      let isDefault = false;
+      const dateStr = localDateStr(date);
+      if (currentStep.type === 'once' || currentStep.type === 'milestone') {
+          isDefault = currentStep.targetDate ? (currentStep.targetDate === dateStr) : true;
+      } else {
+          const stepFreq = currentStep.freq || 'daily';
+          if (stepFreq === 'daily') isDefault = true;
+          else if (stepFreq === 'weekdays') isDefault = i < 5;
+          else if (stepFreq === 'custom') isDefault = (currentStep.customDays || []).includes(i);
+          else {
+              const n = parseInt(stepFreq) || 3;
+              const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+              const allDays = [0,1,2,3,4,5,6];
+              const chosen = [];
+              const step_size = 7 / n;
+              for (let j = 0; j < n; j++) chosen.push(allDays[Math.floor(((seed + j * step_size) % 7))]);
+              isDefault = chosen.includes(i);
+          }
+      }
+      
+      const isAssigned = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
+      if (isAssigned) dot.classList.add('selected');
+      
+      dot.addEventListener('click', () => { 
+        const newlyOn = !isAssigned;
+        state.weeklyAssign[assignKey] = newlyOn; 
+        
+        // AI logging
+        const wkKey = getWeekKey(weekOffset);
+        if(!state.weeklyFriction[wkKey]) state.weeklyFriction[wkKey] = {};
+        if(!state.weeklyFriction[wkKey].scheduleChanges) state.weeklyFriction[wkKey].scheduleChanges = [];
+        state.weeklyFriction[wkKey].scheduleChanges.push({ note: `${newlyOn ? 'Assigned' : 'Removed'} ladder step '${currentStep.name}' for ${dayNames[i]}`, date: localDateStr() });
+
+        save(); renderWeeklyPlanner(); 
+        if(localDateStr(date)===localDateStr()) syncTodayFromAssignments(); 
+      });
+      picker.appendChild(dot);
+    });
+    sidebarEl.appendChild(card);
+  });
+
   const colsEl = document.getElementById('week-cols'); colsEl.innerHTML = '';
   days.forEach((date, i) => {
     const dateStr = localDateStr(date); const col = document.createElement('div'); col.className = 'week-col' + (dateStr === localDateStr() ? ' is-today' : '');
+
     col.innerHTML = `<div class="week-col-header"><div class="week-col-day">${dayNames[i]}</div><div class="week-col-num">${date.getDate()}</div></div><div class="week-col-items"></div>`;
     const itemsEl = col.querySelector('.week-col-items');
     
+    // Normal Habits
     state.habits.filter(h => h.active).forEach(habit => {
       const assignKey = `assign_${wk}_${habit.id}_${i}`;
       const isDefault = (habit.freq === 'daily') || (habit.freq === 'weekdays' && i < 5);
@@ -1558,14 +1711,49 @@ function renderWeeklyPlanner() {
       itemsEl.appendChild(chip);
     });
 
-    // Ladder step chips — show current active step for each area in weekly
+    // Ladder step chips
     state.lifeAreas.forEach(area => {
       const ladder = area.actionLadder || [];
       const currentStep = ladder.find(s => !s.completed);
       if (!currentStep) return;
+      
       const chipKey = `ladder_chip_${wk}_${area.id}_${i}`;
+      const assignKey = `assign_ladder_${wk}_${area.id}_${currentStep.id}_${i}`;
       const dismissKey = `ladder_dismiss_${area.id}_${dateStr}`;
-      if (state.weeklyAssign[dismissKey]) return; // dismissed for this day
+      
+      let shouldShow = false;
+      if (currentStep.type === 'once' || currentStep.type === 'milestone') {
+          if (currentStep.targetDate) {
+              shouldShow = (currentStep.targetDate === dateStr);
+          } else {
+              shouldShow = true; // show every day if no date set
+          }
+      } else {
+          // repeating step frequency check
+          const stepFreq = currentStep.freq || 'daily';
+          if (stepFreq === 'daily') shouldShow = true;
+          else if (stepFreq === 'weekdays') shouldShow = i < 5;
+          else if (stepFreq === 'custom') shouldShow = (currentStep.customDays || []).includes(i);
+          else {
+              const n = parseInt(stepFreq) || 3;
+              const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+              const allDays = [0,1,2,3,4,5,6];
+              const chosen = [];
+              const step_size = 7 / n;
+              for (let j = 0; j < n; j++) chosen.push(allDays[Math.floor(((seed + j * step_size) % 7))]);
+              shouldShow = chosen.includes(i);
+          }
+      }
+
+      // Override with exact assignment
+      if (state.weeklyAssign[assignKey] !== undefined) {
+          shouldShow = state.weeklyAssign[assignKey];
+      } else if (state.weeklyAssign[dismissKey]) {
+          shouldShow = false;
+      }
+
+      if (!shouldShow) return;
+
       const done = state.weeklyChips[chipKey] || currentStep.completed;
       const chip = document.createElement('div');
       chip.className = `week-chip chip-${area.theme}${done?' done-chip':''}`;
@@ -1585,6 +1773,7 @@ function renderWeeklyPlanner() {
       });
       itemsEl.appendChild(chip);
     });
+    
     const evs = (state.calendarEvents[dateStr] || []).slice().sort((a,b) => (a.startTime||'zzz').localeCompare(b.startTime||'zzz'));
     evs.forEach(ev => {
       const evType = ev.type || 'one-time';
@@ -1631,46 +1820,59 @@ function syncTodayFromAssignments() {
     ['high','med','low'].forEach(tier => {
       state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.ladderAreaId !== area.id);
     });
+    
     if (currentStep) {
-      // Check if manually dismissed today
-      const dismissKey = `ladder_dismiss_${area.id}_${todayStr}`;
-      if (!state.weeklyAssign[dismissKey]) {
-        // Check if step is scheduled for today based on freq & customDays
-        const stepFreq = currentStep.freq || 'daily';
-        let scheduledToday = false;
-        if (stepFreq === 'daily') {
-          scheduledToday = true;
-        } else if (stepFreq === 'weekdays') {
-          scheduledToday = dayIdx < 5;
-        } else if (stepFreq === 'custom') {
-          scheduledToday = (currentStep.customDays || []).includes(dayIdx);
-        } else {
-          // Nx per week — use a deterministic day assignment based on area id + week
-          const n = parseInt(stepFreq) || 3;
-          // Generate n evenly-spaced days for this week using a seed based on area id
-          const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-          const allDays = [0,1,2,3,4,5,6];
-          const chosen = [];
-          const step_size = 7 / n;
-          for (let i = 0; i < n; i++) {
-            chosen.push(allDays[Math.floor(((seed + i * step_size) % 7))]);
+      let scheduledToday = false;
+      const assignKey = `assign_ladder_${wk}_${area.id}_${currentStep.id}_${dayIdx}`;
+      
+      // Calculate Default
+      if (currentStep.type === 'once' || currentStep.type === 'milestone') {
+          if (currentStep.targetDate) {
+              scheduledToday = (currentStep.targetDate === todayStr);
+          } else {
+              scheduledToday = true; // show until done if no specific date
           }
-          scheduledToday = chosen.includes(dayIdx);
-        }
-        if (scheduledToday) {
-          const tier = currentStep.energy || 'med';
-          state.todayTasks[tier].push({
-            id: ladderTaskId + '_' + todayStr,
-            habitId: ladderTaskId,
-            name: '🪜 ' + currentStep.name,
-            done: false,
-            cat: area.theme,
-            areaId: area.id,
-            isLadderStep: true,
-            ladderAreaId: area.id,
-            ladderStepId: currentStep.id
-          });
-        }
+      } else {
+          // repeat frequency
+          const stepFreq = currentStep.freq || 'daily';
+          if (stepFreq === 'daily') {
+            scheduledToday = true;
+          } else if (stepFreq === 'weekdays') {
+            scheduledToday = dayIdx < 5;
+          } else if (stepFreq === 'custom') {
+            scheduledToday = (currentStep.customDays || []).includes(dayIdx);
+          } else {
+            const n = parseInt(stepFreq) || 3;
+            const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+            const allDays = [0,1,2,3,4,5,6];
+            const chosen = [];
+            const step_size = 7 / n;
+            for (let i = 0; i < n; i++) chosen.push(allDays[Math.floor(((seed + i * step_size) % 7))]);
+            scheduledToday = chosen.includes(dayIdx);
+          }
+      }
+
+      // Check Override assignments
+      if (state.weeklyAssign[assignKey] !== undefined) {
+          scheduledToday = state.weeklyAssign[assignKey];
+      } else {
+          const dismissKey = `ladder_dismiss_${area.id}_${todayStr}`;
+          if (state.weeklyAssign[dismissKey]) scheduledToday = false;
+      }
+
+      if (scheduledToday) {
+        const tier = currentStep.energy || 'med';
+        state.todayTasks[tier].push({
+          id: ladderTaskId + '_' + todayStr,
+          habitId: ladderTaskId,
+          name: '🪜 ' + currentStep.name,
+          done: false,
+          cat: area.theme,
+          areaId: area.id,
+          isLadderStep: true,
+          ladderAreaId: area.id,
+          ladderStepId: currentStep.id
+        });
       }
     }
   });
