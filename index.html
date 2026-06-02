@@ -973,7 +973,17 @@ function toggleTask(id, tier, el) {
   const task = state.todayTasks[tier].find(t => t.id === id); if (!task) return;
   task.done = !task.done;
   logActionHistory(task.habitId, task.areaId, task.name, task.done);
-  save(); renderToday(); 
+  
+  const todayDate = new Date();
+  const dayIdx = todayDate.getDay() === 0 ? 6 : todayDate.getDay() - 1;
+  const wk = getWeekKey(0);
+  if (task.isLadderStep && task.ladderAreaId && task.ladderId) {
+     state.weeklyChips[`ladder_chip_${wk}_${task.ladderAreaId}_${task.ladderId}_${dayIdx}`] = task.done;
+  } else if (task.habitId) {
+     state.weeklyChips[`chip_${wk}_${task.habitId}_${dayIdx}`] = task.done;
+  }
+
+  save(); renderToday(); renderWeeklyPlanner();
   if (task.done) {
     state.totalVotes++; save(); updateStats();
     
@@ -1765,6 +1775,12 @@ function renderWeeklyPlanner() {
       chip.addEventListener('click', () => { 
         state.weeklyChips[chipKey] = !state.weeklyChips[chipKey]; 
         logActionHistory(habit.id, habit.areaId, habit.name, state.weeklyChips[chipKey]);
+        if (dateStr === localDateStr()) {
+           ['high','med','low'].forEach(tier => {
+              const t = state.todayTasks[tier].find(x => x.habitId === habit.id && !x.isLadderStep);
+              if (t) t.done = state.weeklyChips[chipKey];
+           });
+        }
         save(); renderWeeklyPlanner(); renderLifeAreas(); if(state.weeklyChips[chipKey]) { state.totalVotes++; save(); launchConfetti(); updateStats(); }
       });
       itemsEl.appendChild(chip);
@@ -1814,6 +1830,14 @@ function renderWeeklyPlanner() {
         chip.addEventListener('click', () => {
           const nowDone = !state.weeklyChips[chipKey];
           state.weeklyChips[chipKey] = nowDone;
+          
+          if (dateStr === localDateStr()) {
+             ['high','med','low'].forEach(tier => {
+                const t = state.todayTasks[tier].find(x => x.ladderId === ladder.id);
+                if (t) t.done = nowDone;
+             });
+          }
+          
           if (nowDone && !currentStep.completed) {
             // FIX: If it's a repeating step, just grant daily tick without completing the overall rung
             if (currentStep.type !== 'repeat') {
@@ -1876,8 +1900,14 @@ function syncTodayFromAssignments() {
       const currentStep = (ladder.steps || []).find(s => !s.completed);
       const ladderTaskId = 'ladder_' + area.id + '_' + ladder.id;
       
+      let existingTask = null;
+      let existingTier = null;
       ['high','med','low'].forEach(tier => {
-        state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.ladderId !== ladder.id);
+        const idx = state.todayTasks[tier].findIndex(t => t.ladderId === ladder.id);
+        if (idx !== -1) {
+          existingTask = state.todayTasks[tier][idx];
+          existingTier = tier;
+        }
       });
       
       if (currentStep) {
@@ -1911,19 +1941,39 @@ function syncTodayFromAssignments() {
 
         if (scheduledToday) {
           const tier = currentStep.energy || 'med';
-          state.todayTasks[tier].push({
-            id: ladderTaskId + '_' + todayStr,
-            habitId: ladderTaskId,
-            name: `🪜 [${ladder.title}] ${currentStep.name}`,
-            done: false,
-            cat: area.theme,
-            areaId: area.id,
-            isLadderStep: true,
-            ladderAreaId: area.id,
-            ladderId: ladder.id,
-            ladderStepId: currentStep.id
-          });
+          if (!existingTask) {
+            state.todayTasks[tier].push({
+              id: ladderTaskId + '_' + todayStr,
+              habitId: ladderTaskId,
+              name: `🪜 [${ladder.title}] ${currentStep.name}`,
+              done: false,
+              cat: area.theme,
+              areaId: area.id,
+              isLadderStep: true,
+              ladderAreaId: area.id,
+              ladderId: ladder.id,
+              ladderStepId: currentStep.id
+            });
+          } else if (existingTask.ladderStepId !== currentStep.id) {
+             state.todayTasks[existingTier] = state.todayTasks[existingTier].filter(t => t.id !== existingTask.id);
+             state.todayTasks[tier].push({
+                id: ladderTaskId + '_' + todayStr,
+                habitId: ladderTaskId,
+                name: `🪜 [${ladder.title}] ${currentStep.name}`,
+                done: false,
+                cat: area.theme,
+                areaId: area.id,
+                isLadderStep: true,
+                ladderAreaId: area.id,
+                ladderId: ladder.id,
+                ladderStepId: currentStep.id
+             });
+          }
+        } else if (existingTask) {
+          state.todayTasks[existingTier] = state.todayTasks[existingTier].filter(t => t.id !== existingTask.id);
         }
+      } else if (existingTask) {
+        state.todayTasks[existingTier] = state.todayTasks[existingTier].filter(t => t.id !== existingTask.id);
       }
     });
   });
