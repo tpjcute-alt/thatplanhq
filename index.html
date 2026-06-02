@@ -1107,14 +1107,14 @@ function renderToday() {
   const isActualToday = todayOffset === 0;
   const viewDateStr = localDateStr(getViewDate());
 
-  // For non-today views, load tasks from that date's snapshot if available, else empty
+  // For non-today views, compute tasks from assignments (past: use snapshot if available, else compute; future: always compute)
   let viewTasks = { high: [], med: [], low: [] };
   if (isActualToday) {
     viewTasks = state.todayTasks;
   } else {
-    // Use saved day snapshots keyed by date
+    // Past: prefer snapshot (preserves done state); Future: always compute from assignments
     const snap = (state.daySnapshots && state.daySnapshots[viewDateStr]);
-    if (snap) viewTasks = snap;
+    viewTasks = snap || getTasksForDate(getViewDate());
   }
 
   ['high','med','low'].forEach(tier => {
@@ -1989,6 +1989,73 @@ function renderWeeklyPlanner() {
     if (itemsEl.children.length === 0) { itemsEl.innerHTML = `<div class="week-col-empty">Rest day ✦</div>`; }
     colsEl.appendChild(col);
   });
+}
+
+function getTasksForDate(targetDate) {
+  // Compute what habits/ladders are scheduled for any given date
+  const targetStr = localDateStr(targetDate);
+  const dayIdx = targetDate.getDay() === 0 ? 6 : targetDate.getDay() - 1;
+
+  // Figure out which week this date falls in (offset from current week)
+  const today = new Date(); today.setHours(0,0,0,0);
+  const msPerDay = 86400000;
+  const diffDays = Math.round((targetDate - today) / msPerDay);
+  const weekOffset = Math.floor((diffDays + ((today.getDay() === 0 ? 6 : today.getDay() - 1))) / 7);
+  const wk = getWeekKey(weekOffset);
+
+  const tasks = { high: [], med: [], low: [] };
+
+  state.habits.filter(h => h.active).forEach(habit => {
+    const assignKey = `assign_${wk}_${habit.id}_${dayIdx}`;
+    const isDefault = (habit.freq === 'daily') || (habit.freq === 'weekdays' && dayIdx < 5);
+    const isAssigned = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
+    if (!isAssigned) return;
+    const tier = habit.energy || 'med';
+    // Check weekly chip to get done state
+    const chipKey = `chip_${wk}_${habit.id}_${dayIdx}`;
+    tasks[tier].push({ id: habit.id + '_' + targetStr, habitId: habit.id, name: habit.name, done: !!state.weeklyChips[chipKey], cat: habit.cat, areaId: habit.areaId });
+  });
+
+  state.lifeAreas.forEach(area => {
+    (area.ladders || []).forEach(ladder => {
+      const currentStep = (ladder.steps || []).find(s => !s.completed);
+      if (!currentStep) return;
+      const assignKey = `assign_ladder_${wk}_${area.id}_${ladder.id}_${currentStep.id}_${dayIdx}`;
+      const dismissKey = `ladder_dismiss_${area.id}_${ladder.id}_${targetStr}`;
+      let scheduled = false;
+      if (currentStep.type === 'once' || currentStep.type === 'milestone') {
+        scheduled = currentStep.targetDate ? (currentStep.targetDate === targetStr) : true;
+      } else {
+        const stepFreq = currentStep.freq || 'daily';
+        if (stepFreq === 'daily') scheduled = true;
+        else if (stepFreq === 'weekdays') scheduled = dayIdx < 5;
+        else if (stepFreq === 'custom') scheduled = (currentStep.customDays || []).includes(dayIdx);
+        else {
+          const n = parseInt(stepFreq) || 3;
+          const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+          const chosen = [];
+          const step_size = 7 / n;
+          for (let i = 0; i < n; i++) chosen.push([0,1,2,3,4,5,6][Math.floor(((seed + i * step_size) % 7))]);
+          scheduled = chosen.includes(dayIdx);
+        }
+      }
+      if (state.weeklyAssign[assignKey] !== undefined) scheduled = state.weeklyAssign[assignKey];
+      else if (state.weeklyAssign[dismissKey]) scheduled = false;
+      if (!scheduled) return;
+      const tier = currentStep.energy || 'med';
+      const chipKey = `ladder_chip_${wk}_${area.id}_${ladder.id}_${dayIdx}`;
+      tasks[tier].push({
+        id: 'ladder_' + area.id + '_' + ladder.id + '_' + targetStr,
+        habitId: 'ladder_' + area.id + '_' + ladder.id,
+        name: `🪜 [${ladder.title}] ${currentStep.name}`,
+        done: !!state.weeklyChips[chipKey],
+        cat: area.theme, areaId: area.id,
+        isLadderStep: true, ladderId: ladder.id, ladderStepId: currentStep.id
+      });
+    });
+  });
+
+  return tasks;
 }
 
 function syncTodayFromAssignments() {
