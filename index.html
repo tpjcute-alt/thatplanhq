@@ -52,6 +52,15 @@ body {
 .today-title { font-family: 'Playfair Display', serif; font-size: 42px; color: var(--text-dark); line-height: 1.1; }
 .today-title em { color: var(--pink-500); }
 .today-date { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+.day-nav { display: flex; align-items: center; gap: 10px; }
+.day-nav-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--pink-100); color: var(--text-mid); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.day-nav-btn:hover { background: var(--pink-200); color: var(--pink-600); }
+.day-nav-btn:disabled { opacity: 0.3; cursor: default; background: var(--pink-100); }
+.day-nav-today-btn { padding: 7px 16px; border-radius: var(--radius-pill); border: none; background: var(--pink-400); color: white; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.day-nav-today-btn:hover { background: var(--pink-500); }
+.day-nav-today-btn.is-today { background: var(--pink-100); color: var(--pink-600); cursor: default; }
+.today-past-banner { background: linear-gradient(135deg, #fff0f3, #fff8f0); border: 1.5px dashed var(--pink-300); border-radius: var(--radius-sm); padding: 10px 18px; font-size: 13px; color: var(--text-mid); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.today-past-banner span { font-size: 16px; }
 
 .wake-card { background: linear-gradient(135deg, #fff0f3, #fff8fa); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: var(--shadow-card); }
 .wake-card h3 { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text-dark); }
@@ -405,10 +414,16 @@ body {
 <section id="today" class="section active">
   <div class="today-header">
     <div>
-      <div class="today-title">Good morning, <em>that girl.</em> ✦</div>
+      <div class="today-title" id="today-greeting">Good morning, <em>that girl.</em> ✦</div>
       <div class="today-date" id="today-date"></div>
     </div>
+    <div class="day-nav">
+      <button class="day-nav-btn" id="day-nav-prev" onclick="changeTodayDay(-1)" title="Previous day">&#8249;</button>
+      <button class="day-nav-today-btn is-today" id="day-nav-today-btn" onclick="changeTodayDay(0)">Today</button>
+      <button class="day-nav-btn" id="day-nav-next" onclick="changeTodayDay(1)" title="Next day">&#8250;</button>
+    </div>
   </div>
+  <div id="today-past-banner" style="display:none" class="today-past-banner"><span>👀</span> <span id="today-past-banner-text">Viewing a past day — tasks are read-only.</span></div>
 
   <div class="wake-card">
     <div>
@@ -902,7 +917,16 @@ function checkNewDay() {
   syncTodayFromAssignments();
 }
 
-function save() { localStorage.setItem('thatgirlhq', JSON.stringify(state)); }
+function save() {
+  // Auto-snapshot today's tasks so they can be viewed on other days
+  const todayStr = localDateStr(new Date());
+  if (!state.daySnapshots) state.daySnapshots = {};
+  state.daySnapshots[todayStr] = JSON.parse(JSON.stringify(state.todayTasks));
+  // Keep only last 30 days of snapshots
+  const keys = Object.keys(state.daySnapshots).sort();
+  if (keys.length > 30) keys.slice(0, keys.length - 30).forEach(k => delete state.daySnapshots[k]);
+  localStorage.setItem('thatgirlhq', JSON.stringify(state));
+}
 
 function openEditVotes() {
   document.getElementById('edit-votes-input').value = state.totalVotes || 0;
@@ -919,6 +943,70 @@ function updateStats() {
 
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
+let todayOffset = 0; // 0 = actual today, negative = past days, positive = future days
+
+function getViewDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + todayOffset);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function changeTodayDay(dir) {
+  if (dir === 0) {
+    todayOffset = 0;
+  } else {
+    todayOffset += dir;
+  }
+  updateTodayDateDisplay();
+  renderToday();
+  renderTodayTimedEvents();
+}
+
+function updateTodayDateDisplay() {
+  const vd = getViewDate();
+  const isToday = todayOffset === 0;
+  const isFuture = todayOffset > 0;
+  const isPast = todayOffset < 0;
+
+  // Update date label
+  document.getElementById('today-date').textContent = vd.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Update greeting
+  const greetEl = document.getElementById('today-greeting');
+  if (isToday) {
+    greetEl.innerHTML = 'Good morning, <em>that girl.</em> ✦';
+  } else if (isFuture) {
+    greetEl.innerHTML = `Planning ahead ✦ <em style="font-size:0.65em;color:var(--text-light)">${vd.toLocaleDateString('en-GB',{weekday:'long'})}</em>`;
+  } else {
+    greetEl.innerHTML = `Looking back ✦ <em style="font-size:0.65em;color:var(--text-light)">${vd.toLocaleDateString('en-GB',{weekday:'long'})}</em>`;
+  }
+
+  // Update banner
+  const banner = document.getElementById('today-past-banner');
+  const bannerText = document.getElementById('today-past-banner-text');
+  if (!isToday) {
+    banner.style.display = 'flex';
+    if (isPast) {
+      bannerText.textContent = 'Viewing a past day — tasks are read-only.';
+    } else {
+      bannerText.textContent = "Viewing a future day — you can plan ahead here!";
+    }
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Update today btn
+  const todayBtn = document.getElementById('day-nav-today-btn');
+  if (todayBtn) {
+    if (isToday) { todayBtn.classList.add('is-today'); todayBtn.textContent = 'Today'; }
+    else { todayBtn.classList.remove('is-today'); todayBtn.textContent = 'Back to Today'; }
+  }
+
+  // Disable forward nav if already 7 days ahead
+  const nextBtn = document.getElementById('day-nav-next');
+  if (nextBtn) nextBtn.disabled = todayOffset >= 7;
+}
 
 function fmt12(timeStr) {
   if (!timeStr) return '';
@@ -1016,22 +1104,44 @@ function toggleTask(id, tier, el) {
 }
 
 function renderToday() {
+  const isActualToday = todayOffset === 0;
+  const viewDateStr = localDateStr(getViewDate());
+
+  // For non-today views, load tasks from that date's snapshot if available, else empty
+  let viewTasks = { high: [], med: [], low: [] };
+  if (isActualToday) {
+    viewTasks = state.todayTasks;
+  } else {
+    // Use saved day snapshots keyed by date
+    const snap = (state.daySnapshots && state.daySnapshots[viewDateStr]);
+    if (snap) viewTasks = snap;
+  }
+
   ['high','med','low'].forEach(tier => {
     const container = document.getElementById('tasks-' + tier); container.innerHTML = '';
-    const tasks = state.todayTasks[tier] || [];
-    if (tasks.length === 0) { container.innerHTML = `<div class="empty-state"><span class="emoji">✨</span>Add your first ${tier} energy task</div>`; return; }
+    const tasks = (viewTasks[tier] || []).slice().sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+    if (tasks.length === 0) { container.innerHTML = `<div class="empty-state"><span class="emoji">✨</span>${isActualToday ? 'Add your first ' + tier + ' energy task' : 'No ' + tier + ' energy tasks for this day'}</div>`; return; }
     tasks.forEach(task => {
       const div = document.createElement('div'); div.className = 'task-item' + (task.done ? ' done' : ''); div.dataset.id = task.id;
-      div.innerHTML = `<div class="task-check">${task.done ? '✓' : ''}</div><span class="task-label">${task.name}</span><span class="tag">${catEmoji(task.cat)}</span><button onclick="promptDelete('task', '${task.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-light);font-size:14px;padding:4px;margin-left:auto;" title="Skip/Miss for today">⏭️</button>`;
-      div.addEventListener('click', e => { if(e.target.tagName !== 'BUTTON') toggleTask(task.id, tier, div); }); container.appendChild(div);
+      if (isActualToday) {
+        div.innerHTML = `<div class="task-check">${task.done ? '✓' : ''}</div><span class="task-label">${task.name}</span><span class="tag">${catEmoji(task.cat)}</span><button onclick="promptDelete('task', '${task.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-light);font-size:14px;padding:4px;margin-left:auto;" title="Skip/Miss for today">⏭️</button>`;
+        div.addEventListener('click', e => { if(e.target.tagName !== 'BUTTON') toggleTask(task.id, tier, div); });
+      } else {
+        div.style.cursor = 'default';
+        div.innerHTML = `<div class="task-check">${task.done ? '✓' : ''}</div><span class="task-label">${task.name}</span><span class="tag">${catEmoji(task.cat)}</span>`;
+      }
+      container.appendChild(div);
     });
   });
   
-  const all = [...(state.todayTasks.high||[]), ...(state.todayTasks.med||[]), ...(state.todayTasks.low||[])];
+  const all = [...(viewTasks.high||[]), ...(viewTasks.med||[]), ...(viewTasks.low||[])];
   const done = all.filter(t => t.done).length; const pct = all.length ? Math.round(done/all.length*100) : 0;
   document.getElementById('done-count').textContent = done; document.getElementById('total-count').textContent = all.length;
   document.getElementById('pct-count').textContent = pct + '%';
   document.getElementById('progress-fill').style.width = pct + '%'; document.getElementById('progress-pct').textContent = pct + '%';
+
+  // Hide/show add-task rows and closing shift for non-today views
+  document.querySelectorAll('.add-task-row').forEach(r => r.style.display = isActualToday ? '' : 'none');
   renderClosingShift();
 }
 
@@ -1763,6 +1873,8 @@ function renderWeeklyPlanner() {
     const dateStr = localDateStr(date); const col = document.createElement('div'); col.className = 'week-col' + (dateStr === localDateStr() ? ' is-today' : '');
     col.innerHTML = `<div class="week-col-header"><div class="week-col-day">${dayNames[i]}</div><div class="week-col-num">${date.getDate()}</div></div><div class="week-col-items"></div>`;
     const itemsEl = col.querySelector('.week-col-items');
+    // Collect chips as {el, done} so we can sort done ones to the bottom
+    const weekChipItems = [];
     
     state.habits.filter(h => h.active).forEach(habit => {
       const assignKey = `assign_${wk}_${habit.id}_${i}`;
@@ -1783,7 +1895,7 @@ function renderWeeklyPlanner() {
         }
         save(); renderWeeklyPlanner(); renderLifeAreas(); if(state.weeklyChips[chipKey]) { state.totalVotes++; save(); launchConfetti(); updateStats(); }
       });
-      itemsEl.appendChild(chip);
+      weekChipItems.push({ el: chip, done: !!done });
     });
 
     state.lifeAreas.forEach(area => {
@@ -1853,9 +1965,13 @@ function renderWeeklyPlanner() {
             save(); renderWeeklyPlanner();
           }
         });
-        itemsEl.appendChild(chip);
+        weekChipItems.push({ el: chip, done: !!done });
       });
     });
+
+    // Sort: undone first, done last
+    weekChipItems.sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+    weekChipItems.forEach(item => itemsEl.appendChild(item.el));
     
     const evs = (state.calendarEvents[dateStr] || []).slice().sort((a,b) => (a.startTime||'zzz').localeCompare(b.startTime||'zzz'));
     evs.forEach(ev => {
@@ -2501,7 +2617,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  updateTodayDateDisplay();
   document.getElementById('wake-time-input').value = state.wakeTime || '07:00';
   setWakeTime(true); checkNewDay();
   syncTodayFromAssignments();
@@ -2586,7 +2702,7 @@ function saveEvent() {
 }
 
 function renderTodayTimedEvents() {
-  const todayDate = new Date(); const dateKey = localDateStr(todayDate);
+  const todayDate = getViewDate(); const dateKey = localDateStr(todayDate);
   if(!state.calendarEvents) state.calendarEvents = {};
   const timed = (state.calendarEvents[dateKey] || []).filter(e => e.startTime).sort((a,b) => a.startTime.localeCompare(b.startTime));
   const untimed = (state.calendarEvents[dateKey] || []).filter(e => !e.startTime);
