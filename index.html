@@ -264,7 +264,6 @@ body {
 .log-trend-select { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: var(--radius-sm); padding: 0 10px; font-size: 13px; outline: none; cursor: pointer; }
 .log-btn { background: var(--pink-400); color: white; border: none; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
 
-/* ── Multiple Action Ladders ── */
 .ladder-container { background: #fffcf8; border: 1px solid var(--pink-100); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; position: relative; }
 .ladder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed var(--pink-200); padding-bottom: 6px; }
 .ladder-title { font-size: 13px; font-weight: 800; color: var(--gold); letter-spacing: 0.05em; }
@@ -403,7 +402,6 @@ body {
   </nav>
 </div>
 
-<!-- TODAY -->
 <section id="today" class="section active">
   <div class="today-header">
     <div>
@@ -460,7 +458,6 @@ body {
   <div id="closing-shift-container"></div>
 </section>
 
-<!-- WEEKLY -->
 <section id="weekly" class="section">
   <div class="week-top-bar">
     <div><div class="section-title">Week Planner 📋</div></div>
@@ -484,7 +481,6 @@ body {
   <div class="week-cols-wrap"><div class="week-cols" id="week-cols"></div></div>
 </section>
 
-<!-- CALENDAR -->
 <section id="calendar" class="section">
   <div class="cal-header">
     <div class="cal-title" id="cal-title"></div>
@@ -494,7 +490,6 @@ body {
   <button class="add-event-btn" onclick="openModal('add-event-modal')">+ Event</button>
 </section>
 
-<!-- HABITS -->
 <section id="habits" class="section">
   <div class="lib-header">
     <div><div class="section-title">Habit Library 🗂</div><div class="section-sub">All your recurring actions. Click 🧪 to iterate/tweak a habit.</div></div>
@@ -510,7 +505,6 @@ body {
   <div class="habits-list" id="habits-list"></div>
 </section>
 
-<!-- REVIEWS -->
 <section id="reviews" class="section">
   <div class="section-title">Reviews & Calibration 🎯</div>
   <div class="section-sub">Where we separate Strategy (Weekly) from Outcomes (90-Day).</div>
@@ -545,7 +539,6 @@ body {
   </div>
 </section>
 
-<!-- MODALS -->
 <div class="modal-overlay" id="add-habit-modal">
   <div class="modal">
     <h2>New Habit ✦</h2>
@@ -788,8 +781,6 @@ body {
   </div>
 </div>
 
-
-
 <script>
 let state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
   totalVotes: 0, lastActiveDate: null,
@@ -993,12 +984,18 @@ function toggleTask(id, tier, el) {
         if (ladder) {
           const step = ladder.steps.find(s => s.id === task.ladderStepId);
           if (step && !step.completed) {
-            step.completed = true; step.completedDate = localDateStr();
-            state.totalVotes += 4; save();
-            dopamineHit('Rung unlocked! Ladder step complete 🪜✨');
-            renderLifeAreas();
-            syncTodayFromAssignments();
-            launchConfetti(); return;
+            // FIX: If it's a repeating step, just grant daily tick without completing the overall rung
+            if (step.type !== 'repeat') {
+              step.completed = true; step.completedDate = localDateStr();
+              state.totalVotes += 4; save();
+              dopamineHit('Rung unlocked! Ladder step complete 🪜✨');
+              renderLifeAreas();
+              syncTodayFromAssignments();
+              launchConfetti(); return;
+            } else {
+              dopamineHit('Daily rung action complete! 🪜✨');
+              launchConfetti(); return;
+            }
           }
         }
       }
@@ -1510,7 +1507,6 @@ function resolveLadderReview(action) {
   setTimeout(checkLadderReviews, 300);
 }
 
-
 let pendingDeleteAction = null;
 
 function promptDelete(type, id, extraId = null) {
@@ -1819,10 +1815,16 @@ function renderWeeklyPlanner() {
           const nowDone = !state.weeklyChips[chipKey];
           state.weeklyChips[chipKey] = nowDone;
           if (nowDone && !currentStep.completed) {
-            currentStep.completed = true; currentStep.completedDate = localDateStr();
-            state.totalVotes += 5; save(); renderWeeklyPlanner(); renderLifeAreas(); launchConfetti(); updateStats();
-            dopamineHit('Rung unlocked! 🪜✨');
-            syncTodayFromAssignments();
+            // FIX: If it's a repeating step, just grant daily tick without completing the overall rung
+            if (currentStep.type !== 'repeat') {
+              currentStep.completed = true; currentStep.completedDate = localDateStr();
+              state.totalVotes += 5; save(); renderWeeklyPlanner(); renderLifeAreas(); launchConfetti(); updateStats();
+              dopamineHit('Rung unlocked! 🪜✨');
+              syncTodayFromAssignments();
+            } else {
+              state.totalVotes += 1; save(); renderWeeklyPlanner(); renderLifeAreas(); launchConfetti(); updateStats();
+              dopamineHit('Action completed! 🪜✨');
+            }
           } else {
             save(); renderWeeklyPlanner();
           }
