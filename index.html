@@ -743,13 +743,52 @@ body {
         <p style="font-size:11px; color:var(--text-light); margin-top:4px;">Leave blank to show every day until ticked off.</p>
     </div>
 
+    <div class="form-group" id="ls-range-group" style="display:none;">
+        <label>Time-Bound Window (Optional)</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="date" id="ls-start-date-input" style="flex:1;">
+          <span style="font-size:11px;color:var(--text-light)">→</span>
+          <input type="date" id="ls-end-date-input" style="flex:1;">
+        </div>
+        <p style="font-size:11px; color:var(--text-light); margin-top:4px;">e.g. "Do morning Anki from June 1st to June 14th". You'll be prompted to review when the end date passes.</p>
+    </div>
+
     <div class="form-group"><label>Note (optional)</label><input type="text" id="ls-note-input" placeholder="e.g. Just 15 mins, no pressure…"></div>
+
+    <div class="form-group" style="background:linear-gradient(135deg,#fff8e7,#fffaf0);border:1px solid var(--gold);border-radius:10px;padding:10px 12px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;color:#a67c00;">
+          <input type="checkbox" id="ls-final-input" style="width:16px;height:16px;cursor:pointer;">
+          🏆 Mark as Final Rung
+        </label>
+        <p style="font-size:11px; color:var(--text-light); margin-top:4px;margin-left:24px;">Completing this rung will celebrate, convert the ladder into a permanent Habit in your library, and archive the ladder.</p>
+    </div>
+
     <input type="hidden" id="ls-area-id-input">
     <input type="hidden" id="ls-ladder-id-input">
     <input type="hidden" id="ls-step-id-input">
     <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('ladder-step-modal')">Cancel</button><button class="btn-primary" onclick="saveLadderStep()">Save Step ✦</button></div>
   </div>
 </div>
+
+<div class="modal-overlay" id="ladder-review-modal">
+  <div class="modal" style="width:460px;">
+    <h2>🪜 Time-Bound Step Review</h2>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:6px;">This rung has reached its end date:</p>
+    <div id="lr-step-summary" style="background:var(--pink-100);border-radius:12px;padding:14px;margin-bottom:18px;">
+      <div id="lr-step-name" style="font-weight:800;font-size:15px;color:var(--text-dark);"></div>
+      <div id="lr-step-window" style="font-size:11px;color:var(--text-mid);margin-top:4px;"></div>
+    </div>
+    <p style="font-size:13px;color:var(--text-dark);margin-bottom:16px;font-weight:600;">Did you master the baseline?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn-primary" style="background:linear-gradient(135deg,#7bb88c,#4a9a5e);" onclick="resolveLadderReview('master')">✅ Mastered it — mark complete</button>
+      <button class="btn-primary" onclick="resolveLadderReview('extend')">🔁 Extend for another week</button>
+      <button class="btn-cancel" onclick="resolveLadderReview('snooze')">Remind me tomorrow</button>
+    </div>
+    <input type="hidden" id="lr-area-id"><input type="hidden" id="lr-ladder-id"><input type="hidden" id="lr-step-id">
+  </div>
+</div>
+
+
 
 <script>
 let state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
@@ -1075,12 +1114,20 @@ function renderLifeAreas() {
              const energyBadge = step.energy ? { high: '<span style="font-size:10px">⚡</span>', med: '<span style="font-size:10px">🌤</span>', low: '<span style="font-size:10px">🌙</span>' }[step.energy] || '' : '';
              const freqLabel = (step.type === 'repeat' && step.freq) ? `<span style="font-size:10px;color:var(--text-light)">${step.freq === 'daily' ? 'daily' : step.freq === 'weekdays' ? 'weekdays' : step.freq === 'custom' ? (step.customDays || []).map(d=>['M','T','W','T','F','S','S'][d]).join('') : step.freq + '/wk'}</span>` : '';
              const dateNote = step.targetDate && !isDone ? `<span style="color:var(--text-mid);font-weight:600">📅 ${step.targetDate}</span>` : (isDone && step.completedDate ? `<span style="color:var(--pink-400)">✓ ${step.completedDate}</span>` : '');
+             const today = localDateStr();
+             const rangeNote = (step.type === 'repeat' && (step.startDate || step.endDate)) ? (() => {
+               const overdue = step.endDate && !isDone && step.endDate <= today;
+               const color = overdue ? '#c94f6d' : 'var(--text-mid)';
+               const icon = overdue ? '⏰' : '🗓';
+               return `<span style="color:${color};font-weight:600">${icon} ${step.startDate || '…'} → ${step.endDate || '…'}${overdue ? ' (review)' : ''}</span>`;
+             })() : '';
+             const finalBadge = step.isFinalRung ? `<span style="background:linear-gradient(135deg,var(--gold),#f0c060);color:white;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:800;letter-spacing:0.05em;">🏆 FINAL</span>` : '';
 
              ladderTrackHtml += `<div class="ladder-step ${cls}" onclick="toggleLadderStep('${city.id}','${ladder.id}','${step.id}')">
                <div class="ladder-step-dot">${dotContent}</div>
                <div class="ladder-step-content">
-                 <div class="ladder-step-label">${step.name}</div>
-                 <div class="ladder-step-meta">${typeBadge}${energyBadge}${freqLabel}${step.note ? `<span>${step.note}</span>` : ''}${dateNote}</div>
+                 <div class="ladder-step-label">${step.name} ${finalBadge}</div>
+                 <div class="ladder-step-meta">${typeBadge}${energyBadge}${freqLabel}${step.note ? `<span>${step.note}</span>` : ''}${dateNote}${rangeNote}</div>
                </div>
                <div class="ladder-step-actions">
                  <button class="ladder-step-btn" onclick="event.stopPropagation();openEditLadderStep('${city.id}','${ladder.id}','${step.id}')" title="Edit">✏️</button>
@@ -1215,15 +1262,18 @@ function updateLsTypeView() {
   const freqGroup = document.getElementById('ls-freq-group');
   const daysGroup = document.getElementById('ls-days-section');
   const dateGroup = document.getElementById('ls-date-group');
+  const rangeGroup = document.getElementById('ls-range-group');
 
   if (type === 'repeat') {
       freqGroup.style.display = 'block';
       updateLsDaysSection();
       dateGroup.style.display = 'none';
+      if (rangeGroup) rangeGroup.style.display = 'block';
   } else {
       freqGroup.style.display = 'none';
       daysGroup.style.display = 'none';
       dateGroup.style.display = 'block';
+      if (rangeGroup) rangeGroup.style.display = 'none';
   }
 }
 
@@ -1242,6 +1292,9 @@ function openAddLadderStep(areaId, ladderId) {
   document.getElementById('ls-energy-input').value = 'med';
   document.getElementById('ls-freq-input').value = '3x';
   document.getElementById('ls-date-input').value = '';
+  document.getElementById('ls-start-date-input').value = '';
+  document.getElementById('ls-end-date-input').value = '';
+  document.getElementById('ls-final-input').checked = false;
   document.querySelectorAll('.ls-day-cb').forEach(cb => cb.checked = false);
   updateLsTypeView();
   document.getElementById('ls-note-input').value = '';
@@ -1255,7 +1308,7 @@ function openEditLadderStep(areaId, ladderId, stepId) {
   if (!ladder) return;
   const step = (ladder.steps || []).find(s => s.id === stepId);
   if (!step) return;
-  
+
   document.getElementById('ls-area-id-input').value = areaId;
   document.getElementById('ls-ladder-id-input').value = ladderId;
   document.getElementById('ls-step-id-input').value = stepId;
@@ -1264,6 +1317,9 @@ function openEditLadderStep(areaId, ladderId, stepId) {
   document.getElementById('ls-energy-input').value = step.energy || 'med';
   document.getElementById('ls-freq-input').value = step.freq || '3x';
   document.getElementById('ls-date-input').value = step.targetDate || '';
+  document.getElementById('ls-start-date-input').value = step.startDate || '';
+  document.getElementById('ls-end-date-input').value = step.endDate || '';
+  document.getElementById('ls-final-input').checked = !!step.isFinalRung;
   const customDays = step.customDays || [];
   document.querySelectorAll('.ls-day-cb').forEach(cb => { cb.checked = customDays.includes(parseInt(cb.value)); });
   updateLsTypeView();
@@ -1277,45 +1333,48 @@ function saveLadderStep() {
   const stepId = document.getElementById('ls-step-id-input').value;
   const name = document.getElementById('ls-name-input').value.trim();
   if (!name) return;
-  
+
   const type = document.getElementById('ls-type-input').value;
   const energy = document.getElementById('ls-energy-input').value;
   const note = document.getElementById('ls-note-input').value.trim();
-  
+  const isFinalRung = document.getElementById('ls-final-input').checked;
+
   let targetDate = null;
   let freq = 'daily';
   let customDays = [];
+  let startDate = null, endDate = null;
 
   if (type === 'repeat') {
       freq = document.getElementById('ls-freq-input').value;
       customDays = freq === 'custom'
         ? Array.from(document.querySelectorAll('.ls-day-cb:checked')).map(cb => parseInt(cb.value))
         : [];
+      startDate = document.getElementById('ls-start-date-input').value || null;
+      endDate = document.getElementById('ls-end-date-input').value || null;
   } else {
       targetDate = document.getElementById('ls-date-input').value || null;
   }
-  
+
   const city = state.lifeAreas.find(a => a.id === areaId);
   if (!city || !city.ladders) return;
   const ladder = city.ladders.find(l => l.id === ladderId);
   if (!ladder) return;
   if (!ladder.steps) ladder.steps = [];
-  
+
   if (stepId) {
     const step = ladder.steps.find(s => s.id === stepId);
-    if (step) { 
-      step.name = name; 
-      step.type = type; 
-      step.energy = energy; 
-      step.freq = freq; 
-      step.customDays = customDays; 
-      step.note = note;
-      step.targetDate = targetDate;
+    if (step) {
+      const prevEnd = step.endDate;
+      step.name = name; step.type = type; step.energy = energy;
+      step.freq = freq; step.customDays = customDays; step.note = note;
+      step.targetDate = targetDate; step.startDate = startDate; step.endDate = endDate;
+      step.isFinalRung = isFinalRung;
+      if (prevEnd !== endDate) step.reviewSnoozedUntil = null;
     }
   } else {
-    ladder.steps.push({ id: h(), name, type, energy, freq, customDays, targetDate, note, completed: false, completedDate: null });
+    ladder.steps.push({ id: h(), name, type, energy, freq, customDays, targetDate, startDate, endDate, isFinalRung, note, completed: false, completedDate: null });
   }
-  
+
   save(); closeModal('ladder-step-modal'); renderLifeAreas();
   syncTodayFromAssignments();
   renderWeeklyPlanner();
@@ -1327,22 +1386,61 @@ function toggleLadderStep(areaId, ladderId, stepId) {
   if (!city || !city.ladders) return;
   const ladder = city.ladders.find(l => l.id === ladderId);
   if (!ladder || !ladder.steps) return;
-  
+
   const step = ladder.steps.find(s => s.id === stepId);
   if (!step) return;
-  
+
   step.completed = !step.completed;
   step.completedDate = step.completed ? localDateStr() : null;
-  save(); renderLifeAreas();
-  syncTodayFromAssignments();
-  renderWeeklyPlanner();
-  
+  save();
+
   if (step.completed) {
     state.totalVotes += 5; save(); updateStats();
+
+    // ── Final Rung Evolution: convert ladder → habit ──
+    if (step.isFinalRung) {
+      convertLadderToHabit(city, ladder, step);
+      return;
+    }
+
+    renderLifeAreas(); syncTodayFromAssignments(); renderWeeklyPlanner();
     dopamineHit('Rung unlocked! You are climbing 🪜✨'); launchConfetti();
+
+    // ── Auto-Progression: completed the last existing rung? ──
+    const isLastRung = ladder.steps.indexOf(step) === ladder.steps.length - 1;
+    const allDone = ladder.steps.every(s => s.completed);
+    if (isLastRung && allDone) {
+      setTimeout(() => {
+        if (confirm('🪜 You just topped this ladder! Want to add the next rung now?')) {
+          openAddLadderStep(city.id, ladder.id);
+        }
+      }, 600);
+    }
   } else {
+    renderLifeAreas(); syncTodayFromAssignments(); renderWeeklyPlanner();
     dopamineHit('Step reopened ↩️');
   }
+}
+
+function convertLadderToHabit(city, ladder, finalStep) {
+  const habitName = finalStep.name || ladder.title;
+  const freq = finalStep.freq || '3x';
+  const energy = finalStep.energy || 'med';
+  state.habits.push({
+    id: h(), name: habitName, areaId: city.id, cat: city.theme,
+    freq, energy, customDays: finalStep.customDays || [],
+    tweaks: [], active: true, bornFromLadder: ladder.title,
+  });
+  ladder.archived = true;
+  ladder.archivedDate = localDateStr();
+  city.ladders = city.ladders.filter(l => l.id !== ladder.id);
+  if (!city.archivedLadders) city.archivedLadders = [];
+  city.archivedLadders.push(ladder);
+
+  save();
+  renderLifeAreas(); renderHabits(); syncTodayFromAssignments(); renderWeeklyPlanner(); updateStats();
+  dopamineHit(`🏆 Final Rung conquered! "${habitName}" is now a permanent Habit.`);
+  launchConfetti(); setTimeout(launchConfetti, 400); setTimeout(launchConfetti, 800);
 }
 
 function deleteLadderStep(areaId, ladderId, stepId) {
@@ -1350,10 +1448,68 @@ function deleteLadderStep(areaId, ladderId, stepId) {
   if (!city || !city.ladders) return;
   const ladder = city.ladders.find(l => l.id === ladderId);
   if (!ladder || !ladder.steps) return;
-  
+
   ladder.steps = ladder.steps.filter(s => s.id !== stepId);
   save(); renderLifeAreas(); syncTodayFromAssignments(); renderWeeklyPlanner(); dopamineHit('Step removed');
 }
+
+// ── Review Prompts for Time-Bound Steps ──
+function checkLadderReviews() {
+  const today = localDateStr();
+  for (const area of (state.lifeAreas || [])) {
+    for (const ladder of (area.ladders || [])) {
+      for (const step of (ladder.steps || [])) {
+        if (step.type !== 'repeat' || !step.endDate || step.completed) continue;
+        if (step.endDate > today) continue;
+        if (step.reviewSnoozedUntil && step.reviewSnoozedUntil > today) continue;
+        openLadderReviewModal(area.id, ladder.id, step.id);
+        return;
+      }
+    }
+  }
+}
+
+function openLadderReviewModal(areaId, ladderId, stepId) {
+  const area = state.lifeAreas.find(a => a.id === areaId);
+  const ladder = area && area.ladders.find(l => l.id === ladderId);
+  const step = ladder && ladder.steps.find(s => s.id === stepId);
+  if (!step) return;
+  document.getElementById('lr-area-id').value = areaId;
+  document.getElementById('lr-ladder-id').value = ladderId;
+  document.getElementById('lr-step-id').value = stepId;
+  document.getElementById('lr-step-name').textContent = `${ladder.title} — ${step.name}`;
+  document.getElementById('lr-step-window').textContent = `${step.startDate || '?'} → ${step.endDate}`;
+  openModal('ladder-review-modal');
+}
+
+function resolveLadderReview(action) {
+  const areaId = document.getElementById('lr-area-id').value;
+  const ladderId = document.getElementById('lr-ladder-id').value;
+  const stepId = document.getElementById('lr-step-id').value;
+  const area = state.lifeAreas.find(a => a.id === areaId);
+  const ladder = area && area.ladders.find(l => l.id === ladderId);
+  const step = ladder && ladder.steps.find(s => s.id === stepId);
+  if (!step) { closeModal('ladder-review-modal'); return; }
+
+  if (action === 'master') {
+    closeModal('ladder-review-modal');
+    toggleLadderStep(areaId, ladderId, stepId);
+  } else if (action === 'extend') {
+    const end = new Date(step.endDate + 'T00:00:00');
+    end.setDate(end.getDate() + 7);
+    step.endDate = localDateStr(end);
+    step.reviewSnoozedUntil = null;
+    save(); renderLifeAreas();
+    dopamineHit(`🔁 Extended to ${step.endDate}`);
+    closeModal('ladder-review-modal');
+  } else {
+    const t = new Date(); t.setDate(t.getDate() + 1);
+    step.reviewSnoozedUntil = localDateStr(t);
+    save(); closeModal('ladder-review-modal');
+  }
+  setTimeout(checkLadderReviews, 300);
+}
+
 
 let pendingDeleteAction = null;
 
@@ -2302,6 +2458,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const syncId = localStorage.getItem('thatgirlhq_syncid');
   const btn = document.getElementById('cloud-sync-btn');
   if (btn) btn.style.opacity = syncId ? '1' : '0.5';
+
+  setTimeout(checkLadderReviews, 800);
 });
 
 // Render helper functions that were in DOMContentLoaded
