@@ -136,7 +136,7 @@ body {
 .week-nav-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text-dark); margin: 0 8px; font-weight: 600; }
 .cal-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--pink-100); cursor: pointer; font-size: 16px; color: var(--text-mid); display: flex; align-items: center; justify-content: center; }
 .cal-btn:hover { background: var(--pink-200); }
-.week-assign-panel { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, margin-bottom 0.35s ease; margin-bottom: 0; }
+.week-assign-panel { max-height: 0; overflow: hidden; transition: max-height: 0.35s ease, margin-bottom: 0.35s ease; margin-bottom: 0; }
 .week-assign-panel.open { max-height: 600px; margin-bottom: 20px; }
 .assign-panel-inner { background: white; border-radius: var(--radius); padding: 18px 20px 20px; box-shadow: var(--shadow-card); }
 .assign-panel-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -146,7 +146,6 @@ body {
 .sidebar-habit-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .sidebar-freq { font-size: 11px; color: var(--text-light); }
 
-/* ✨ Custom styling for Action Ladder Steps in the Assign panel ✨ */
 .sidebar-habit.ladder-item { background: #fffcf5; border: 1px solid var(--gold); border-left: 4px solid var(--gold); box-shadow: 0 2px 8px rgba(212,168,67,0.1); }
 .sidebar-habit.ladder-item .sidebar-habit-name { color: #a67c00; font-weight: 700; font-size: 13px; }
 .sidebar-habit.ladder-item .day-dot { border: 1px solid rgba(212,168,67,0.2); }
@@ -238,7 +237,6 @@ body {
 .city-actions-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .city-actions-list li { font-size: 13px; color: var(--text-mid); background: var(--pink-50); padding: 6px 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
 
-/* Timeline */
 .outcome-timeline { border-left: 2px solid rgba(255,255,255,0.2); margin-left: 8px; padding-left: 16px; display:flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-height:160px; overflow-y:auto; }
 .timeline-node { position: relative; }
 .timeline-node .node-dot { position: absolute; left: -21px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all 0.3s; }
@@ -266,12 +264,12 @@ body {
 .log-trend-select { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: var(--radius-sm); padding: 0 10px; font-size: 13px; outline: none; cursor: pointer; }
 .log-btn { background: var(--pink-400); color: white; border: none; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
 
-/* ── Action Ladder ── */
-.action-ladder-section { margin-bottom: 20px; }
-.action-ladder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.action-ladder-title { font-size: 11px; font-weight: 800; color: var(--pink-400); text-transform: uppercase; letter-spacing: 0.1em; }
-.btn-add-ladder-step { background: var(--pink-100); border: none; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--pink-600); cursor: pointer; transition: all 0.2s; }
-.btn-add-ladder-step:hover { background: var(--pink-200); }
+/* ── Multiple Action Ladders ── */
+.ladder-container { background: #fffcf8; border: 1px solid var(--pink-100); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; position: relative; }
+.ladder-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed var(--pink-200); padding-bottom: 6px; }
+.ladder-title { font-size: 13px; font-weight: 800; color: var(--gold); letter-spacing: 0.05em; }
+.btn-add-ladder-step { background: transparent; border: 1px solid var(--pink-300); border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 700; color: var(--pink-600); cursor: pointer; transition: all 0.2s; }
+.btn-add-ladder-step:hover { background: var(--pink-50); }
 .ladder-track { position: relative; padding-left: 20px; }
 .ladder-track::before { content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(to bottom, var(--pink-300), var(--pink-100)); border-radius: 2px; }
 .ladder-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px 8px 0; position: relative; cursor: pointer; border-radius: 10px; transition: background 0.15s; margin-bottom: 4px; }
@@ -493,7 +491,7 @@ body {
     <div class="cal-nav"><button class="cal-btn" onclick="changeMonth(-1)">‹</button><button class="cal-btn" onclick="changeMonth(0)">Today</button><button class="cal-btn" onclick="changeMonth(1)">›</button></div>
   </div>
   <div class="cal-grid" id="cal-grid"></div>
-  <button class="add-event-btn" onclick="openModal('add-event-modal')" style="position:fixed;bottom:max(32px, env(safe-area-inset-bottom));right:24px;background:var(--pink-400);color:white;border:none;padding:16px 24px;border-radius:var(--radius-pill);font-weight:600;cursor:pointer;box-shadow:0 8px 30px rgba(255,133,161,0.4);z-index:900;">+ Event</button>
+  <button class="add-event-btn" onclick="openModal('add-event-modal')">+ Event</button>
 </section>
 
 <!-- HABITS -->
@@ -651,8 +649,6 @@ body {
 <div class="modal-overlay" id="cloud-sync-modal">
   <div class="modal" style="max-width:460px;">
     <h2 style="display:flex;align-items:center;gap:10px;">☁️ Cloud Sync</h2>
-
-    <!-- Logged-out state -->
     <div id="sync-logged-out">
       <p style="font-size:13px;color:var(--text-light);line-height:1.6;margin-bottom:20px;">Generate a Sync ID to back up your data and access it from any device. Keep it safe — it's your key!</p>
       <button onclick="createSyncId()" class="btn-primary" style="width:100%;margin-bottom:20px;padding:14px;font-size:14px;">✦ Generate My Sync ID</button>
@@ -666,8 +662,6 @@ body {
         <button onclick="loginWithSyncId()" class="btn-add-task" style="white-space:nowrap;">Log In</button>
       </div>
     </div>
-
-    <!-- Logged-in state -->
     <div id="sync-logged-in" style="display:none;">
       <div style="background:var(--pink-100);border-radius:var(--radius-sm);padding:16px 20px;margin-bottom:18px;">
         <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Your Sync ID</div>
@@ -680,14 +674,22 @@ body {
       <button onclick="syncNow()" class="btn-primary" style="width:100%;margin-bottom:10px;padding:14px;">🔄 Sync Now</button>
       <button onclick="logoutSync()" style="width:100%;background:transparent;border:1.5px solid var(--pink-200);color:var(--text-mid);padding:13px;border-radius:var(--radius-pill);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='var(--pink-100)'" onmouseout="this.style.background='transparent'">Log Out</button>
     </div>
-
     <div class="modal-actions" style="margin-top:20px;">
       <button class="btn-cancel" onclick="closeModal('cloud-sync-modal')">Close</button>
     </div>
   </div>
 </div>
 
-<!-- Action Ladder Step Modal -->
+<div class="modal-overlay" id="new-ladder-modal">
+  <div class="modal">
+    <h2>New Action Ladder 🪜</h2>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:20px;">Create a distinct track for progression within this sub-goal (e.g. "Focus Skills" vs "Knowledge Base").</p>
+    <div class="form-group"><label>Ladder Title</label><input type="text" id="nl-title-input" placeholder="e.g. Master Anki, Build Mobility..."></div>
+    <input type="hidden" id="nl-area-id">
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('new-ladder-modal')">Cancel</button><button class="btn-primary" onclick="saveNewLadder()">Create Ladder ✦</button></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="ladder-step-modal">
   <div class="modal" style="width:480px;">
     <h2>🪜 Action Ladder Step</h2>
@@ -708,7 +710,6 @@ body {
       </select>
     </div>
     
-    <!-- Frequency specific to Repeating Tasks -->
     <div class="form-group" id="ls-freq-group">
         <label>How often per week?</label>
         <select id="ls-freq-input" onchange="updateLsDaysSection()">
@@ -736,7 +737,6 @@ body {
       </div>
     </div>
 
-    <!-- Date input specific to One-Time Tasks -->
     <div class="form-group" id="ls-date-group" style="display:none;">
         <label>Scheduled Date (Optional)</label>
         <input type="date" id="ls-date-input">
@@ -745,15 +745,13 @@ body {
 
     <div class="form-group"><label>Note (optional)</label><input type="text" id="ls-note-input" placeholder="e.g. Just 15 mins, no pressure…"></div>
     <input type="hidden" id="ls-area-id-input">
+    <input type="hidden" id="ls-ladder-id-input">
     <input type="hidden" id="ls-step-id-input">
     <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('ladder-step-modal')">Cancel</button><button class="btn-primary" onclick="saveLadderStep()">Save Step ✦</button></div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════
-//  STATE & REPAIR
-// ══════════════════════════════════════
 let state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
   totalVotes: 0, lastActiveDate: null,
   habits: [], todayTasks: { high: [], med: [], low: [] },
@@ -777,36 +775,53 @@ if(!state.lifeAreas)      state.lifeAreas      = [];
 if(!state.habits)         state.habits         = [];
 if(state.totalVotes === undefined)  state.totalVotes  = 0;
 
-// Ensure every life area has an actionLadder array
-function repairLadders() { (state.lifeAreas || []).forEach(a => { if (!a.actionLadder) a.actionLadder = []; }); }
+function h() { return Math.random().toString(36).substr(2,9); }
+
+function repairLadders() { 
+  (state.lifeAreas || []).forEach(a => { 
+    if (!a.ladders) {
+      a.ladders = [];
+      if (a.actionLadder && a.actionLadder.length > 0) {
+        a.ladders.push({
+          id: h(),
+          title: 'Main Ladder',
+          steps: a.actionLadder
+        });
+      }
+      delete a.actionLadder; // clean up old state array
+    }
+  }); 
+}
 repairLadders();
 
 if (state.lifeAreas.length <= 5) {
   state.lifeAreas = [
-    { id: 'city_study', theme: 'productivity', title: 'Studying', emoji: '📚', identity: 'I make desired action feel easy.\nI create active recall instead of re-reading.', outcome: 'Pass exams confidently', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_tidy', theme: 'productivity', title: 'Tidy & Environment', emoji: '🧹', identity: 'I respect my space.\nI clear it for my future self.', outcome: 'Permanently serene room', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_uni', theme: 'productivity', title: 'Extracurricular / Uni', emoji: '🎓', identity: 'I am open to interesting conversations.\nRelatedness is fuel.', outcome: 'Build a strong network', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_adhd', theme: 'health', title: 'ADHD Diagnosis Path', emoji: '🧠', identity: 'My brain works differently.\nI am learning its manual.', outcome: 'Secure official diagnosis', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_skin', theme: 'health', title: 'Skin & Hair Routine', emoji: '✨', identity: 'I tend to my vessel because it feels good.', outcome: 'Clear skin and healthy hair', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_gym', theme: 'health', title: 'Gym & Movement', emoji: '🏋️', identity: 'I follow through on movement commitments.\nI move for joy.', outcome: 'Be 55kg, master compound lift', outcomeLogs: [], evidenceLogs: [], actionLadder: [
-      { id: 'ls1', name: 'Buy gym clothes & shoes', type: 'once', note: 'Just the kit — no pressure to go yet!', completed: false, completedDate: null },
-      { id: 'ls2', name: 'Do a fun home workout once', type: 'once', note: 'YouTube, dancing, anything goes', completed: false, completedDate: null },
-      { id: 'ls3', name: 'Home workout twice a week', type: 'repeat', freq: '2x', note: 'Build the habit at home first', completed: false, completedDate: null },
-      { id: 'ls4', name: 'Walk to the gym — just look inside', type: 'once', note: 'Remove the scary unknown!', completed: false, completedDate: null },
-      { id: 'ls5', name: 'Go to gym for one easy session', type: 'once', note: 'Machines only, no pressure', completed: false, completedDate: null },
-      { id: 'ls6', name: 'Gym twice a week consistently', type: 'repeat', freq: '2x', note: '3 weeks in a row = unlocked', completed: false, completedDate: null },
-      { id: 'ls7', name: 'Start a beginner program (e.g. StrongLifts 5×5)', type: 'milestone', note: 'Now you are an athlete 🏆', completed: false, completedDate: null }
+    { id: 'city_study', theme: 'productivity', title: 'Studying', emoji: '📚', identity: 'I make desired action feel easy.\nI create active recall instead of re-reading.', outcome: 'Pass exams confidently', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_tidy', theme: 'productivity', title: 'Tidy & Environment', emoji: '🧹', identity: 'I respect my space.\nI clear it for my future self.', outcome: 'Permanently serene room', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_uni', theme: 'productivity', title: 'Extracurricular / Uni', emoji: '🎓', identity: 'I am open to interesting conversations.\nRelatedness is fuel.', outcome: 'Build a strong network', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_adhd', theme: 'health', title: 'ADHD Diagnosis Path', emoji: '🧠', identity: 'My brain works differently.\nI am learning its manual.', outcome: 'Secure official diagnosis', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_skin', theme: 'health', title: 'Skin & Hair Routine', emoji: '✨', identity: 'I tend to my vessel because it feels good.', outcome: 'Clear skin and healthy hair', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_gym', theme: 'health', title: 'Gym & Movement', emoji: '🏋️', identity: 'I follow through on movement commitments.\nI move for joy.', outcome: 'Be 55kg, master compound lift', outcomeLogs: [], evidenceLogs: [], ladders: [
+      { id: 'ladder_main_gym', title: 'Main Ladder', steps: [
+        { id: 'ls1', name: 'Buy gym clothes & shoes', type: 'once', note: 'Just the kit — no pressure to go yet!', completed: false, completedDate: null },
+        { id: 'ls2', name: 'Do a fun home workout once', type: 'once', note: 'YouTube, dancing, anything goes', completed: false, completedDate: null },
+        { id: 'ls3', name: 'Home workout twice a week', type: 'repeat', freq: '2x', note: 'Build the habit at home first', completed: false, completedDate: null },
+        { id: 'ls4', name: 'Walk to the gym — just look inside', type: 'once', note: 'Remove the scary unknown!', completed: false, completedDate: null },
+        { id: 'ls5', name: 'Go to gym for one easy session', type: 'once', note: 'Machines only, no pressure', completed: false, completedDate: null },
+        { id: 'ls6', name: 'Gym twice a week consistently', type: 'repeat', freq: '2x', note: '3 weeks in a row = unlocked', completed: false, completedDate: null },
+        { id: 'ls7', name: 'Start a beginner program (e.g. StrongLifts 5×5)', type: 'milestone', note: 'Now you are an athlete 🏆', completed: false, completedDate: null }
+      ]}
     ] },
-    { id: 'city_mental', theme: 'health', title: 'Mental Resilience', emoji: '🧘', identity: 'I prime my seeking system toward positive anticipation.', outcome: 'Reduce limbic loop anxiety', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_save', theme: 'wealth', title: 'Save Money', emoji: '🏦', identity: 'I build a generous relationship with money.\nI align purchases with my future self.', outcome: 'Grow the Future Me Fund', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_earn', theme: 'wealth', title: 'Earn Money', emoji: '💸', identity: 'I create value naturally.\nI raise my earning power.', outcome: 'Earn £50 via weird brainstorms', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_content', theme: 'content', title: 'Content Creation', emoji: '📱', identity: 'I publish before perfect.\nVolume beats polish.', outcome: 'Hit 10k views, build brand', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_magic', theme: 'hobbies', title: 'Magic Tricks', emoji: '🎩', identity: 'I play for the sheer joy of it.\nI share awe.', outcome: 'Master 5 close-up routines', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_yugi', theme: 'hobbies', title: 'Yu-Gi-Oh!', emoji: '🃏', identity: 'I build thematic decks for intrinsic fun.', outcome: 'Win a local casual duel', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_skate', theme: 'hobbies', title: 'Roller Skating', emoji: '🛼', identity: 'I focus on how movement feels in my body.', outcome: 'Nail forward-to-backward transition', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_dance', theme: 'hobbies', title: 'Dancing', emoji: '💃', identity: 'I discharge stress.\nI reconnect to my body.', outcome: 'Learn full K-Pop choreo', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_art', theme: 'hobbies', title: 'Diamond Painting', emoji: '💎', identity: 'I use slow art as a deliberate calming transition.', outcome: 'Finish a display piece', outcomeLogs: [], evidenceLogs: [] },
-    { id: 'city_anime', theme: 'hobbies', title: 'Anime / K-Drama', emoji: '📺', identity: 'I turn passive consumption into mindful appreciation.', outcome: 'Create an aesthetic vision board', outcomeLogs: [], evidenceLogs: [] }
+    { id: 'city_mental', theme: 'health', title: 'Mental Resilience', emoji: '🧘', identity: 'I prime my seeking system toward positive anticipation.', outcome: 'Reduce limbic loop anxiety', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_save', theme: 'wealth', title: 'Save Money', emoji: '🏦', identity: 'I build a generous relationship with money.\nI align purchases with my future self.', outcome: 'Grow the Future Me Fund', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_earn', theme: 'wealth', title: 'Earn Money', emoji: '💸', identity: 'I create value naturally.\nI raise my earning power.', outcome: 'Earn £50 via weird brainstorms', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_content', theme: 'content', title: 'Content Creation', emoji: '📱', identity: 'I publish before perfect.\nVolume beats polish.', outcome: 'Hit 10k views, build brand', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_magic', theme: 'hobbies', title: 'Magic Tricks', emoji: '🎩', identity: 'I play for the sheer joy of it.\nI share awe.', outcome: 'Master 5 close-up routines', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_yugi', theme: 'hobbies', title: 'Yu-Gi-Oh!', emoji: '🃏', identity: 'I build thematic decks for intrinsic fun.', outcome: 'Win a local casual duel', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_skate', theme: 'hobbies', title: 'Roller Skating', emoji: '🛼', identity: 'I focus on how movement feels in my body.', outcome: 'Nail forward-to-backward transition', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_dance', theme: 'hobbies', title: 'Dancing', emoji: '💃', identity: 'I discharge stress.\nI reconnect to my body.', outcome: 'Learn full K-Pop choreo', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_art', theme: 'hobbies', title: 'Diamond Painting', emoji: '💎', identity: 'I use slow art as a deliberate calming transition.', outcome: 'Finish a display piece', outcomeLogs: [], evidenceLogs: [], ladders: [] },
+    { id: 'city_anime', theme: 'hobbies', title: 'Anime / K-Drama', emoji: '📺', identity: 'I turn passive consumption into mindful appreciation.', outcome: 'Create an aesthetic vision board', outcomeLogs: [], evidenceLogs: [], ladders: [] }
   ];
   save();
 }
@@ -817,8 +832,6 @@ state.habits.forEach(habit => {
   if(!habit.tweaks) habit.tweaks = []; 
   const cityExists = state.lifeAreas.some(a => a.id === habit.areaId);
   if (!cityExists || !habit.areaId) {
-    // Orphaned habit! The sub-goal was deleted previously. 
-    // We remove the habit instead of reassigning it to random new sub-goals.
     repaired = true;
   } else {
     validHabits.push(habit);
@@ -859,7 +872,6 @@ function checkNewDay() {
   syncTodayFromAssignments();
 }
 
-function h() { return Math.random().toString(36).substr(2,9); }
 function save() { localStorage.setItem('thatgirlhq', JSON.stringify(state)); }
 
 function openEditVotes() {
@@ -870,7 +882,6 @@ function saveVotes() {
   state.totalVotes = parseInt(document.getElementById('edit-votes-input').value) || 0;
   save(); updateStats(); closeModal('edit-votes-modal'); dopamineHit('Votes updated! 🌸');
 }
-
 function updateStats() {
   const streakCount = document.getElementById('streak-count');
   if (streakCount) streakCount.textContent = state.totalVotes || 0;
@@ -886,115 +897,10 @@ function fmt12(timeStr) {
   const h12 = h % 12 || 12;
   return `${h12}:${String(m).padStart(2,'0')}${ampm}`;
 }
-
 function fmtTimeRange(start, end) {
   if (!start) return '';
   return end ? `${fmt12(start)}–${fmt12(end)}` : fmt12(start);
 }
-
-function renderCalendar() {
-  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const titleEl = document.getElementById('cal-title'); if(!titleEl) return;
-  titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
-  const grid = document.getElementById('cal-grid'); if(!grid) return;
-  grid.innerHTML = '';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
-    const el = document.createElement('div'); el.className = 'cal-day-header'; el.textContent = d; grid.appendChild(el);
-  });
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const today = new Date();
-  for (let i = 0; i < firstDay; i++) {
-    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const el = document.createElement('div'); el.className = 'cal-day';
-    const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
-    if (isToday) el.classList.add('today');
-    const dateKey = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const numEl = document.createElement('div'); numEl.className = 'cal-day-num'; numEl.textContent = d; el.appendChild(numEl);
-    const events = (state.calendarEvents[dateKey] || []).slice().sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
-    events.forEach(ev => {
-      const evEl = document.createElement('div'); evEl.className = `cal-event ${ev.type || 'one-time'}`;
-      const timeLabel = ev.startTime ? `<span class="cal-event-time">${fmt12(ev.startTime)}</span>` : '';
-      evEl.innerHTML = `${timeLabel}${ev.title}`; el.appendChild(evEl);
-    });
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', () => openDayDetail(dateKey, d));
-    grid.appendChild(el);
-  }
-}
-
-function changeMonth(dir) {
-  if (dir === 0) { calYear = new Date().getFullYear(); calMonth = new Date().getMonth(); }
-  else { calMonth += dir; if (calMonth > 11) { calMonth=0; calYear++; } if (calMonth < 0) { calMonth=11; calYear--; } }
-  renderCalendar();
-}
-
-function openDayDetail(dateKey, dayNum) {
-  const [y, m, d] = dateKey.split('-').map(Number); const dateObj = new Date(y, m-1, d);
-  document.getElementById('day-detail-title').textContent = dateObj.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
-  document.getElementById('event-date-input').value = dateKey;
-  const container = document.getElementById('day-detail-events'); container.innerHTML = '';
-  const events = (state.calendarEvents[dateKey] || []).slice().sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
-  if (events.length === 0) { container.innerHTML = `<div class="empty-state"><span class="emoji">📅</span>Nothing scheduled yet.</div>`; }
-  else {
-    events.forEach(ev => {
-      const timeRange = fmtTimeRange(ev.startTime, ev.endTime); const div = document.createElement('div'); div.className = `detail-event ${ev.type || 'one-time'}`;
-      div.innerHTML = `${timeRange ? `<div class="detail-event-time">${timeRange}</div>` : ''}<div style="flex:1"><div class="detail-event-name">✦ ${ev.title}</div><div class="detail-event-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div></div><button class="detail-delete" onclick="promptDelete('event', '${ev.id}', '${dateKey}')">🗑</button>`;
-      container.appendChild(div);
-    });
-  }
-  openModal('day-detail-modal');
-}
-
-function saveEvent() {
-  const title = document.getElementById('event-title-input').value.trim();
-  const date = document.getElementById('event-date-input').value;
-  const startTime = document.getElementById('event-start-input').value;
-  const endTime = document.getElementById('event-end-input').value;
-  const type = document.getElementById('event-type-input').value;
-  const cat = document.getElementById('event-cat-input').value;
-  if (!title || !date) return;
-  if (!state.calendarEvents[date]) state.calendarEvents[date] = [];
-  state.calendarEvents[date].push({ title, type, cat, startTime, endTime, id: h() });
-  save(); closeModal('add-event-modal'); renderCalendar(); renderTodayTimedEvents(); renderWeeklyPlanner();
-  dopamineHit('Event added! 📅✦'); document.getElementById('event-title-input').value = '';
-}
-
-function renderTodayTimedEvents() {
-  const todayDate = new Date(); const dateKey = localDateStr(todayDate);
-  if(!state.calendarEvents) state.calendarEvents = {};
-  const timed = (state.calendarEvents[dateKey] || []).filter(e => e.startTime).sort((a,b) => a.startTime.localeCompare(b.startTime));
-  const untimed = (state.calendarEvents[dateKey] || []).filter(e => !e.startTime);
-  const events = [...timed, ...untimed];
-  const section = document.getElementById('today-timed-events'); const list = document.getElementById('today-timed-list');
-  if (!section || !list) return;
-  if (events.length === 0) { section.style.display = 'none'; return; } section.style.display = 'block'; list.innerHTML = '';
-  events.forEach(ev => {
-    const evType = ev.type || 'one-time'; const isInfo = ['obligation','uni'].includes(evType);
-    const timeStr = ev.startTime ? fmtTimeRange(ev.startTime, ev.endTime) : 'Event';
-    const el = document.createElement('div'); el.className = `today-timed-event ev-${evType}${ev.done ? ' ev-done' : ''}`;
-    const tickBtn = isInfo ? '' : `<button class="ev-tick-btn${ev.done ? ' ticked' : ''}"></button>`;
-    el.innerHTML = `<div class="ev-priority-dot"></div><div class="today-timed-time">${timeStr}</div><div style="flex:1"><div class="today-timed-name">✦ ${ev.title}</div><div class="today-timed-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div></div>${tickBtn}`;
-    if (!isInfo) { el.querySelector('.ev-tick-btn').addEventListener('click', (e) => { e.stopPropagation(); tickEvent(dateKey, ev.id, e.currentTarget); }); }
-    list.appendChild(el);
-  });
-}
-
-function tickEvent(dateKey, evId, sourceEl) {
-  const evList = state.calendarEvents[dateKey] || []; const ev = evList.find(e => e.id === evId); if (!ev) return;
-  if (ev.done) { ev.done = false; delete ev.reflection; save(); renderTodayTimedEvents(); renderWeeklyPlanner(); return; }
-  ev.done = true; save(); renderTodayTimedEvents(); renderWeeklyPlanner(); dopamineHit('Action taken ✦');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  document.getElementById('wake-time-input').value = state.wakeTime || '07:00';
-  setWakeTime(true); checkNewDay();
-  syncTodayFromAssignments();
-  renderToday(); renderTodayTimedEvents(); renderCalendar(); renderHabits(); renderLifeAreas(); updateStats(); renderReviewVault();
-});
 
 function showSection(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1040,19 +946,21 @@ function toggleTask(id, tier, el) {
   save(); renderToday(); 
   if (task.done) {
     state.totalVotes++; save(); updateStats();
-    // If it's a ladder step, mark it complete on the ladder too
-    if (task.isLadderStep && task.ladderAreaId && task.ladderStepId) {
+    
+    if (task.isLadderStep && task.ladderAreaId && task.ladderId && task.ladderStepId) {
       const area = state.lifeAreas.find(a => a.id === task.ladderAreaId);
-      if (area && area.actionLadder) {
-        const step = area.actionLadder.find(s => s.id === task.ladderStepId);
-        if (step && !step.completed) {
-          step.completed = true; step.completedDate = localDateStr();
-          state.totalVotes += 4; save(); // bonus 4 (total 5 with the 1 above)
-          dopamineHit('Rung unlocked! Ladder step complete 🪜✨');
-          renderLifeAreas();
-          // Refresh today so next ladder step appears
-          syncTodayFromAssignments();
-          launchConfetti(); return;
+      if (area && area.ladders) {
+        const ladder = area.ladders.find(l => l.id === task.ladderId);
+        if (ladder) {
+          const step = ladder.steps.find(s => s.id === task.ladderStepId);
+          if (step && !step.completed) {
+            step.completed = true; step.completedDate = localDateStr();
+            state.totalVotes += 4; save();
+            dopamineHit('Rung unlocked! Ladder step complete 🪜✨');
+            renderLifeAreas();
+            syncTodayFromAssignments();
+            launchConfetti(); return;
+          }
         }
       }
     }
@@ -1113,7 +1021,6 @@ function renderLifeAreas() {
     const habits = state.habits.filter(h => h.areaId === city.id && h.active);
     const habitsHtml = habits.length ? habits.map(h => `<li><div style="display:flex;justify-content:space-between"><span>${h.name}</span><span style="font-size:9px;background:var(--pink-200);color:var(--pink-600);padding:2px 6px;border-radius:4px;font-weight:700">${h.freq}</span></div></li>`).join('') : '<li style="list-style:none;padding:0;color:var(--text-light)">No actions linked.</li>';
     
-    // Timeline logic
     const logs = city.outcomeLogs || []; 
     let timelineHtml = '<div style="font-size:12px;color:rgba(255,255,255,0.4);font-style:italic;">No outcomes logged yet.</div>';
     if (logs.length > 0) {
@@ -1131,51 +1038,72 @@ function renderLifeAreas() {
     const identities = (city.identity || '').split('\n').map(i => i.trim()).filter(i=>i);
     const idHtml = identities.map(i => `<span class="id-tag">${i}</span>`).join('');
     
-    // Unscheduled Wins
     const evidenceHtml = (city.evidenceLogs || []).slice(0,3).map(e => `<div style="font-size:12px;color:var(--text-mid);background:var(--pink-50);padding:6px 10px;border-radius:6px;margin-bottom:4px;border-left:2px solid var(--pink-300)">✨ ${e.value}</div>`).join('');
     
     let cityVol = 0;
     (state.actionHistory || []).forEach(a => { if(a.areaId === city.id) cityVol++; });
     const lvl = Math.floor(cityVol / 10) + 1;
 
-    // ── Action Ladder ──
-    const ladder = city.actionLadder || [];
-    const currentStepIndex = ladder.findIndex(s => !s.completed);
-    let ladderHtml = '';
-    if (ladder.length === 0) {
-      ladderHtml = `<div class="ladder-empty">No steps yet. Build your progression from tiny start → big win!</div>`;
+    // ── Multiple Action Ladders ──
+    let laddersHtml = '';
+    const ladders = city.ladders || [];
+    
+    if (ladders.length === 0) {
+      laddersHtml = `<div class="ladder-empty">No ladders yet. Build focused tracks for different skills within this goal!</div>`;
     } else {
-      if (currentStepIndex > 0) {
-        const doneCount = ladder.filter(s => s.completed).length;
-        ladderHtml += `<div class="ladder-current-badge">🪜 Rung ${doneCount} of ${ladder.length} — keep climbing!</div>`;
-      } else if (currentStepIndex === -1) {
-        ladderHtml += `<div class="ladder-current-badge" style="background:linear-gradient(135deg,#7bb88c,#4a9a5e)">🏆 Ladder complete! Legend.</div>`;
-      }
-      ladderHtml += `<div class="ladder-track">`;
-      ladder.forEach((step, idx) => {
-        const isCurrent = idx === currentStepIndex;
-        const isDone = step.completed;
-        const cls = isDone ? 'completed' : (isCurrent ? 'current' : '');
-        const dotContent = isDone ? '✓' : (isCurrent ? '★' : '');
-        const typeBadge = { once: '<span class="step-badge once">once</span>', repeat: '<span class="step-badge repeat">habit</span>', milestone: '<span class="step-badge milestone">🏆</span>' }[step.type] || '';
-        const energyBadge = step.energy ? { high: '<span style="font-size:10px">⚡</span>', med: '<span style="font-size:10px">🌤</span>', low: '<span style="font-size:10px">🌙</span>' }[step.energy] || '' : '';
-        const freqLabel = (step.type === 'repeat' && step.freq) ? `<span style="font-size:10px;color:var(--text-light)">${step.freq === 'daily' ? 'daily' : step.freq === 'weekdays' ? 'weekdays' : step.freq === 'custom' ? (step.customDays || []).map(d=>['M','T','W','T','F','S','S'][d]).join('') : step.freq + '/wk'}</span>` : '';
+      ladders.forEach(ladder => {
+        const ladderSteps = ladder.steps || [];
+        const currentStepIndex = ladderSteps.findIndex(s => !s.completed);
         
-        const dateNote = step.targetDate && !isDone ? `<span style="color:var(--text-mid);font-weight:600">📅 ${step.targetDate}</span>` : (isDone && step.completedDate ? `<span style="color:var(--pink-400)">✓ ${step.completedDate}</span>` : '');
+        let ladderTrackHtml = '';
+        if (ladderSteps.length === 0) {
+           ladderTrackHtml = `<div class="ladder-empty">No steps in this ladder. Add your first rung.</div>`;
+        } else {
+           if (currentStepIndex > 0) {
+             const doneCount = ladderSteps.filter(s => s.completed).length;
+             ladderTrackHtml += `<div class="ladder-current-badge">🪜 Rung ${doneCount} of ${ladderSteps.length}</div>`;
+           } else if (currentStepIndex === -1) {
+             ladderTrackHtml += `<div class="ladder-current-badge" style="background:linear-gradient(135deg,#7bb88c,#4a9a5e)">🏆 Ladder complete! Legend.</div>`;
+           }
+           ladderTrackHtml += `<div class="ladder-track">`;
+           ladderSteps.forEach((step, idx) => {
+             const isCurrent = idx === currentStepIndex;
+             const isDone = step.completed;
+             const cls = isDone ? 'completed' : (isCurrent ? 'current' : '');
+             const dotContent = isDone ? '✓' : (isCurrent ? '★' : '');
+             const typeBadge = { once: '<span class="step-badge once">once</span>', repeat: '<span class="step-badge repeat">habit</span>', milestone: '<span class="step-badge milestone">🏆</span>' }[step.type] || '';
+             const energyBadge = step.energy ? { high: '<span style="font-size:10px">⚡</span>', med: '<span style="font-size:10px">🌤</span>', low: '<span style="font-size:10px">🌙</span>' }[step.energy] || '' : '';
+             const freqLabel = (step.type === 'repeat' && step.freq) ? `<span style="font-size:10px;color:var(--text-light)">${step.freq === 'daily' ? 'daily' : step.freq === 'weekdays' ? 'weekdays' : step.freq === 'custom' ? (step.customDays || []).map(d=>['M','T','W','T','F','S','S'][d]).join('') : step.freq + '/wk'}</span>` : '';
+             const dateNote = step.targetDate && !isDone ? `<span style="color:var(--text-mid);font-weight:600">📅 ${step.targetDate}</span>` : (isDone && step.completedDate ? `<span style="color:var(--pink-400)">✓ ${step.completedDate}</span>` : '');
 
-        ladderHtml += `<div class="ladder-step ${cls}" onclick="toggleLadderStep('${city.id}','${step.id}')">
-          <div class="ladder-step-dot">${dotContent}</div>
-          <div class="ladder-step-content">
-            <div class="ladder-step-label">${step.name}</div>
-            <div class="ladder-step-meta">${typeBadge}${energyBadge}${freqLabel}${step.note ? `<span>${step.note}</span>` : ''}${dateNote}</div>
+             ladderTrackHtml += `<div class="ladder-step ${cls}" onclick="toggleLadderStep('${city.id}','${ladder.id}','${step.id}')">
+               <div class="ladder-step-dot">${dotContent}</div>
+               <div class="ladder-step-content">
+                 <div class="ladder-step-label">${step.name}</div>
+                 <div class="ladder-step-meta">${typeBadge}${energyBadge}${freqLabel}${step.note ? `<span>${step.note}</span>` : ''}${dateNote}</div>
+               </div>
+               <div class="ladder-step-actions">
+                 <button class="ladder-step-btn" onclick="event.stopPropagation();openEditLadderStep('${city.id}','${ladder.id}','${step.id}')" title="Edit">✏️</button>
+                 <button class="ladder-step-btn" onclick="event.stopPropagation();deleteLadderStep('${city.id}','${ladder.id}','${step.id}')" title="Delete">🗑</button>
+               </div>
+             </div>`;
+           });
+           ladderTrackHtml += `</div>`;
+        }
+
+        laddersHtml += `
+          <div class="ladder-container">
+            <div class="ladder-header">
+              <span class="ladder-title">${ladder.title}</span>
+              <div style="display:flex; gap:4px;">
+                <button class="btn-add-ladder-step" onclick="openAddLadderStep('${city.id}', '${ladder.id}')">+ Add Rung</button>
+                <button class="btn-add-ladder-step" style="border:none;color:var(--text-light);" onclick="promptDelete('ladder', '${ladder.id}', '${city.id}')" title="Delete Ladder">🗑</button>
+              </div>
+            </div>
+            ${ladderTrackHtml}
           </div>
-          <div class="ladder-step-actions">
-            <button class="ladder-step-btn" onclick="event.stopPropagation();openEditLadderStep('${city.id}','${step.id}')" title="Edit">✏️</button>
-            <button class="ladder-step-btn" onclick="event.stopPropagation();deleteLadderStep('${city.id}','${step.id}')" title="Delete">🗑</button>
-          </div>
-        </div>`;
+        `;
       });
-      ladderHtml += `</div>`;
     }
 
     html += `
@@ -1197,11 +1125,11 @@ function renderLifeAreas() {
         </div>
 
         <div class="action-ladder-section">
-          <div class="action-ladder-header">
-            <span class="action-ladder-title">🪜 Action Ladder</span>
-            <button class="btn-add-ladder-step" onclick="openAddLadderStep('${city.id}')">+ Add Step</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-size:11px; font-weight:800; color:var(--pink-400); text-transform:uppercase; letter-spacing:0.1em;">Action Ladders</span>
+            <button class="btn-add-ladder-step" style="background:var(--pink-400); color:white; border:none;" onclick="openAddLadderModal('${city.id}')">+ New Ladder</button>
           </div>
-          ${ladderHtml}
+          ${laddersHtml}
         </div>
 
         <div style="margin-bottom:20px;">
@@ -1256,7 +1184,32 @@ function saveOutcomeLog(cityId) {
   if (city) { if (!city.outcomeLogs) city.outcomeLogs = []; city.outcomeLogs.unshift({ date: localDateStr(), value: val, trend: trend }); save(); renderLifeAreas(); setTimeout(() => { document.getElementById('locker-' + cityId).classList.add('is-open'); document.getElementById('locker-content-' + cityId).classList.add('unlocked'); }, 50); dopamineHit('Outcome logged! 📈'); }
 }
 
-// ── Action Ladder Functions ──
+function openAddLadderModal(areaId) {
+  document.getElementById('nl-area-id').value = areaId;
+  document.getElementById('nl-title-input').value = '';
+  openModal('new-ladder-modal');
+}
+
+function saveNewLadder() {
+  const areaId = document.getElementById('nl-area-id').value;
+  const title = document.getElementById('nl-title-input').value.trim();
+  if (!title) return;
+  
+  const city = state.lifeAreas.find(a => a.id === areaId);
+  if (city) {
+    if (!city.ladders) city.ladders = [];
+    city.ladders.push({
+      id: h(),
+      title: title,
+      steps: []
+    });
+    save();
+    renderLifeAreas();
+    closeModal('new-ladder-modal');
+    dopamineHit('New Ladder Created! 🪜');
+  }
+}
+
 function updateLsTypeView() {
   const type = document.getElementById('ls-type-input').value;
   const freqGroup = document.getElementById('ls-freq-group');
@@ -1265,10 +1218,9 @@ function updateLsTypeView() {
 
   if (type === 'repeat') {
       freqGroup.style.display = 'block';
-      updateLsDaysSection(); // might show daysGroup
+      updateLsDaysSection();
       dateGroup.style.display = 'none';
   } else {
-      // 'once' or 'milestone'
       freqGroup.style.display = 'none';
       daysGroup.style.display = 'none';
       dateGroup.style.display = 'block';
@@ -1281,8 +1233,9 @@ function updateLsDaysSection() {
   document.getElementById('ls-days-section').style.display = (freq === 'custom' && type === 'repeat') ? 'block' : 'none';
 }
 
-function openAddLadderStep(areaId) {
+function openAddLadderStep(areaId, ladderId) {
   document.getElementById('ls-area-id-input').value = areaId;
+  document.getElementById('ls-ladder-id-input').value = ladderId;
   document.getElementById('ls-step-id-input').value = '';
   document.getElementById('ls-name-input').value = '';
   document.getElementById('ls-type-input').value = 'once';
@@ -1295,12 +1248,16 @@ function openAddLadderStep(areaId) {
   openModal('ladder-step-modal');
 }
 
-function openEditLadderStep(areaId, stepId) {
+function openEditLadderStep(areaId, ladderId, stepId) {
   const city = state.lifeAreas.find(a => a.id === areaId);
-  if (!city) return;
-  const step = (city.actionLadder || []).find(s => s.id === stepId);
+  if (!city || !city.ladders) return;
+  const ladder = city.ladders.find(l => l.id === ladderId);
+  if (!ladder) return;
+  const step = (ladder.steps || []).find(s => s.id === stepId);
   if (!step) return;
+  
   document.getElementById('ls-area-id-input').value = areaId;
+  document.getElementById('ls-ladder-id-input').value = ladderId;
   document.getElementById('ls-step-id-input').value = stepId;
   document.getElementById('ls-name-input').value = step.name;
   document.getElementById('ls-type-input').value = step.type || 'once';
@@ -1316,6 +1273,7 @@ function openEditLadderStep(areaId, stepId) {
 
 function saveLadderStep() {
   const areaId = document.getElementById('ls-area-id-input').value;
+  const ladderId = document.getElementById('ls-ladder-id-input').value;
   const stepId = document.getElementById('ls-step-id-input').value;
   const name = document.getElementById('ls-name-input').value.trim();
   if (!name) return;
@@ -1338,11 +1296,13 @@ function saveLadderStep() {
   }
   
   const city = state.lifeAreas.find(a => a.id === areaId);
-  if (!city) return;
-  if (!city.actionLadder) city.actionLadder = [];
+  if (!city || !city.ladders) return;
+  const ladder = city.ladders.find(l => l.id === ladderId);
+  if (!ladder) return;
+  if (!ladder.steps) ladder.steps = [];
   
   if (stepId) {
-    const step = city.actionLadder.find(s => s.id === stepId);
+    const step = ladder.steps.find(s => s.id === stepId);
     if (step) { 
       step.name = name; 
       step.type = type; 
@@ -1353,7 +1313,7 @@ function saveLadderStep() {
       step.targetDate = targetDate;
     }
   } else {
-    city.actionLadder.push({ id: h(), name, type, energy, freq, customDays, targetDate, note, completed: false, completedDate: null });
+    ladder.steps.push({ id: h(), name, type, energy, freq, customDays, targetDate, note, completed: false, completedDate: null });
   }
   
   save(); closeModal('ladder-step-modal'); renderLifeAreas();
@@ -1362,17 +1322,21 @@ function saveLadderStep() {
   dopamineHit('Step saved! 🪜');
 }
 
-function toggleLadderStep(areaId, stepId) {
+function toggleLadderStep(areaId, ladderId, stepId) {
   const city = state.lifeAreas.find(a => a.id === areaId);
-  if (!city || !city.actionLadder) return;
-  const step = city.actionLadder.find(s => s.id === stepId);
+  if (!city || !city.ladders) return;
+  const ladder = city.ladders.find(l => l.id === ladderId);
+  if (!ladder || !ladder.steps) return;
+  
+  const step = ladder.steps.find(s => s.id === stepId);
   if (!step) return;
+  
   step.completed = !step.completed;
   step.completedDate = step.completed ? localDateStr() : null;
   save(); renderLifeAreas();
-  // Sync today so completed step disappears and next rung appears
   syncTodayFromAssignments();
   renderWeeklyPlanner();
+  
   if (step.completed) {
     state.totalVotes += 5; save(); updateStats();
     dopamineHit('Rung unlocked! You are climbing 🪜✨'); launchConfetti();
@@ -1381,92 +1345,20 @@ function toggleLadderStep(areaId, stepId) {
   }
 }
 
-function deleteLadderStep(areaId, stepId) {
+function deleteLadderStep(areaId, ladderId, stepId) {
   const city = state.lifeAreas.find(a => a.id === areaId);
-  if (!city || !city.actionLadder) return;
-  city.actionLadder = city.actionLadder.filter(s => s.id !== stepId);
+  if (!city || !city.ladders) return;
+  const ladder = city.ladders.find(l => l.id === ladderId);
+  if (!ladder || !ladder.steps) return;
+  
+  ladder.steps = ladder.steps.filter(s => s.id !== stepId);
   save(); renderLifeAreas(); syncTodayFromAssignments(); renderWeeklyPlanner(); dopamineHit('Step removed');
 }
 
-let activeLibCat = 'all';
-function renderHabits() {
-  const cats = ['all','productivity','health','wealth','content','hobbies'];
-  document.getElementById('lib-cats').innerHTML = cats.map(c => `<div class="cat-pill ${activeLibCat===c?'active':''}" onclick="activeLibCat='${c}';renderHabits()">${c==='all'?'All ✦':catEmoji(c)+' '+c}</div>`).join('');
-  
-  const searchInput = document.getElementById('habit-search-input');
-  const searchQ = searchInput ? searchInput.value.toLowerCase() : '';
-
-  const filtered = state.habits.filter(h => {
-    const catMatch = activeLibCat === 'all' || h.cat === activeLibCat;
-    const searchMatch = !searchQ || h.name.toLowerCase().includes(searchQ);
-    return catMatch && searchMatch;
-  });
-  
-  const grouped = {};
-  state.lifeAreas.forEach(a => { if(!grouped[a.theme]) grouped[a.theme] = []; grouped[a.theme].push(a); });
-  let optionsHtml = '';
-  for (let theme in grouped) {
-    optionsHtml += `<optgroup label="${theme.toUpperCase()}">`;
-    grouped[theme].forEach(a => { optionsHtml += `<option value="${a.id}">${a.emoji} ${a.title}</option>`; });
-    optionsHtml += `</optgroup>`;
-  }
-
-  document.getElementById('habits-list').innerHTML = filtered.map(habit => {
-    const updatedOptions = optionsHtml.replace(`value="${habit.areaId}"`, `value="${habit.areaId}" selected`);
-    return `<div class="habit-card ${habit.cat}"><div class="habit-info"><h4>${habit.name}</h4><div class="freq-selector" style="margin-top:6px;gap:8px">
-      <select onchange="updateArea('${habit.id}', this.value)" style="max-width:130px;font-size:11px;padding:3px 8px">${updatedOptions}</select>
-      <select onchange="updateFreq('${habit.id}', this.value)" style="font-size:11px;padding:3px 8px">${['daily','weekdays','3x','2x','1x','monthly'].map(f => `<option value="${f}" ${habit.freq===f?'selected':''}>${f}</option>`).join('')}</select>
-    </div></div><div class="habit-actions"><button class="btn-icon" onclick="openTweakModal('${habit.id}')" title="Tweak/Iterate Habit">🧪</button><button class="btn-icon ${habit.active?'active':''}" onclick="toggleHabitActive('${habit.id}')">${habit.active?'✓':'○'}</button><button class="btn-icon" onclick="promptDelete('habit', '${habit.id}')">🗑</button></div></div>`
-  }).join('');
-}
-
-function updateFreq(id, val) { const h = state.habits.find(h => h.id === id); if (h) { h.freq = val; save(); } }
-function updateArea(id, val) { const h = state.habits.find(h => h.id === id); const area = state.lifeAreas.find(a => a.id === val); if (h && area) { h.areaId = val; h.cat = area.theme; save(); renderHabits(); renderLifeAreas(); } }
-function toggleHabitActive(id) { const h = state.habits.find(h => h.id === id); if (h) { h.active = !h.active; save(); renderHabits(); } }
-
-function openAddHabitModal() {
-  const select = document.getElementById('habit-cat-input');
-  select.innerHTML = state.lifeAreas.map(a => `<option value="${a.id}">${a.emoji} ${a.title}</option>`).join('');
-  openModal('add-habit-modal');
-}
-function saveHabit() {
-  const name = document.getElementById('habit-name-input').value.trim(); if (!name) return;
-  const areaId = document.getElementById('habit-cat-input').value; const area = state.lifeAreas.find(a => a.id === areaId);
-  state.habits.push({ id: h(), name, areaId: areaId, cat: area.theme, freq: document.getElementById('habit-freq-input').value, energy: document.getElementById('habit-energy-input').value, tweaks: [], active: true });
-  save(); closeModal('add-habit-modal'); renderHabits(); renderLifeAreas(); dopamineHit('Habit added!');
-}
-
-function openTweakModal(habitId) {
-  const h = state.habits.find(x => x.id === habitId); if(!h) return;
-  document.getElementById('tweak-id-input').value = habitId;
-  document.getElementById('tweak-name-input').value = h.name;
-  document.getElementById('tweak-freq-input').value = h.freq || 'daily';
-  document.getElementById('tweak-reason-input').value = '';
-  openModal('tweak-habit-modal');
-}
-function saveTweak() {
-  const habitId = document.getElementById('tweak-id-input').value;
-  const newName = document.getElementById('tweak-name-input').value.trim();
-  const newFreq = document.getElementById('tweak-freq-input').value;
-  const reason = document.getElementById('tweak-reason-input').value.trim();
-  const h = state.habits.find(x => x.id === habitId);
-  if(h && newName) {
-    if(!h.tweaks) h.tweaks = [];
-    const oldLabel = h.name + (h.freq !== newFreq ? ` (${h.freq})` : '');
-    const newLabel = newName + (h.freq !== newFreq ? ` (${newFreq})` : '');
-    h.tweaks.push({ date: localDateStr(), oldName: oldLabel, newName: newLabel, reason: reason });
-    h.name = newName;
-    h.freq = newFreq; 
-    save(); renderHabits(); renderLifeAreas(); renderWeeklyPlanner(); syncTodayFromAssignments(); closeModal('tweak-habit-modal');
-    dopamineHit('Habit iteration tracking started! 🧪');
-  }
-}
-
-// ── CUSTOM DELETE & SKIP SYSTEM ──
 let pendingDeleteAction = null;
 
-function promptDelete(type, id, dateKey = null) {
-  pendingDeleteAction = { type, id, dateKey };
+function promptDelete(type, id, extraId = null) {
+  pendingDeleteAction = { type, id, extraId };
   
   const reasonBox = document.getElementById('delete-reason-box');
   const reasonInput = document.getElementById('delete-reason-input');
@@ -1487,6 +1379,11 @@ function promptDelete(type, id, dateKey = null) {
     lbl.textContent = 'Reason:'; btn.textContent = 'Log Action'; btn.style.background = 'var(--gold)';
     reasonBox.style.display = 'block'; reasonInput.value = '';
     skipSelect.style.display = 'block';
+  } else if (type === 'ladder') {
+    emoji.textContent = '🗑'; title.textContent = 'Delete Ladder?'; desc.textContent = 'This will remove the entire progression track and all its steps.';
+    btn.textContent = 'Delete Ladder'; btn.style.background = 'var(--pink-600)';
+    reasonBox.style.display = 'none';
+    skipSelect.style.display = 'none';
   } else {
     emoji.textContent = '🗑'; title.textContent = 'Delete this?'; desc.textContent = 'This action cannot be undone.';
     btn.textContent = 'Delete'; btn.style.background = 'var(--pink-600)';
@@ -1499,7 +1396,7 @@ function promptDelete(type, id, dateKey = null) {
 
 function executeDelete() {
   if (!pendingDeleteAction) return;
-  const { type, id, dateKey } = pendingDeleteAction;
+  const { type, id, extraId } = pendingDeleteAction; // extraId used for ladder's areaId
   
   if (type === 'habit') {
     const reason = document.getElementById('delete-reason-input').value.trim();
@@ -1520,12 +1417,26 @@ function executeDelete() {
     dopamineHit('Habit removed 🗑');
     
   } else if (type === 'event') {
+    const dateKey = extraId; // for events, extraId was passed as dateKey
     state.calendarEvents[dateKey] = (state.calendarEvents[dateKey] || []).filter(e => e.id !== id);
     save(); renderCalendar(); renderTodayTimedEvents(); renderWeeklyPlanner();
     const [y, m, d] = dateKey.split('-').map(Number); 
     openDayDetail(dateKey, d);
     dopamineHit('Event deleted 🗑');
     
+  } else if (type === 'ladder') {
+    const areaId = extraId;
+    const city = state.lifeAreas.find(a => a.id === areaId);
+    if (city && city.ladders) {
+      city.ladders = city.ladders.filter(l => l.id !== id);
+      // Clean up today's tasks
+      ['high', 'med', 'low'].forEach(tier => {
+        state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.ladderId !== id);
+      });
+      save(); renderLifeAreas(); renderWeeklyPlanner(); renderToday();
+      dopamineHit('Ladder deleted 🗑');
+    }
+
   } else if (type === 'task') {
     const reason = document.getElementById('delete-reason-input').value.trim();
     const skipType = document.getElementById('skip-type-select').value;
@@ -1534,26 +1445,36 @@ function executeDelete() {
     let taskHabitId = null;
     let isLadder = false;
     let ladderAreaId = null;
+    let ladderId = null;
+
     ['high', 'med', 'low'].forEach(tier => {
       const t = state.todayTasks[tier].find(x => x.id === id);
-      if (t) { taskName = t.name; taskHabitId = t.habitId; isLadder = !!t.isLadderStep; ladderAreaId = t.ladderAreaId || null; }
+      if (t) { 
+        taskName = t.name; taskHabitId = t.habitId; 
+        isLadder = !!t.isLadderStep; ladderAreaId = t.ladderAreaId || null; ladderId = t.ladderId || null;
+      }
       state.todayTasks[tier] = state.todayTasks[tier].filter(x => x.id !== id);
     });
 
-    if (isLadder && ladderAreaId) {
-      // Dismiss this ladder step for today
-      const dismissKey = `ladder_dismiss_${ladderAreaId}_${localDateStr()}`;
+    if (isLadder && ladderAreaId && ladderId) {
+      // Dismiss this specific ladder for today
+      const dismissKey = `ladder_dismiss_${ladderAreaId}_${ladderId}_${localDateStr()}`;
       state.weeklyAssign[dismissKey] = true;
       
       const dayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
       const wk = getWeekKey(0);
       const area = state.lifeAreas.find(a => a.id === ladderAreaId);
-      const currentStep = area && area.actionLadder ? area.actionLadder.find(s => !s.completed) : null;
-      if (currentStep) {
-        const assignKey = `assign_ladder_${wk}_${ladderAreaId}_${currentStep.id}_${dayIdx}`;
-        state.weeklyAssign[assignKey] = false;
+      if (area && area.ladders) {
+        const ladder = area.ladders.find(l => l.id === ladderId);
+        if (ladder) {
+          const currentStep = ladder.steps.find(s => !s.completed);
+          if (currentStep) {
+            const assignKey = `assign_ladder_${wk}_${ladderAreaId}_${ladderId}_${currentStep.id}_${dayIdx}`;
+            state.weeklyAssign[assignKey] = false;
+          }
+        }
       }
-    } else if (taskHabitId) {
+    } else if (taskHabitId && !isLadder) {
       const dayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
       state.weeklyAssign[`assign_${getWeekKey(0)}_${taskHabitId}_${dayIdx}`] = false;
     }
@@ -1568,7 +1489,6 @@ function executeDelete() {
     
   } else if (type === 'lifeArea') {
     state.lifeAreas = state.lifeAreas.filter(a => a.id !== id);
-    // Cascade delete any orphaned habits and today's tasks tied to this sub-goal
     state.habits = state.habits.filter(h => h.areaId !== id);
     ['high', 'med', 'low'].forEach(tier => {
       state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.areaId !== id);
@@ -1595,32 +1515,24 @@ function renderWeeklyPlanner() {
   
   const sidebarEl = document.getElementById('sidebar-habits'); sidebarEl.innerHTML = '';
   
-  // Render normal habits in sidebar
+  // Normal habits
   state.habits.filter(h => h.active).forEach(habit => {
     const card = document.createElement('div'); card.className = 'sidebar-habit';
     card.innerHTML = `<div class="sidebar-habit-name">${catEmoji(habit.cat)} ${habit.name}</div><div class="day-picker" id="dp-${habit.id}"></div>`;
     const picker = card.querySelector('.day-picker');
     days.forEach((date, i) => {
       const assignKey = `assign_${wk}_${habit.id}_${i}`; const dot = document.createElement('div'); dot.className = 'day-dot'; dot.textContent = dayNames[i][0];
-      
       const isDefault = (habit.freq === 'daily') || (habit.freq === 'weekdays' && i < 5);
       const isAssigned = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
-      
       if (isAssigned) dot.classList.add('selected');
       
       dot.addEventListener('click', () => { 
         const newlyOn = !isAssigned;
         state.weeklyAssign[assignKey] = newlyOn; 
-        
-        // Auto-log the change
         const wkKey = getWeekKey(weekOffset);
         if(!state.weeklyFriction[wkKey]) state.weeklyFriction[wkKey] = {};
         if(!state.weeklyFriction[wkKey].scheduleChanges) state.weeklyFriction[wkKey].scheduleChanges = [];
-        
-        const actionStr = newlyOn ? 'Assigned' : 'Removed';
-        const logNote = `${actionStr} '${habit.name}' for ${dayNames[i]}`;
-        state.weeklyFriction[wkKey].scheduleChanges.push({ note: logNote, date: localDateStr() });
-
+        state.weeklyFriction[wkKey].scheduleChanges.push({ note: `${newlyOn?'Assigned':'Removed'} '${habit.name}' for ${dayNames[i]}`, date: localDateStr() });
         save(); renderWeeklyPlanner(); if(localDateStr(date)===localDateStr()) syncTodayFromAssignments(); 
       });
       picker.appendChild(dot);
@@ -1628,73 +1540,68 @@ function renderWeeklyPlanner() {
     sidebarEl.appendChild(card);
   });
 
-  // Render Action Ladder steps in sidebar
+  // Action Ladder steps
   state.lifeAreas.forEach(area => {
-    const ladder = area.actionLadder || [];
-    const currentStep = ladder.find(s => !s.completed);
-    if (!currentStep) return;
+    (area.ladders || []).forEach(ladder => {
+      const currentStep = (ladder.steps || []).find(s => !s.completed);
+      if (!currentStep) return;
 
-    const card = document.createElement('div'); 
-    card.className = 'sidebar-habit ladder-item';
-    card.innerHTML = `<div class="sidebar-habit-name">🪜 ${currentStep.name}</div><div class="day-picker" id="dp-ladder-${area.id}"></div>`;
-    const picker = card.querySelector('.day-picker');
-    
-    days.forEach((date, i) => {
-      const assignKey = `assign_ladder_${wk}_${area.id}_${currentStep.id}_${i}`;
-      const dot = document.createElement('div'); 
-      dot.className = 'day-dot'; 
-      dot.textContent = dayNames[i][0];
+      const card = document.createElement('div'); 
+      card.className = 'sidebar-habit ladder-item';
+      card.innerHTML = `<div class="sidebar-habit-name">🪜 [${ladder.title}] ${currentStep.name}</div><div class="day-picker" id="dp-ladder-${ladder.id}"></div>`;
+      const picker = card.querySelector('.day-picker');
       
-      // Calculate Default
-      let isDefault = false;
-      const dateStr = localDateStr(date);
-      if (currentStep.type === 'once' || currentStep.type === 'milestone') {
-          isDefault = currentStep.targetDate ? (currentStep.targetDate === dateStr) : true;
-      } else {
-          const stepFreq = currentStep.freq || 'daily';
-          if (stepFreq === 'daily') isDefault = true;
-          else if (stepFreq === 'weekdays') isDefault = i < 5;
-          else if (stepFreq === 'custom') isDefault = (currentStep.customDays || []).includes(i);
-          else {
-              const n = parseInt(stepFreq) || 3;
-              const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-              const allDays = [0,1,2,3,4,5,6];
-              const chosen = [];
-              const step_size = 7 / n;
-              for (let j = 0; j < n; j++) chosen.push(allDays[Math.floor(((seed + j * step_size) % 7))]);
-              isDefault = chosen.includes(i);
-          }
-      }
-      
-      const isAssigned = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
-      if (isAssigned) dot.classList.add('selected');
-      
-      dot.addEventListener('click', () => { 
-        const newlyOn = !isAssigned;
-        state.weeklyAssign[assignKey] = newlyOn; 
+      days.forEach((date, i) => {
+        const assignKey = `assign_ladder_${wk}_${area.id}_${ladder.id}_${currentStep.id}_${i}`;
+        const dot = document.createElement('div'); 
+        dot.className = 'day-dot'; 
+        dot.textContent = dayNames[i][0];
         
-        // AI logging
-        const wkKey = getWeekKey(weekOffset);
-        if(!state.weeklyFriction[wkKey]) state.weeklyFriction[wkKey] = {};
-        if(!state.weeklyFriction[wkKey].scheduleChanges) state.weeklyFriction[wkKey].scheduleChanges = [];
-        state.weeklyFriction[wkKey].scheduleChanges.push({ note: `${newlyOn ? 'Assigned' : 'Removed'} ladder step '${currentStep.name}' for ${dayNames[i]}`, date: localDateStr() });
-
-        save(); renderWeeklyPlanner(); 
-        if(localDateStr(date)===localDateStr()) syncTodayFromAssignments(); 
+        let isDefault = false;
+        const dateStr = localDateStr(date);
+        if (currentStep.type === 'once' || currentStep.type === 'milestone') {
+            isDefault = currentStep.targetDate ? (currentStep.targetDate === dateStr) : true;
+        } else {
+            const stepFreq = currentStep.freq || 'daily';
+            if (stepFreq === 'daily') isDefault = true;
+            else if (stepFreq === 'weekdays') isDefault = i < 5;
+            else if (stepFreq === 'custom') isDefault = (currentStep.customDays || []).includes(i);
+            else {
+                const n = parseInt(stepFreq) || 3;
+                const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                const allDays = [0,1,2,3,4,5,6];
+                const chosen = [];
+                const step_size = 7 / n;
+                for (let j = 0; j < n; j++) chosen.push(allDays[Math.floor(((seed + j * step_size) % 7))]);
+                isDefault = chosen.includes(i);
+            }
+        }
+        
+        const isAssigned = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
+        if (isAssigned) dot.classList.add('selected');
+        
+        dot.addEventListener('click', () => { 
+          const newlyOn = !isAssigned;
+          state.weeklyAssign[assignKey] = newlyOn; 
+          const wkKey = getWeekKey(weekOffset);
+          if(!state.weeklyFriction[wkKey]) state.weeklyFriction[wkKey] = {};
+          if(!state.weeklyFriction[wkKey].scheduleChanges) state.weeklyFriction[wkKey].scheduleChanges = [];
+          state.weeklyFriction[wkKey].scheduleChanges.push({ note: `${newlyOn?'Assigned':'Removed'} ladder step '${currentStep.name}' for ${dayNames[i]}`, date: localDateStr() });
+          save(); renderWeeklyPlanner(); 
+          if(localDateStr(date)===localDateStr()) syncTodayFromAssignments(); 
+        });
+        picker.appendChild(dot);
       });
-      picker.appendChild(dot);
+      sidebarEl.appendChild(card);
     });
-    sidebarEl.appendChild(card);
   });
 
   const colsEl = document.getElementById('week-cols'); colsEl.innerHTML = '';
   days.forEach((date, i) => {
     const dateStr = localDateStr(date); const col = document.createElement('div'); col.className = 'week-col' + (dateStr === localDateStr() ? ' is-today' : '');
-
     col.innerHTML = `<div class="week-col-header"><div class="week-col-day">${dayNames[i]}</div><div class="week-col-num">${date.getDate()}</div></div><div class="week-col-items"></div>`;
     const itemsEl = col.querySelector('.week-col-items');
     
-    // Normal Habits
     state.habits.filter(h => h.active).forEach(habit => {
       const assignKey = `assign_${wk}_${habit.id}_${i}`;
       const isDefault = (habit.freq === 'daily') || (habit.freq === 'weekdays' && i < 5);
@@ -1711,67 +1618,61 @@ function renderWeeklyPlanner() {
       itemsEl.appendChild(chip);
     });
 
-    // Ladder step chips
     state.lifeAreas.forEach(area => {
-      const ladder = area.actionLadder || [];
-      const currentStep = ladder.find(s => !s.completed);
-      if (!currentStep) return;
-      
-      const chipKey = `ladder_chip_${wk}_${area.id}_${i}`;
-      const assignKey = `assign_ladder_${wk}_${area.id}_${currentStep.id}_${i}`;
-      const dismissKey = `ladder_dismiss_${area.id}_${dateStr}`;
-      
-      let shouldShow = false;
-      if (currentStep.type === 'once' || currentStep.type === 'milestone') {
-          if (currentStep.targetDate) {
-              shouldShow = (currentStep.targetDate === dateStr);
-          } else {
-              shouldShow = true; // show every day if no date set
-          }
-      } else {
-          // repeating step frequency check
-          const stepFreq = currentStep.freq || 'daily';
-          if (stepFreq === 'daily') shouldShow = true;
-          else if (stepFreq === 'weekdays') shouldShow = i < 5;
-          else if (stepFreq === 'custom') shouldShow = (currentStep.customDays || []).includes(i);
-          else {
-              const n = parseInt(stepFreq) || 3;
-              const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-              const allDays = [0,1,2,3,4,5,6];
-              const chosen = [];
-              const step_size = 7 / n;
-              for (let j = 0; j < n; j++) chosen.push(allDays[Math.floor(((seed + j * step_size) % 7))]);
-              shouldShow = chosen.includes(i);
-          }
-      }
-
-      // Override with exact assignment
-      if (state.weeklyAssign[assignKey] !== undefined) {
-          shouldShow = state.weeklyAssign[assignKey];
-      } else if (state.weeklyAssign[dismissKey]) {
-          shouldShow = false;
-      }
-
-      if (!shouldShow) return;
-
-      const done = state.weeklyChips[chipKey] || currentStep.completed;
-      const chip = document.createElement('div');
-      chip.className = `week-chip chip-${area.theme}${done?' done-chip':''}`;
-      chip.style.borderLeft = '3px solid var(--gold)';
-      chip.innerHTML = `<div class="chip-check">${done?'✓':''}</div><span class="chip-label">🪜 ${currentStep.name}</span>`;
-      chip.addEventListener('click', () => {
-        const nowDone = !state.weeklyChips[chipKey];
-        state.weeklyChips[chipKey] = nowDone;
-        if (nowDone && !currentStep.completed) {
-          currentStep.completed = true; currentStep.completedDate = localDateStr();
-          state.totalVotes += 5; save(); renderWeeklyPlanner(); renderLifeAreas(); launchConfetti(); updateStats();
-          dopamineHit('Rung unlocked! 🪜✨');
-          syncTodayFromAssignments();
+      (area.ladders || []).forEach(ladder => {
+        const currentStep = (ladder.steps || []).find(s => !s.completed);
+        if (!currentStep) return;
+        
+        const chipKey = `ladder_chip_${wk}_${area.id}_${ladder.id}_${i}`;
+        const assignKey = `assign_ladder_${wk}_${area.id}_${ladder.id}_${currentStep.id}_${i}`;
+        const dismissKey = `ladder_dismiss_${area.id}_${ladder.id}_${dateStr}`;
+        
+        let shouldShow = false;
+        if (currentStep.type === 'once' || currentStep.type === 'milestone') {
+            shouldShow = currentStep.targetDate ? (currentStep.targetDate === dateStr) : true;
         } else {
-          save(); renderWeeklyPlanner();
+            const stepFreq = currentStep.freq || 'daily';
+            if (stepFreq === 'daily') shouldShow = true;
+            else if (stepFreq === 'weekdays') shouldShow = i < 5;
+            else if (stepFreq === 'custom') shouldShow = (currentStep.customDays || []).includes(i);
+            else {
+                const n = parseInt(stepFreq) || 3;
+                const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                const allDays = [0,1,2,3,4,5,6];
+                const chosen = [];
+                const step_size = 7 / n;
+                for (let j = 0; j < n; j++) chosen.push(allDays[Math.floor(((seed + j * step_size) % 7))]);
+                shouldShow = chosen.includes(i);
+            }
         }
+
+        if (state.weeklyAssign[assignKey] !== undefined) {
+            shouldShow = state.weeklyAssign[assignKey];
+        } else if (state.weeklyAssign[dismissKey]) {
+            shouldShow = false;
+        }
+
+        if (!shouldShow) return;
+
+        const done = state.weeklyChips[chipKey] || currentStep.completed;
+        const chip = document.createElement('div');
+        chip.className = `week-chip chip-${area.theme}${done?' done-chip':''}`;
+        chip.style.borderLeft = '3px solid var(--gold)';
+        chip.innerHTML = `<div class="chip-check">${done?'✓':''}</div><span class="chip-label">🪜 ${currentStep.name}</span>`;
+        chip.addEventListener('click', () => {
+          const nowDone = !state.weeklyChips[chipKey];
+          state.weeklyChips[chipKey] = nowDone;
+          if (nowDone && !currentStep.completed) {
+            currentStep.completed = true; currentStep.completedDate = localDateStr();
+            state.totalVotes += 5; save(); renderWeeklyPlanner(); renderLifeAreas(); launchConfetti(); updateStats();
+            dopamineHit('Rung unlocked! 🪜✨');
+            syncTodayFromAssignments();
+          } else {
+            save(); renderWeeklyPlanner();
+          }
+        });
+        itemsEl.appendChild(chip);
       });
-      itemsEl.appendChild(chip);
     });
     
     const evs = (state.calendarEvents[dateStr] || []).slice().sort((a,b) => (a.startTime||'zzz').localeCompare(b.startTime||'zzz'));
@@ -1811,70 +1712,62 @@ function syncTodayFromAssignments() {
     }
   });
 
-  // Inject current active ladder step for each life area
+  // Inject active ladder steps for all ladders in all life areas
   state.lifeAreas.forEach(area => {
-    const ladder = area.actionLadder || [];
-    const currentStep = ladder.find(s => !s.completed);
-    const ladderTaskId = 'ladder_' + area.id;
-    // Remove any stale ladder task for this area first (step may have changed)
-    ['high','med','low'].forEach(tier => {
-      state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.ladderAreaId !== area.id);
-    });
-    
-    if (currentStep) {
-      let scheduledToday = false;
-      const assignKey = `assign_ladder_${wk}_${area.id}_${currentStep.id}_${dayIdx}`;
+    (area.ladders || []).forEach(ladder => {
+      const currentStep = (ladder.steps || []).find(s => !s.completed);
+      const ladderTaskId = 'ladder_' + area.id + '_' + ladder.id;
       
-      // Calculate Default
-      if (currentStep.type === 'once' || currentStep.type === 'milestone') {
-          if (currentStep.targetDate) {
-              scheduledToday = (currentStep.targetDate === todayStr);
-          } else {
-              scheduledToday = true; // show until done if no specific date
-          }
-      } else {
-          // repeat frequency
-          const stepFreq = currentStep.freq || 'daily';
-          if (stepFreq === 'daily') {
-            scheduledToday = true;
-          } else if (stepFreq === 'weekdays') {
-            scheduledToday = dayIdx < 5;
-          } else if (stepFreq === 'custom') {
-            scheduledToday = (currentStep.customDays || []).includes(dayIdx);
-          } else {
-            const n = parseInt(stepFreq) || 3;
-            const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-            const allDays = [0,1,2,3,4,5,6];
-            const chosen = [];
-            const step_size = 7 / n;
-            for (let i = 0; i < n; i++) chosen.push(allDays[Math.floor(((seed + i * step_size) % 7))]);
-            scheduledToday = chosen.includes(dayIdx);
-          }
-      }
+      ['high','med','low'].forEach(tier => {
+        state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.ladderId !== ladder.id);
+      });
+      
+      if (currentStep) {
+        let scheduledToday = false;
+        const assignKey = `assign_ladder_${wk}_${area.id}_${ladder.id}_${currentStep.id}_${dayIdx}`;
+        
+        if (currentStep.type === 'once' || currentStep.type === 'milestone') {
+            scheduledToday = currentStep.targetDate ? (currentStep.targetDate === todayStr) : true;
+        } else {
+            const stepFreq = currentStep.freq || 'daily';
+            if (stepFreq === 'daily') scheduledToday = true;
+            else if (stepFreq === 'weekdays') scheduledToday = dayIdx < 5;
+            else if (stepFreq === 'custom') scheduledToday = (currentStep.customDays || []).includes(dayIdx);
+            else {
+              const n = parseInt(stepFreq) || 3;
+              const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+              const allDays = [0,1,2,3,4,5,6];
+              const chosen = [];
+              const step_size = 7 / n;
+              for (let i = 0; i < n; i++) chosen.push(allDays[Math.floor(((seed + i * step_size) % 7))]);
+              scheduledToday = chosen.includes(dayIdx);
+            }
+        }
 
-      // Check Override assignments
-      if (state.weeklyAssign[assignKey] !== undefined) {
-          scheduledToday = state.weeklyAssign[assignKey];
-      } else {
-          const dismissKey = `ladder_dismiss_${area.id}_${todayStr}`;
-          if (state.weeklyAssign[dismissKey]) scheduledToday = false;
-      }
+        if (state.weeklyAssign[assignKey] !== undefined) {
+            scheduledToday = state.weeklyAssign[assignKey];
+        } else {
+            const dismissKey = `ladder_dismiss_${area.id}_${ladder.id}_${todayStr}`;
+            if (state.weeklyAssign[dismissKey]) scheduledToday = false;
+        }
 
-      if (scheduledToday) {
-        const tier = currentStep.energy || 'med';
-        state.todayTasks[tier].push({
-          id: ladderTaskId + '_' + todayStr,
-          habitId: ladderTaskId,
-          name: '🪜 ' + currentStep.name,
-          done: false,
-          cat: area.theme,
-          areaId: area.id,
-          isLadderStep: true,
-          ladderAreaId: area.id,
-          ladderStepId: currentStep.id
-        });
+        if (scheduledToday) {
+          const tier = currentStep.energy || 'med';
+          state.todayTasks[tier].push({
+            id: ladderTaskId + '_' + todayStr,
+            habitId: ladderTaskId,
+            name: `🪜 [${ladder.title}] ${currentStep.name}`,
+            done: false,
+            cat: area.theme,
+            areaId: area.id,
+            isLadderStep: true,
+            ladderAreaId: area.id,
+            ladderId: ladder.id,
+            ladderStepId: currentStep.id
+          });
+        }
       }
-    }
+    });
   });
 
   save(); renderToday();
@@ -1899,6 +1792,52 @@ function calcTweakPerformance(habitId, tweakDate) {
      }
   });
   return { preDone, postDone };
+}
+
+let activeLibCat = 'all';
+function renderHabits() {
+  const cats = ['all','productivity','health','wealth','content','hobbies'];
+  document.getElementById('lib-cats').innerHTML = cats.map(c => `<div class="cat-pill ${activeLibCat===c?'active':''}" onclick="activeLibCat='${c}';renderHabits()">${c==='all'?'All ✦':catEmoji(c)+' '+c}</div>`).join('');
+  
+  const searchInput = document.getElementById('habit-search-input');
+  const searchQ = searchInput ? searchInput.value.toLowerCase() : '';
+
+  const filtered = state.habits.filter(h => {
+    const catMatch = activeLibCat === 'all' || h.cat === activeLibCat;
+    const searchMatch = !searchQ || h.name.toLowerCase().includes(searchQ);
+    return catMatch && searchMatch;
+  });
+  
+  const grouped = {};
+  state.lifeAreas.forEach(a => { if(!grouped[a.theme]) grouped[a.theme] = []; grouped[a.theme].push(a); });
+  let optionsHtml = '';
+  for (let theme in grouped) {
+    optionsHtml += `<optgroup label="${theme.toUpperCase()}">`;
+    grouped[theme].forEach(a => { optionsHtml += `<option value="${a.id}">${a.emoji} ${a.title}</option>`; });
+    optionsHtml += `</optgroup>`;
+  }
+
+  document.getElementById('habits-list').innerHTML = filtered.map(habit => {
+    const updatedOptions = optionsHtml.replace(`value="${habit.areaId}"`, `value="${habit.areaId}" selected`);
+    return `<div class="habit-card ${habit.cat}"><div class="habit-info"><h4>${habit.name}</h4><div class="freq-selector" style="margin-top:6px;gap:8px">
+      <select onchange="updateArea('${habit.id}', this.value)" style="max-width:130px;font-size:11px;padding:3px 8px">${updatedOptions}</select>
+      <select onchange="updateFreq('${habit.id}', this.value)" style="font-size:11px;padding:3px 8px">${['daily','weekdays','3x','2x','1x','monthly'].map(f => `<option value="${f}" ${habit.freq===f?'selected':''}>${f}</option>`).join('')}</select>
+    </div></div><div class="habit-actions"><button class="btn-icon" onclick="openTweakModal('${habit.id}')" title="Tweak/Iterate Habit">🧪</button><button class="btn-icon ${habit.active?'active':''}" onclick="toggleHabitActive('${habit.id}')">${habit.active?'✓':'○'}</button><button class="btn-icon" onclick="promptDelete('habit', '${habit.id}')">🗑</button></div></div>`
+  }).join('');
+}
+function updateFreq(id, val) { const h = state.habits.find(h => h.id === id); if (h) { h.freq = val; save(); } }
+function updateArea(id, val) { const h = state.habits.find(h => h.id === id); const area = state.lifeAreas.find(a => a.id === val); if (h && area) { h.areaId = val; h.cat = area.theme; save(); renderHabits(); renderLifeAreas(); } }
+function toggleHabitActive(id) { const h = state.habits.find(h => h.id === id); if (h) { h.active = !h.active; save(); renderHabits(); } }
+function openAddHabitModal() {
+  const select = document.getElementById('habit-cat-input');
+  select.innerHTML = state.lifeAreas.map(a => `<option value="${a.id}">${a.emoji} ${a.title}</option>`).join('');
+  openModal('add-habit-modal');
+}
+function saveHabit() {
+  const name = document.getElementById('habit-name-input').value.trim(); if (!name) return;
+  const areaId = document.getElementById('habit-cat-input').value; const area = state.lifeAreas.find(a => a.id === areaId);
+  state.habits.push({ id: h(), name, areaId: areaId, cat: area.theme, freq: document.getElementById('habit-freq-input').value, energy: document.getElementById('habit-energy-input').value, tweaks: [], active: true });
+  save(); closeModal('add-habit-modal'); renderHabits(); renderLifeAreas(); dopamineHit('Habit added!');
 }
 
 function openWeeklyDashboard() {
@@ -2148,18 +2087,18 @@ function openQuarterlyDashboard() {
   document.body.appendChild(overlay);
 }
 
-function saveQLog(cityId) {
-  const val = document.getElementById('q-log-' + cityId).value.trim(); if(!val) return;
-  const trend = document.getElementById('q-log-trend-' + cityId).value;
-  const city = state.lifeAreas.find(a=>a.id===cityId);
-  if(city) { if(!city.outcomeLogs) city.outcomeLogs=[]; city.outcomeLogs.unshift({date:localDateStr(), value:val, trend: trend}); save(); document.getElementById('q-log-'+cityId).value=''; document.getElementById('quarterly-dash-overlay').remove(); openQuarterlyDashboard(); dopamineHit('Logged!'); }
-}
-
 function saveQuarterlySnapshot(totalVol) {
   const snapshot = { id: h(), date: localDateStr(), type: 'quarterly', volume: totalVol };
   state.reviewVault.quarterly.unshift(snapshot); save(); renderReviewVault();
   document.getElementById('quarterly-dash-overlay').remove();
   dopamineHit('Quarter successfully archived! 🏆');
+}
+
+function saveQLog(cityId) {
+  const val = document.getElementById('q-log-' + cityId).value.trim(); if(!val) return;
+  const trend = document.getElementById('q-log-trend-' + cityId).value;
+  const city = state.lifeAreas.find(a=>a.id===cityId);
+  if(city) { if(!city.outcomeLogs) city.outcomeLogs=[]; city.outcomeLogs.unshift({date:localDateStr(), value:val, trend: trend}); save(); document.getElementById('q-log-'+cityId).value=''; document.getElementById('quarterly-dash-overlay').remove(); openQuarterlyDashboard(); dopamineHit('Logged!'); }
 }
 
 function renderReviewVault() {
@@ -2192,6 +2131,7 @@ function openLifeAreaModal(id) {
   document.getElementById('area-outcome-input').value = a ? a.outcome : '';
   openModal('life-area-modal');
 }
+
 function saveLifeArea() {
   const id = document.getElementById('area-id-input').value;
   const existing = id ? state.lifeAreas.find(x=>x.id===id) : null;
@@ -2199,7 +2139,7 @@ function saveLifeArea() {
     id: id || h(), theme: document.getElementById('area-theme-input').value, emoji: document.getElementById('area-emoji-input').value||'✦',
     title: document.getElementById('area-title-input').value, identity: document.getElementById('area-identity-input').value,
     outcome: document.getElementById('area-outcome-input').value, outcomeLogs: id ? (existing?.outcomeLogs||[]) : [], evidenceLogs: id ? (existing?.evidenceLogs||[]) : [],
-    actionLadder: id ? (existing?.actionLadder||[]) : []
+    ladders: id ? (existing?.ladders||[]) : []
   };
   if(id) { const idx = state.lifeAreas.findIndex(x=>x.id===id); if(idx>-1) state.lifeAreas[idx]=a; } else state.lifeAreas.push(a);
   save(); closeModal('life-area-modal'); renderLifeAreas();
@@ -2352,12 +2292,115 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
 
-// Init: reflect sync login state on load
-(function initSyncBtn() {
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('wake-time-input').value = state.wakeTime || '07:00';
+  setWakeTime(true); checkNewDay();
+  syncTodayFromAssignments();
+  renderToday(); renderTodayTimedEvents(); renderCalendar(); renderHabits(); renderLifeAreas(); updateStats(); renderReviewVault();
+  
   const syncId = localStorage.getItem('thatgirlhq_syncid');
   const btn = document.getElementById('cloud-sync-btn');
   if (btn) btn.style.opacity = syncId ? '1' : '0.5';
-})();
+});
+
+// Render helper functions that were in DOMContentLoaded
+function renderCalendar() {
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const titleEl = document.getElementById('cal-title'); if(!titleEl) return;
+  titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
+  const grid = document.getElementById('cal-grid'); if(!grid) return;
+  grid.innerHTML = '';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+    const el = document.createElement('div'); el.className = 'cal-day-header'; el.textContent = d; grid.appendChild(el);
+  });
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const el = document.createElement('div'); el.className = 'cal-day';
+    const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+    if (isToday) el.classList.add('today');
+    const dateKey = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const numEl = document.createElement('div'); numEl.className = 'cal-day-num'; numEl.textContent = d; el.appendChild(numEl);
+    const events = (state.calendarEvents[dateKey] || []).slice().sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+    events.forEach(ev => {
+      const evEl = document.createElement('div'); evEl.className = `cal-event ${ev.type || 'one-time'}`;
+      const timeLabel = ev.startTime ? `<span class="cal-event-time">${fmt12(ev.startTime)}</span>` : '';
+      evEl.innerHTML = `${timeLabel}${ev.title}`; el.appendChild(evEl);
+    });
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => openDayDetail(dateKey, d));
+    grid.appendChild(el);
+  }
+}
+
+function changeMonth(dir) {
+  if (dir === 0) { calYear = new Date().getFullYear(); calMonth = new Date().getMonth(); }
+  else { calMonth += dir; if (calMonth > 11) { calMonth=0; calYear++; } if (calMonth < 0) { calMonth=11; calYear--; } }
+  renderCalendar();
+}
+
+function openDayDetail(dateKey, dayNum) {
+  const [y, m, d] = dateKey.split('-').map(Number); const dateObj = new Date(y, m-1, d);
+  document.getElementById('day-detail-title').textContent = dateObj.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('event-date-input').value = dateKey;
+  const container = document.getElementById('day-detail-events'); container.innerHTML = '';
+  const events = (state.calendarEvents[dateKey] || []).slice().sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
+  if (events.length === 0) { container.innerHTML = `<div class="empty-state"><span class="emoji">📅</span>Nothing scheduled yet.</div>`; }
+  else {
+    events.forEach(ev => {
+      const timeRange = fmtTimeRange(ev.startTime, ev.endTime); const div = document.createElement('div'); div.className = `detail-event ${ev.type || 'one-time'}`;
+      div.innerHTML = `${timeRange ? `<div class="detail-event-time">${timeRange}</div>` : ''}<div style="flex:1"><div class="detail-event-name">✦ ${ev.title}</div><div class="detail-event-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div></div><button class="detail-delete" onclick="promptDelete('event', '${ev.id}', '${dateKey}')">🗑</button>`;
+      container.appendChild(div);
+    });
+  }
+  openModal('day-detail-modal');
+}
+
+function saveEvent() {
+  const title = document.getElementById('event-title-input').value.trim();
+  const date = document.getElementById('event-date-input').value;
+  const startTime = document.getElementById('event-start-input').value;
+  const endTime = document.getElementById('event-end-input').value;
+  const type = document.getElementById('event-type-input').value;
+  const cat = document.getElementById('event-cat-input').value;
+  if (!title || !date) return;
+  if (!state.calendarEvents[date]) state.calendarEvents[date] = [];
+  state.calendarEvents[date].push({ title, type, cat, startTime, endTime, id: h() });
+  save(); closeModal('add-event-modal'); renderCalendar(); renderTodayTimedEvents(); renderWeeklyPlanner();
+  dopamineHit('Event added! 📅✦'); document.getElementById('event-title-input').value = '';
+}
+
+function renderTodayTimedEvents() {
+  const todayDate = new Date(); const dateKey = localDateStr(todayDate);
+  if(!state.calendarEvents) state.calendarEvents = {};
+  const timed = (state.calendarEvents[dateKey] || []).filter(e => e.startTime).sort((a,b) => a.startTime.localeCompare(b.startTime));
+  const untimed = (state.calendarEvents[dateKey] || []).filter(e => !e.startTime);
+  const events = [...timed, ...untimed];
+  const section = document.getElementById('today-timed-events'); const list = document.getElementById('today-timed-list');
+  if (!section || !list) return;
+  if (events.length === 0) { section.style.display = 'none'; return; } section.style.display = 'block'; list.innerHTML = '';
+  events.forEach(ev => {
+    const evType = ev.type || 'one-time'; const isInfo = ['obligation','uni'].includes(evType);
+    const timeStr = ev.startTime ? fmtTimeRange(ev.startTime, ev.endTime) : 'Event';
+    const el = document.createElement('div'); el.className = `today-timed-event ev-${evType}${ev.done ? ' ev-done' : ''}`;
+    const tickBtn = isInfo ? '' : `<button class="ev-tick-btn${ev.done ? ' ticked' : ''}"></button>`;
+    el.innerHTML = `<div class="ev-priority-dot"></div><div class="today-timed-time">${timeStr}</div><div style="flex:1"><div class="today-timed-name">✦ ${ev.title}</div><div class="today-timed-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div></div>${tickBtn}`;
+    if (!isInfo) { el.querySelector('.ev-tick-btn').addEventListener('click', (e) => { e.stopPropagation(); tickEvent(dateKey, ev.id, e.currentTarget); }); }
+    list.appendChild(el);
+  });
+}
+
+function tickEvent(dateKey, evId, sourceEl) {
+  const evList = state.calendarEvents[dateKey] || []; const ev = evList.find(e => e.id === evId); if (!ev) return;
+  if (ev.done) { ev.done = false; delete ev.reflection; save(); renderTodayTimedEvents(); renderWeeklyPlanner(); return; }
+  ev.done = true; save(); renderTodayTimedEvents(); renderWeeklyPlanner(); dopamineHit('Action taken ✦');
+}
+
 </script>
 </body>
 </html>
