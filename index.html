@@ -797,7 +797,19 @@ body {
 </div>
 
 <script>
-let state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
+// Expose functions required for full re-rendering from Cloud
+window.renderAll = function() {
+  updateTodayDateDisplay();
+  renderToday();
+  renderTodayTimedEvents();
+  renderCalendar();
+  renderHabits();
+  renderLifeAreas();
+  updateStats();
+  renderReviewVault();
+};
+
+var state = JSON.parse(localStorage.getItem('thatgirlhq') || 'null') || {
   totalVotes: 0, lastActiveDate: null,
   habits: [], todayTasks: { high: [], med: [], low: [] },
   weeklyAssign: {}, weeklyChips: {}, calendarEvents: {}, 
@@ -926,6 +938,11 @@ function save() {
   const keys = Object.keys(state.daySnapshots).sort();
   if (keys.length > 30) keys.slice(0, keys.length - 30).forEach(k => delete state.daySnapshots[k]);
   localStorage.setItem('thatgirlhq', JSON.stringify(state));
+  
+  // TRIGGER CLOUD SYNC AUTOMATICALLY
+  if (window.pushToCloud) {
+    window.pushToCloud();
+  }
 }
 
 function openEditVotes() {
@@ -1082,7 +1099,6 @@ function toggleTask(id, tier, el) {
         if (ladder) {
           const step = ladder.steps.find(s => s.id === task.ladderStepId);
           if (step && !step.completed) {
-            // FIX: If it's a repeating step, just grant daily tick without completing the overall rung
             if (step.type !== 'repeat') {
               step.completed = true; step.completedDate = localDateStr();
               state.totalVotes += 4; save();
@@ -1107,12 +1123,10 @@ function renderToday() {
   const isActualToday = todayOffset === 0;
   const viewDateStr = localDateStr(getViewDate());
 
-  // For non-today views, compute tasks from assignments (past: use snapshot if available, else compute; future: always compute)
   let viewTasks = { high: [], med: [], low: [] };
   if (isActualToday) {
     viewTasks = state.todayTasks;
   } else {
-    // Past: prefer snapshot (preserves done state); Future: always compute from assignments
     const snap = (state.daySnapshots && state.daySnapshots[viewDateStr]);
     viewTasks = snap || getTasksForDate(getViewDate());
   }
@@ -1140,7 +1154,6 @@ function renderToday() {
   document.getElementById('pct-count').textContent = pct + '%';
   document.getElementById('progress-fill').style.width = pct + '%'; document.getElementById('progress-pct').textContent = pct + '%';
 
-  // Hide/show add-task rows and closing shift for non-today views
   document.querySelectorAll('.add-task-row').forEach(r => r.style.display = isActualToday ? '' : 'none');
   renderClosingShift();
 }
@@ -1200,7 +1213,6 @@ function renderLifeAreas() {
     (state.actionHistory || []).forEach(a => { if(a.areaId === city.id) cityVol++; });
     const lvl = Math.floor(cityVol / 10) + 1;
 
-    // ── Multiple Action Ladders ──
     let laddersHtml = '';
     const ladders = city.ladders || [];
     
@@ -1514,7 +1526,6 @@ function toggleLadderStep(areaId, ladderId, stepId) {
   if (step.completed) {
     state.totalVotes += 5; save(); updateStats();
 
-    // ── Final Rung Evolution: convert ladder → habit ──
     if (step.isFinalRung) {
       convertLadderToHabit(city, ladder, step);
       return;
@@ -1523,7 +1534,6 @@ function toggleLadderStep(areaId, ladderId, stepId) {
     renderLifeAreas(); syncTodayFromAssignments(); renderWeeklyPlanner();
     dopamineHit('Rung unlocked! You are climbing 🪜✨'); launchConfetti();
 
-    // ── Auto-Progression: completed the last existing rung? ──
     const isLastRung = ladder.steps.indexOf(step) === ladder.steps.length - 1;
     const allDone = ladder.steps.every(s => s.completed);
     if (isLastRung && allDone) {
@@ -1570,7 +1580,6 @@ function deleteLadderStep(areaId, ladderId, stepId) {
   save(); renderLifeAreas(); syncTodayFromAssignments(); renderWeeklyPlanner(); dopamineHit('Step removed');
 }
 
-// ── Review Prompts for Time-Bound Steps ──
 function checkLadderReviews() {
   const today = localDateStr();
   for (const area of (state.lifeAreas || [])) {
@@ -1668,7 +1677,7 @@ function promptDelete(type, id, extraId = null) {
 
 function executeDelete() {
   if (!pendingDeleteAction) return;
-  const { type, id, extraId } = pendingDeleteAction; // extraId used for ladder's areaId
+  const { type, id, extraId } = pendingDeleteAction; 
   
   if (type === 'habit') {
     const reason = document.getElementById('delete-reason-input').value.trim();
@@ -1689,7 +1698,7 @@ function executeDelete() {
     dopamineHit('Habit removed 🗑');
     
   } else if (type === 'event') {
-    const dateKey = extraId; // for events, extraId was passed as dateKey
+    const dateKey = extraId;
     state.calendarEvents[dateKey] = (state.calendarEvents[dateKey] || []).filter(e => e.id !== id);
     save(); renderCalendar(); renderTodayTimedEvents(); renderWeeklyPlanner();
     const [y, m, d] = dateKey.split('-').map(Number); 
@@ -1701,7 +1710,6 @@ function executeDelete() {
     const city = state.lifeAreas.find(a => a.id === areaId);
     if (city && city.ladders) {
       city.ladders = city.ladders.filter(l => l.id !== id);
-      // Clean up today's tasks
       ['high', 'med', 'low'].forEach(tier => {
         state.todayTasks[tier] = state.todayTasks[tier].filter(t => t.ladderId !== id);
       });
@@ -1729,7 +1737,6 @@ function executeDelete() {
     });
 
     if (isLadder && ladderAreaId && ladderId) {
-      // Dismiss this specific ladder for today
       const dismissKey = `ladder_dismiss_${ladderAreaId}_${ladderId}_${localDateStr()}`;
       state.weeklyAssign[dismissKey] = true;
       
@@ -1787,7 +1794,6 @@ function renderWeeklyPlanner() {
   
   const sidebarEl = document.getElementById('sidebar-habits'); sidebarEl.innerHTML = '';
   
-  // Normal habits
   state.habits.filter(h => h.active).forEach(habit => {
     const card = document.createElement('div'); card.className = 'sidebar-habit';
     card.innerHTML = `<div class="sidebar-habit-name">${catEmoji(habit.cat)} ${habit.name}</div><div class="day-picker" id="dp-${habit.id}"></div>`;
@@ -1812,7 +1818,6 @@ function renderWeeklyPlanner() {
     sidebarEl.appendChild(card);
   });
 
-  // Action Ladder steps
   state.lifeAreas.forEach(area => {
     (area.ladders || []).forEach(ladder => {
       const currentStep = (ladder.steps || []).find(s => !s.completed);
@@ -1873,7 +1878,6 @@ function renderWeeklyPlanner() {
     const dateStr = localDateStr(date); const col = document.createElement('div'); col.className = 'week-col' + (dateStr === localDateStr() ? ' is-today' : '');
     col.innerHTML = `<div class="week-col-header"><div class="week-col-day">${dayNames[i]}</div><div class="week-col-num">${date.getDate()}</div></div><div class="week-col-items"></div>`;
     const itemsEl = col.querySelector('.week-col-items');
-    // Collect chips as {el, done} so we can sort done ones to the bottom
     const weekChipItems = [];
     
     state.habits.filter(h => h.active).forEach(habit => {
@@ -1951,7 +1955,6 @@ function renderWeeklyPlanner() {
           }
           
           if (nowDone && !currentStep.completed) {
-            // FIX: If it's a repeating step, just grant daily tick without completing the overall rung
             if (currentStep.type !== 'repeat') {
               currentStep.completed = true; currentStep.completedDate = localDateStr();
               state.totalVotes += 5; save(); renderWeeklyPlanner(); renderLifeAreas(); launchConfetti(); updateStats();
@@ -1969,7 +1972,6 @@ function renderWeeklyPlanner() {
       });
     });
 
-    // Sort: undone first, done last
     weekChipItems.sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
     weekChipItems.forEach(item => itemsEl.appendChild(item.el));
     
@@ -1992,11 +1994,9 @@ function renderWeeklyPlanner() {
 }
 
 function getTasksForDate(targetDate) {
-  // Compute what habits/ladders are scheduled for any given date
   const targetStr = localDateStr(targetDate);
   const dayIdx = targetDate.getDay() === 0 ? 6 : targetDate.getDay() - 1;
 
-  // Figure out which week this date falls in (offset from current week)
   const today = new Date(); today.setHours(0,0,0,0);
   const msPerDay = 86400000;
   const diffDays = Math.round((targetDate - today) / msPerDay);
@@ -2011,7 +2011,6 @@ function getTasksForDate(targetDate) {
     const isAssigned = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
     if (!isAssigned) return;
     const tier = habit.energy || 'med';
-    // Check weekly chip to get done state
     const chipKey = `chip_${wk}_${habit.id}_${dayIdx}`;
     tasks[tier].push({ id: habit.id + '_' + targetStr, habitId: habit.id, name: habit.name, done: !!state.weeklyChips[chipKey], cat: habit.cat, areaId: habit.areaId });
   });
@@ -2077,7 +2076,6 @@ function syncTodayFromAssignments() {
     }
   });
 
-  // Inject active ladder steps for all ladders in all life areas
   state.lifeAreas.forEach(area => {
     (area.ladders || []).forEach(ladder => {
       const currentStep = (ladder.steps || []).find(s => !s.completed);
@@ -2630,169 +2628,329 @@ function importData(e) { const f=e.target.files[0];if(!f)return;const r=new File
 function toggleCloudSync() {
   const syncId = localStorage.getItem('thatgirlhq_syncid');
   const loggedOut = document.getElementById('sync-logged-out');
-  const loggedIn  = document.getElementById('sync-logged-in');
+  const loggedIn = document.getElementById('sync-logged-in');
   if (syncId) {
     loggedOut.style.display = 'none';
-    loggedIn.style.display  = 'block';
+    loggedIn.style.display = 'block';
     document.getElementById('sync-id-display').textContent = syncId;
   } else {
     loggedOut.style.display = 'block';
-    loggedIn.style.display  = 'none';
+    loggedIn.style.display = 'none';
   }
-  document.getElementById('cloud-sync-btn').style.opacity = syncId ? '1' : '0.5';
   openModal('cloud-sync-modal');
 }
 
 function createSyncId() {
-  const rand = () => Math.random().toString(36).substr(2, 5);
-  const id = 'tgrl-' + rand() + '-' + rand() + '-' + rand();
-  localStorage.setItem('thatgirlhq_syncid', id);
+  const newId = 'hq-' + Math.random().toString(36).substr(2, 9) + '-' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('thatgirlhq_syncid', newId);
   toggleCloudSync();
-  dopamineHit('Sync ID created! ☁️');
+  syncNow();
+  updateSyncBtnUI();
 }
 
 function loginWithSyncId() {
-  const val = document.getElementById('sync-id-enter').value.trim();
-  if (!val) return;
-  localStorage.setItem('thatgirlhq_syncid', val);
-  document.getElementById('sync-id-enter').value = '';
+  const input = document.getElementById('sync-id-enter').value.trim();
+  if (!input) return;
+  localStorage.setItem('thatgirlhq_syncid', input);
   toggleCloudSync();
-  dopamineHit('Logged in with Sync ID! ☁️');
-}
-
-function logoutSync() {
-  localStorage.removeItem('thatgirlhq_syncid');
-  document.getElementById('cloud-sync-btn').style.opacity = '0.5';
-  closeModal('cloud-sync-modal');
-  setTimeout(() => toggleCloudSync(), 150);
-  dopamineHit('Logged out ✓');
+  syncNow();
+  updateSyncBtnUI();
 }
 
 function copySyncId() {
   const id = localStorage.getItem('thatgirlhq_syncid');
-  if (id) navigator.clipboard.writeText(id).then(() => dopamineHit('Sync ID copied! 📋'));
+  if (id) {
+    navigator.clipboard.writeText(id).catch(() => {
+      const t = document.createElement('textarea');
+      t.value = id;
+      document.body.appendChild(t);
+      t.select();
+      document.execCommand('copy');
+      document.body.removeChild(t);
+    });
+    dopamineHit('Sync ID Copied! 📋');
+  }
 }
 
-function syncNow() {
-  const syncId = localStorage.getItem('thatgirlhq_syncid');
-  if (!syncId) { toggleCloudSync(); return; }
-  dopamineHit('Synced successfully! 🔄');
+function logoutSync() {
+  localStorage.removeItem('thatgirlhq_syncid');
+  toggleCloudSync();
+  updateSyncBtnUI();
+  dopamineHit('Logged out of Sync');
 }
 
+function updateSyncBtnUI() {
+   const syncId = localStorage.getItem('thatgirlhq_syncid');
+   const btn = document.getElementById('cloud-sync-btn');
+   if (btn) {
+       if (syncId) {
+           btn.style.opacity = '1';
+           btn.innerHTML = '☁️';
+       } else {
+           btn.style.opacity = '0.5';
+           btn.innerHTML = '☁️';
+       }
+   }
+}
+
+// --- FIREBASE CLOUD SYNC ---
+let db = null;
+let auth = null;
+let fsDoc, fsSetDoc, fsGetDoc;
+let appId = typeof __app_id !== 'undefined' ? __app_id : 'thatgirlhq-default';
+
+async function initFirebase() {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+    const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+    const { getFirestore, doc, setDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+    
+    const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+    const firebaseConfig = JSON.parse(configStr);
+    if (Object.keys(firebaseConfig).length === 0) return;
+    
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    
+    fsDoc = doc; fsSetDoc = setDoc; fsGetDoc = getDoc;
+
+    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+      await signInWithCustomToken(auth, __initial_auth_token);
+    } else {
+      await signInAnonymously(auth);
+    }
+    
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+         console.log("Firebase Auth ready");
+         syncNow(true);
+      }
+    });
+  } catch (e) {
+    console.error("Firebase init error", e);
+  }
+}
+
+window.pushToCloud = async function() {
+   const syncId = localStorage.getItem('thatgirlhq_syncid');
+   if (!syncId || !db || !auth || !auth.currentUser) return;
+   try {
+      const docRef = fsDoc(db, 'artifacts', appId, 'public', 'data', 'sync', syncId);
+      await fsSetDoc(docRef, { state: JSON.stringify(state), lastUpdated: Date.now() });
+   } catch (e) {
+      console.error("Cloud push failed", e);
+   }
+};
+
+async function syncNow(silent = false) {
+   const syncId = localStorage.getItem('thatgirlhq_syncid');
+   if (!syncId) {
+      if (!silent) dopamineHit('No Sync ID set! ☁️');
+      return;
+   }
+   if (!db || !auth || !auth.currentUser) {
+      if (!silent) dopamineHit('Connecting to cloud... ☁️');
+      return;
+   }
+   
+   try {
+      const docRef = fsDoc(db, 'artifacts', appId, 'public', 'data', 'sync', syncId);
+      const docSnap = await fsGetDoc(docRef);
+      if (docSnap.exists()) {
+         const data = docSnap.data();
+         if (data.state) {
+            state = JSON.parse(data.state);
+            localStorage.setItem('thatgirlhq', JSON.stringify(state));
+            if (window.renderAll) window.renderAll();
+            if (!silent) dopamineHit('Synced successfully! ✨');
+         }
+      } else {
+         await window.pushToCloud();
+         if (!silent) dopamineHit('Cloud backup created! ☁️');
+      }
+   } catch(e) {
+      console.error("Sync error", e);
+      if (!silent) dopamineHit('Sync failed. ❌');
+   }
+}
+
+// Modal Helpers
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
 
-document.addEventListener('DOMContentLoaded', () => {
-  updateTodayDateDisplay();
-  document.getElementById('wake-time-input').value = state.wakeTime || '07:00';
-  setWakeTime(true); checkNewDay();
-  syncTodayFromAssignments();
-  renderToday(); renderTodayTimedEvents(); renderCalendar(); renderHabits(); renderLifeAreas(); updateStats(); renderReviewVault();
-  
-  const syncId = localStorage.getItem('thatgirlhq_syncid');
-  const btn = document.getElementById('cloud-sync-btn');
-  if (btn) btn.style.opacity = syncId ? '1' : '0.5';
+// Tweak Modal
+function openTweakModal(id) {
+   const h = state.habits.find(x => x.id === id);
+   if (!h) return;
+   document.getElementById('tweak-id-input').value = id;
+   document.getElementById('tweak-name-input').value = h.name;
+   document.getElementById('tweak-freq-input').value = h.freq || 'daily';
+   document.getElementById('tweak-reason-input').value = '';
+   openModal('tweak-habit-modal');
+}
+function saveTweak() {
+   const id = document.getElementById('tweak-id-input').value;
+   const h = state.habits.find(x => x.id === id);
+   if (!h) return;
+   const newName = document.getElementById('tweak-name-input').value.trim();
+   const newFreq = document.getElementById('tweak-freq-input').value;
+   const reason = document.getElementById('tweak-reason-input').value.trim();
+   if (!newName) return;
+   
+   if (!h.tweaks) h.tweaks = [];
+   h.tweaks.push({ date: localDateStr(), oldName: h.name, newName: newName, oldFreq: h.freq, newFreq: newFreq, reason: reason || 'General iteration' });
+   
+   h.name = newName;
+   h.freq = newFreq;
+   save();
+   closeModal('tweak-habit-modal');
+   renderHabits();
+   renderWeeklyPlanner();
+   dopamineHit('Habit Tweak Applied! 🧪');
+}
 
-  setTimeout(checkLadderReviews, 800);
-});
-
-// Render helper functions that were in DOMContentLoaded
+// Calendar & Scheduled Events
 function renderCalendar() {
-  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const titleEl = document.getElementById('cal-title'); if(!titleEl) return;
-  titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
-  const grid = document.getElementById('cal-grid'); if(!grid) return;
-  grid.innerHTML = '';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
-    const el = document.createElement('div'); el.className = 'cal-day-header'; el.textContent = d; grid.appendChild(el);
-  });
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const today = new Date();
-  for (let i = 0; i < firstDay; i++) {
-    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const el = document.createElement('div'); el.className = 'cal-day';
-    const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
-    if (isToday) el.classList.add('today');
-    const dateKey = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const numEl = document.createElement('div'); numEl.className = 'cal-day-num'; numEl.textContent = d; el.appendChild(numEl);
-    const events = (state.calendarEvents[dateKey] || []).slice().sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
-    events.forEach(ev => {
-      const evEl = document.createElement('div'); evEl.className = `cal-event ${ev.type || 'one-time'}`;
-      const timeLabel = ev.startTime ? `<span class="cal-event-time">${fmt12(ev.startTime)}</span>` : '';
-      evEl.innerHTML = `${timeLabel}${ev.title}`; el.appendChild(evEl);
-    });
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', () => openDayDetail(dateKey, d));
-    grid.appendChild(el);
-  }
+   const title = document.getElementById('cal-title');
+   const grid = document.getElementById('cal-grid');
+   if (!title || !grid) return;
+   
+   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+   title.textContent = `${monthNames[calMonth]} ${calYear}`;
+   
+   const firstDay = new Date(calYear, calMonth, 1).getDay();
+   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+   const startingDay = firstDay === 0 ? 6 : firstDay - 1; 
+   
+   grid.innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => `<div class="cal-day-header">${d}</div>`).join('');
+   
+   for (let i = 0; i < startingDay; i++) grid.innerHTML += `<div class="cal-day empty"></div>`;
+   
+   const today = new Date();
+   for (let i = 1; i <= daysInMonth; i++) {
+      const dateStr = `${calYear}-${String(calMonth + 1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+      const isToday = i === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+      
+      let dayHtml = `<div class="cal-day ${isToday ? 'today' : ''}" onclick="openDayDetail('${dateStr}', ${i})"><div class="cal-day-num">${i}</div>`;
+      
+      const evs = (state.calendarEvents[dateStr] || []).slice().sort((a,b) => (a.startTime||'zzz').localeCompare(b.startTime||'zzz'));
+      evs.slice(0, 3).forEach(ev => {
+         const timeStr = ev.startTime ? `<span class="cal-event-time">${fmt12(ev.startTime)}</span>` : '';
+         dayHtml += `<div class="cal-event">${timeStr}${ev.title}</div>`;
+      });
+      if (evs.length > 3) dayHtml += `<div class="cal-event" style="background:transparent;color:var(--text-light)">+${evs.length - 3} more</div>`;
+      
+      dayHtml += `</div>`;
+      grid.innerHTML += dayHtml;
+   }
 }
 
 function changeMonth(dir) {
-  if (dir === 0) { calYear = new Date().getFullYear(); calMonth = new Date().getMonth(); }
-  else { calMonth += dir; if (calMonth > 11) { calMonth=0; calYear++; } if (calMonth < 0) { calMonth=11; calYear--; } }
-  renderCalendar();
+   if (dir === 0) { const t = new Date(); calMonth = t.getMonth(); calYear = t.getFullYear(); }
+   else { calMonth += dir; if (calMonth > 11) { calMonth = 0; calYear++; } else if (calMonth < 0) { calMonth = 11; calYear--; } }
+   renderCalendar();
 }
 
-function openDayDetail(dateKey, dayNum) {
-  const [y, m, d] = dateKey.split('-').map(Number); const dateObj = new Date(y, m-1, d);
-  document.getElementById('day-detail-title').textContent = dateObj.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
-  document.getElementById('event-date-input').value = dateKey;
-  const container = document.getElementById('day-detail-events'); container.innerHTML = '';
-  const events = (state.calendarEvents[dateKey] || []).slice().sort((a,b) => (a.startTime||'').localeCompare(b.startTime||''));
-  if (events.length === 0) { container.innerHTML = `<div class="empty-state"><span class="emoji">📅</span>Nothing scheduled yet.</div>`; }
-  else {
-    events.forEach(ev => {
-      const timeRange = fmtTimeRange(ev.startTime, ev.endTime); const div = document.createElement('div'); div.className = `detail-event ${ev.type || 'one-time'}`;
-      div.innerHTML = `${timeRange ? `<div class="detail-event-time">${timeRange}</div>` : ''}<div style="flex:1"><div class="detail-event-name">✦ ${ev.title}</div><div class="detail-event-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div></div><button class="detail-delete" onclick="promptDelete('event', '${ev.id}', '${dateKey}')">🗑</button>`;
-      container.appendChild(div);
-    });
-  }
-  openModal('day-detail-modal');
+function openDayDetail(dateStr, dayNum) {
+   document.getElementById('day-detail-title').textContent = `${dayNum} ${document.getElementById('cal-title').textContent}`;
+   const list = document.getElementById('day-detail-events');
+   list.innerHTML = '';
+   
+   const evs = (state.calendarEvents[dateStr] || []).slice().sort((a,b) => (a.startTime||'zzz').localeCompare(b.startTime||'zzz'));
+   if (evs.length === 0) {
+      list.innerHTML = `<div style="font-size:13px;color:var(--text-light);padding:16px 0;text-align:center;">No events scheduled.</div>`;
+   } else {
+      evs.forEach(ev => {
+         const timeStr = ev.startTime ? fmtTimeRange(ev.startTime, ev.endTime) : 'All Day';
+         list.innerHTML += `
+            <div class="detail-event">
+               <div class="detail-event-time">${timeStr}</div>
+               <div>
+                  <div class="detail-event-name">${ev.title}</div>
+                  <div class="detail-event-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div>
+               </div>
+               <button class="detail-delete" onclick="promptDelete('event', '${ev.id}', '${dateStr}')">🗑</button>
+            </div>
+         `;
+      });
+   }
+   document.getElementById('event-date-input').value = dateStr;
+   openModal('day-detail-modal');
 }
 
 function saveEvent() {
-  const title = document.getElementById('event-title-input').value.trim();
-  const date = document.getElementById('event-date-input').value;
-  const startTime = document.getElementById('event-start-input').value;
-  const endTime = document.getElementById('event-end-input').value;
-  const type = document.getElementById('event-type-input').value;
-  const cat = document.getElementById('event-cat-input').value;
-  if (!title || !date) return;
-  if (!state.calendarEvents[date]) state.calendarEvents[date] = [];
-  state.calendarEvents[date].push({ title, type, cat, startTime, endTime, id: h() });
-  save(); closeModal('add-event-modal'); renderCalendar(); renderTodayTimedEvents(); renderWeeklyPlanner();
-  dopamineHit('Event added! 📅✦'); document.getElementById('event-title-input').value = '';
+   const title = document.getElementById('event-title-input').value.trim();
+   const dateStr = document.getElementById('event-date-input').value;
+   const startTime = document.getElementById('event-start-input').value;
+   const endTime = document.getElementById('event-end-input').value;
+   const type = document.getElementById('event-type-input').value;
+   const cat = document.getElementById('event-cat-input').value;
+   
+   if (!title || !dateStr) return;
+   
+   if (!state.calendarEvents[dateStr]) state.calendarEvents[dateStr] = [];
+   state.calendarEvents[dateStr].push({ id: h(), title, startTime, endTime, type, cat, done: false });
+   
+   save();
+   closeModal('add-event-modal');
+   renderCalendar();
+   renderTodayTimedEvents();
+   renderWeeklyPlanner();
+   dopamineHit('Event Scheduled! 📅');
 }
 
 function renderTodayTimedEvents() {
-  const todayDate = getViewDate(); const dateKey = localDateStr(todayDate);
-  if(!state.calendarEvents) state.calendarEvents = {};
-  const timed = (state.calendarEvents[dateKey] || []).filter(e => e.startTime).sort((a,b) => a.startTime.localeCompare(b.startTime));
-  const untimed = (state.calendarEvents[dateKey] || []).filter(e => !e.startTime);
-  const events = [...timed, ...untimed];
-  const section = document.getElementById('today-timed-events'); const list = document.getElementById('today-timed-list');
-  if (!section || !list) return;
-  if (events.length === 0) { section.style.display = 'none'; return; } section.style.display = 'block'; list.innerHTML = '';
-  events.forEach(ev => {
-    const evType = ev.type || 'one-time'; const isInfo = ['obligation','uni'].includes(evType);
-    const timeStr = ev.startTime ? fmtTimeRange(ev.startTime, ev.endTime) : 'Event';
-    const el = document.createElement('div'); el.className = `today-timed-event ev-${evType}${ev.done ? ' ev-done' : ''}`;
-    const tickBtn = isInfo ? '' : `<button class="ev-tick-btn${ev.done ? ' ticked' : ''}"></button>`;
-    el.innerHTML = `<div class="ev-priority-dot"></div><div class="today-timed-time">${timeStr}</div><div style="flex:1"><div class="today-timed-name">✦ ${ev.title}</div><div class="today-timed-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div></div>${tickBtn}`;
-    if (!isInfo) { el.querySelector('.ev-tick-btn').addEventListener('click', (e) => { e.stopPropagation(); tickEvent(dateKey, ev.id, e.currentTarget); }); }
-    list.appendChild(el);
-  });
+   const dateKey = localDateStr(getViewDate());
+   const events = (state.calendarEvents[dateKey] || []).slice().sort((a,b) => (a.startTime||'zzz').localeCompare(b.startTime||'zzz'));
+   const section = document.getElementById('today-timed-events');
+   const list = document.getElementById('today-timed-list');
+   if (!section || !list) return;
+   
+   if (events.length === 0) { section.style.display = 'none'; return; }
+   
+   section.style.display = 'block';
+   list.innerHTML = '';
+   
+   events.forEach(ev => {
+      const evType = ev.type || 'one-time';
+      const isInfo = ['obligation','uni'].includes(evType);
+      const timeStr = ev.startTime ? fmtTimeRange(ev.startTime, ev.endTime) : 'Event';
+      const el = document.createElement('div');
+      el.className = `today-timed-event ev-${evType}${ev.done ? ' ev-done' : ''}`;
+      const tickBtn = isInfo ? '' : `<button class="ev-tick-btn${ev.done ? ' ticked' : ''}"></button>`;
+      el.innerHTML = `<div class="ev-priority-dot"></div><div class="today-timed-time">${timeStr}</div><div style="flex:1"><div class="today-timed-name">✦ ${ev.title}</div><div class="today-timed-cat">${catEmoji(ev.cat)} ${ev.cat || 'general'}</div></div>${tickBtn}`;
+      
+      if (!isInfo) { el.querySelector('.ev-tick-btn').addEventListener('click', (e) => { e.stopPropagation(); tickEvent(dateKey, ev.id, e.currentTarget); }); }
+      list.appendChild(el);
+   });
 }
 
 function tickEvent(dateKey, evId, sourceEl) {
-  const evList = state.calendarEvents[dateKey] || []; const ev = evList.find(e => e.id === evId); if (!ev) return;
-  if (ev.done) { ev.done = false; delete ev.reflection; save(); renderTodayTimedEvents(); renderWeeklyPlanner(); return; }
-  ev.done = true; save(); renderTodayTimedEvents(); renderWeeklyPlanner(); dopamineHit('Action taken ✦');
+   const evList = state.calendarEvents[dateKey] || [];
+   const ev = evList.find(e => e.id === evId);
+   if (ev) {
+      ev.done = !ev.done;
+      save();
+      renderTodayTimedEvents();
+      renderWeeklyPlanner();
+      if (ev.done) {
+         state.totalVotes++; save(); updateStats();
+         dopamineHit('Event checked off! ✨'); launchConfetti();
+      }
+   }
 }
+
+// Application Initialization
+window.addEventListener('DOMContentLoaded', () => {
+   initFirebase();
+   checkNewDay();
+   updateStats();
+   updateSyncBtnUI();
+   if (window.renderAll) window.renderAll();
+});
+
+setTimeout(checkLadderReviews, 1500);
 
 </script>
 </body>
