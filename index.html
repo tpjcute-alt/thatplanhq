@@ -2641,11 +2641,8 @@ function toggleCloudSync() {
 }
 
 function createSyncId() {
-  const newId = 'hq-' + Math.random().toString(36).substr(2, 9) + '-' + Math.random().toString(36).substr(2, 9);
-  localStorage.setItem('thatgirlhq_syncid', newId);
-  toggleCloudSync();
-  syncNow();
-  updateSyncBtnUI();
+  // Handled by window.createSyncId in the JSONBin sync block
+  if (window._jsonbinCreateSyncId) window._jsonbinCreateSyncId();
 }
 
 function loginWithSyncId() {
@@ -2693,87 +2690,95 @@ function updateSyncBtnUI() {
    }
 }
 
-// --- FIREBASE CLOUD SYNC ---
-let db = null;
-let auth = null;
-let fsDoc, fsSetDoc, fsGetDoc;
-let appId = typeof __app_id !== 'undefined' ? __app_id : 'thatgirlhq-default';
+// --- JSONBIN CLOUD SYNC ---
+// Uses jsonbin.io as a free key-value store. The syncId IS the bin ID.
+// Master key is write-only from client; read uses the bin's public access.
+const JSONBIN_MASTER_KEY = '$2a$10$QYyN9d8HqHPVFIGQPSExlOJQL3pvn1cGaaqQUHl5Crn7UHgVKv9aG';
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
+let _syncReady = false;
 
-async function initFirebase() {
-  try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-    const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-    const { getFirestore, doc, setDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-    
-    const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
-    const firebaseConfig = JSON.parse(configStr);
-    if (Object.keys(firebaseConfig).length === 0) return;
-    
-    const app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    
-    fsDoc = doc; fsSetDoc = setDoc; fsGetDoc = getDoc;
-
-    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-      await signInWithCustomToken(auth, __initial_auth_token);
-    } else {
-      await signInAnonymously(auth);
-    }
-    
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-         console.log("Firebase Auth ready");
-         syncNow(true);
-      }
-    });
-  } catch (e) {
-    console.error("Firebase init error", e);
-  }
+function initFirebase() {
+  // No-op: JSONBin needs no initialisation, it's just REST calls.
+  // We do a silent pull on load if a syncId exists.
+  _syncReady = true;
+  const syncId = localStorage.getItem('thatgirlhq_syncid');
+  if (syncId) syncNow(true);
 }
 
 window.pushToCloud = async function() {
-   const syncId = localStorage.getItem('thatgirlhq_syncid');
-   if (!syncId || !db || !auth || !auth.currentUser) return;
-   try {
-      const docRef = fsDoc(db, 'artifacts', appId, 'public', 'data', 'sync', syncId);
-      await fsSetDoc(docRef, { state: JSON.stringify(state), lastUpdated: Date.now() });
-   } catch (e) {
-      console.error("Cloud push failed", e);
-   }
+  const syncId = localStorage.getItem('thatgirlhq_syncid');
+  if (!syncId) return;
+  try {
+    await fetch(`${JSONBIN_BASE}/b/${syncId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_MASTER_KEY,
+        'X-Bin-Versioning': 'false'
+      },
+      body: JSON.stringify({ state: JSON.stringify(state), lastUpdated: Date.now() })
+    });
+  } catch (e) {
+    console.error('Cloud push failed', e);
+  }
 };
 
 async function syncNow(silent = false) {
-   const syncId = localStorage.getItem('thatgirlhq_syncid');
-   if (!syncId) {
-      if (!silent) dopamineHit('No Sync ID set! ☁️');
+  const syncId = localStorage.getItem('thatgirlhq_syncid');
+  if (!syncId) {
+    if (!silent) dopamineHit('No Sync ID set! ☁️');
+    return;
+  }
+  try {
+    const res = await fetch(`${JSONBIN_BASE}/b/${syncId}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_MASTER_KEY }
+    });
+    if (res.status === 404) {
+      // Bin doesn't exist yet — this should not happen normally (bin is created at ID creation time)
+      if (!silent) dopamineHit('Sync bin not found. Try creating a new Sync ID. ❌');
       return;
-   }
-   if (!db || !auth || !auth.currentUser) {
-      if (!silent) dopamineHit('Connecting to cloud... ☁️');
-      return;
-   }
-   
-   try {
-      const docRef = fsDoc(db, 'artifacts', appId, 'public', 'data', 'sync', syncId);
-      const docSnap = await fsGetDoc(docRef);
-      if (docSnap.exists()) {
-         const data = docSnap.data();
-         if (data.state) {
-            state = JSON.parse(data.state);
-            localStorage.setItem('thatgirlhq', JSON.stringify(state));
-            if (window.renderAll) window.renderAll();
-            if (!silent) dopamineHit('Synced successfully! ✨');
-         }
-      } else {
-         await window.pushToCloud();
-         if (!silent) dopamineHit('Cloud backup created! ☁️');
-      }
-   } catch(e) {
-      console.error("Sync error", e);
-      if (!silent) dopamineHit('Sync failed. ❌');
-   }
+    }
+    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+    const json = await res.json();
+    const data = json.record;
+    if (data && data.state) {
+      state = JSON.parse(data.state);
+      localStorage.setItem('thatgirlhq', JSON.stringify(state));
+      if (window.renderAll) window.renderAll();
+      if (!silent) dopamineHit('Synced! ✨');
+    }
+  } catch(e) {
+    console.error('Sync error', e);
+    if (!silent) dopamineHit('Sync failed. Check your API key. ❌');
+  }
 }
+
+// Creates a real JSONBin bin and stores its ID as the syncId
+window._jsonbinCreateSyncId = async function() {
+  try {
+    dopamineHit('Creating cloud bin... ☁️');
+    const res = await fetch(`${JSONBIN_BASE}/b`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_MASTER_KEY,
+        'X-Bin-Name': 'thatgirlhq-sync',
+        'X-Bin-Private': 'false'
+      },
+      body: JSON.stringify({ state: JSON.stringify(state), lastUpdated: Date.now() })
+    });
+    if (!res.ok) throw new Error('Bin creation failed: ' + res.status);
+    const json = await res.json();
+    const binId = json.metadata.id;
+    localStorage.setItem('thatgirlhq_syncid', binId);
+    toggleCloudSync();
+    updateSyncBtnUI();
+    dopamineHit('Cloud sync ready! ☁️✨');
+  } catch(e) {
+    console.error('Create bin failed', e);
+    dopamineHit('Could not create cloud bin. Check API key. ❌');
+  }
+};
 
 // Modal Helpers
 function openModal(id) { document.getElementById(id).classList.add('open'); }
