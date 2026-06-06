@@ -1915,18 +1915,23 @@ function renderWeeklyPlanner() {
         if (currentStep.type === 'once' || currentStep.type === 'milestone') {
             shouldShow = currentStep.targetDate ? (currentStep.targetDate === dateStr) : true;
         } else {
-            const stepFreq = currentStep.freq || 'daily';
-            if (stepFreq === 'daily') shouldShow = true;
-            else if (stepFreq === 'weekdays') shouldShow = i < 5;
-            else if (stepFreq === 'custom') shouldShow = (currentStep.customDays || []).includes(i);
-            else {
-                const n = parseInt(stepFreq) || 3;
-                const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-                const allDays = [0,1,2,3,4,5,6];
-                const chosen = [];
-                const step_size = 7 / n;
-                for (let j = 0; j < n; j++) chosen.push(allDays[Math.floor(((seed + j * step_size) % 7))]);
-                shouldShow = chosen.includes(i);
+            // BUG FIX: don't show before startDate
+            if (currentStep.startDate && dateStr < currentStep.startDate) {
+                shouldShow = false;
+            } else {
+                const stepFreq = currentStep.freq || 'daily';
+                if (stepFreq === 'daily') shouldShow = true;
+                else if (stepFreq === 'weekdays') shouldShow = i < 5;
+                else if (stepFreq === 'custom') shouldShow = (currentStep.customDays || []).includes(i);
+                else {
+                    const n = parseInt(stepFreq) || 3;
+                    const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                    const allDays = [0,1,2,3,4,5,6];
+                    const chosen = [];
+                    const step_size = 7 / n;
+                    for (let j = 0; j < n; j++) chosen.push(allDays[Math.floor(((seed + j * step_size) % 7))]);
+                    shouldShow = chosen.includes(i);
+                }
             }
         }
 
@@ -2025,17 +2030,22 @@ function getTasksForDate(targetDate) {
       if (currentStep.type === 'once' || currentStep.type === 'milestone') {
         scheduled = currentStep.targetDate ? (currentStep.targetDate === targetStr) : true;
       } else {
-        const stepFreq = currentStep.freq || 'daily';
-        if (stepFreq === 'daily') scheduled = true;
-        else if (stepFreq === 'weekdays') scheduled = dayIdx < 5;
-        else if (stepFreq === 'custom') scheduled = (currentStep.customDays || []).includes(dayIdx);
-        else {
-          const n = parseInt(stepFreq) || 3;
-          const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-          const chosen = [];
-          const step_size = 7 / n;
-          for (let i = 0; i < n; i++) chosen.push([0,1,2,3,4,5,6][Math.floor(((seed + i * step_size) % 7))]);
-          scheduled = chosen.includes(dayIdx);
+        // BUG FIX: don't show before startDate
+        if (currentStep.startDate && targetStr < currentStep.startDate) {
+          scheduled = false;
+        } else {
+          const stepFreq = currentStep.freq || 'daily';
+          if (stepFreq === 'daily') scheduled = true;
+          else if (stepFreq === 'weekdays') scheduled = dayIdx < 5;
+          else if (stepFreq === 'custom') scheduled = (currentStep.customDays || []).includes(dayIdx);
+          else {
+            const n = parseInt(stepFreq) || 3;
+            const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+            const chosen = [];
+            const step_size = 7 / n;
+            for (let i = 0; i < n; i++) chosen.push([0,1,2,3,4,5,6][Math.floor(((seed + i * step_size) % 7))]);
+            scheduled = chosen.includes(dayIdx);
+          }
         }
       }
       if (state.weeklyAssign[assignKey] !== undefined) scheduled = state.weeklyAssign[assignKey];
@@ -2098,18 +2108,23 @@ function syncTodayFromAssignments() {
         if (currentStep.type === 'once' || currentStep.type === 'milestone') {
             scheduledToday = currentStep.targetDate ? (currentStep.targetDate === todayStr) : true;
         } else {
-            const stepFreq = currentStep.freq || 'daily';
-            if (stepFreq === 'daily') scheduledToday = true;
-            else if (stepFreq === 'weekdays') scheduledToday = dayIdx < 5;
-            else if (stepFreq === 'custom') scheduledToday = (currentStep.customDays || []).includes(dayIdx);
-            else {
-              const n = parseInt(stepFreq) || 3;
-              const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-              const allDays = [0,1,2,3,4,5,6];
-              const chosen = [];
-              const step_size = 7 / n;
-              for (let i = 0; i < n; i++) chosen.push(allDays[Math.floor(((seed + i * step_size) % 7))]);
-              scheduledToday = chosen.includes(dayIdx);
+            // BUG FIX: don't show before startDate
+            if (currentStep.startDate && todayStr < currentStep.startDate) {
+                scheduledToday = false;
+            } else {
+                const stepFreq = currentStep.freq || 'daily';
+                if (stepFreq === 'daily') scheduledToday = true;
+                else if (stepFreq === 'weekdays') scheduledToday = dayIdx < 5;
+                else if (stepFreq === 'custom') scheduledToday = (currentStep.customDays || []).includes(dayIdx);
+                else {
+                  const n = parseInt(stepFreq) || 3;
+                  const seed = area.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                  const allDays = [0,1,2,3,4,5,6];
+                  const chosen = [];
+                  const step_size = 7 / n;
+                  for (let i = 0; i < n; i++) chosen.push(allDays[Math.floor(((seed + i * step_size) % 7))]);
+                  scheduledToday = chosen.includes(dayIdx);
+                }
             }
         }
 
@@ -2135,13 +2150,14 @@ function syncTodayFromAssignments() {
               ladderId: ladder.id,
               ladderStepId: currentStep.id
             });
-          } else if (existingTask.ladderStepId !== currentStep.id) {
-             state.todayTasks[existingTier] = state.todayTasks[existingTier].filter(t => t.id !== existingTask.id);
-             state.todayTasks[tier].push({
+          } else if (existingTask.ladderStepId !== currentStep.id || existingTier !== tier) {
+            // BUG FIX: also move to correct tier if energy changed
+            state.todayTasks[existingTier] = state.todayTasks[existingTier].filter(t => t.id !== existingTask.id);
+            state.todayTasks[tier].push({
                 id: ladderTaskId + '_' + todayStr,
                 habitId: ladderTaskId,
                 name: `🪜 [${ladder.title}] ${currentStep.name}`,
-                done: false,
+                done: existingTask.done,
                 cat: area.theme,
                 areaId: area.id,
                 isLadderStep: true,
@@ -2719,6 +2735,7 @@ window.pushToCloud = async function() {
       body: JSON.stringify({ state: JSON.stringify(state), lastUpdated: Date.now() })
     });
   } catch (e) {
+    if (e instanceof TypeError) return; // silently ignore network errors on local file
     console.error('Cloud push failed', e);
   }
 };
@@ -2748,6 +2765,7 @@ async function syncNow(silent = false) {
       if (!silent) dopamineHit('Synced! ✨');
     }
   } catch(e) {
+    if (e instanceof TypeError) return; // silently ignore network errors on local file
     console.error('Sync error', e);
     if (!silent) dopamineHit('Sync failed. Check your API key. ❌');
   }
