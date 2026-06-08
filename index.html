@@ -2242,7 +2242,7 @@ function saveHabit() {
   const name = document.getElementById('habit-name-input').value.trim(); if (!name) return;
   const areaId = document.getElementById('habit-cat-input').value; const area = state.lifeAreas.find(a => a.id === areaId);
   state.habits.push({ id: h(), name, areaId: areaId, cat: area.theme, freq: document.getElementById('habit-freq-input').value, energy: document.getElementById('habit-energy-input').value, tweaks: [], active: true });
-  save(); closeModal('add-habit-modal'); renderHabits(); renderLifeAreas(); dopamineHit('Habit added!');
+  save(); closeModal('add-habit-modal'); renderHabits(); renderLifeAreas(); syncTodayFromAssignments(); renderToday(); dopamineHit('Habit added!');
 }
 
 function openWeeklyDashboard() {
