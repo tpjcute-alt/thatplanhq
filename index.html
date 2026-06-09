@@ -95,6 +95,12 @@ body {
 .today-timed-event.ev-review  { border-color: #9b5de5; }
 .today-timed-event.ev-obligation { border-color: #6b7a8c; }
 .today-timed-event.ev-uni { border-color: #14a085; }
+.today-timed-event.ev-lecture { border-color: #14a085; }
+.today-timed-event.ev-class { border-color: #0ea5a0; }
+.today-timed-event.ev-pco { border-color: #f97316; }
+.today-timed-event.ev-pcp { border-color: #e11d48; }
+.today-timed-event.ev-hangout { border-color: #ec4899; }
+.today-timed-event.ev-solo { border-color: #a855f7; }
 .today-timed-time { font-size: 12px; font-weight: 700; min-width: 90px; color: var(--text-mid); }
 .today-timed-name { font-size: 14px; font-weight: 600; color: var(--text-dark); }
 .today-timed-cat  { font-size: 11px; color: var(--text-light); }
@@ -105,6 +111,12 @@ body {
 .ev-review .ev-priority-dot { background: #9b5de5; }
 .ev-obligation .ev-priority-dot { background: #6b7a8c; }
 .ev-uni .ev-priority-dot { background: #14a085; }
+.ev-lecture .ev-priority-dot { background: #14a085; }
+.ev-class .ev-priority-dot { background: #0ea5a0; }
+.ev-pco .ev-priority-dot { background: #f97316; }
+.ev-pcp .ev-priority-dot { background: #e11d48; }
+.ev-hangout .ev-priority-dot { background: #ec4899; }
+.ev-solo .ev-priority-dot { background: #a855f7; }
 
 .energy-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 .energy-col { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-card); }
@@ -595,7 +607,9 @@ body {
     <div class="form-group"><label>Title</label><input type="text" id="event-title-input"></div>
     <div class="form-group"><label>Date</label><input type="date" id="event-date-input"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="form-group"><label>Start</label><input type="time" id="event-start-input"></div><div class="form-group"><label>End</label><input type="time" id="event-end-input"></div></div>
-    <div class="form-group"><label>Type</label><select id="event-type-input"><option value="timed">📅 Meeting</option><option value="one-time">✅ Task</option><option value="habit">🔁 Habit</option><option value="review">📊 Review</option><option value="obligation">🧾 Obligation</option><option value="uni">🎓 Uni</option></select></div>
+    <div class="form-group"><label>Type</label><select id="event-type-input" onchange="onEventTypeChange()"><option value="timed">📅 Meeting</option><option value="one-time">✅ Task</option><option value="habit">🔁 Habit</option><option value="review">📊 Review</option><option value="obligation">🧾 Obligation</option><option value="uni">🎓 Uni</option><option value="social">🫶 Social</option></select></div>
+    <div class="form-group" id="event-subtype-row" style="display:none"><label>Sub-type</label><select id="event-subtype-input" onchange="onEventSubtypeChange()"></select></div>
+    <div class="form-group" id="event-time-preset-row" style="display:none"><label>Session time</label><select id="event-time-preset-input" onchange="applyTimePreset()"><option value="">Pick a slot…</option><option value="morning">Morning (08:45 – 12:30)</option><option value="afternoon">Afternoon (13:30 – 17:00)</option></select></div>
     <div class="form-group"><label>Theme</label><select id="event-cat-input"><option value="productivity">🧠 Productivity</option><option value="health">❤️ Health</option><option value="wealth">💰 Wealth</option><option value="hobbies">🎨 Hobbies</option><option value="content">📱 Content</option></select></div>
     <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('add-event-modal')">Cancel</button><button class="btn-primary" onclick="saveEvent()">Add ✦</button></div>
   </div>
@@ -2224,13 +2238,31 @@ function renderHabits() {
 
   document.getElementById('habits-list').innerHTML = filtered.map(habit => {
     const updatedOptions = optionsHtml.replace(`value="${habit.areaId}"`, `value="${habit.areaId}" selected`);
+    const energyOpts = ['high','med','low'].map(e => `<option value="${e}" ${habit.energy===e?'selected':''}>${e==='high'?'⚡ High':e==='med'?'🌤 Med':'🌙 Low'}</option>`).join('');
     return `<div class="habit-card ${habit.cat}"><div class="habit-info"><h4>${habit.name}</h4><div class="freq-selector" style="margin-top:6px;gap:8px">
       <select onchange="updateArea('${habit.id}', this.value)" style="max-width:130px;font-size:11px;padding:3px 8px">${updatedOptions}</select>
       <select onchange="updateFreq('${habit.id}', this.value)" style="font-size:11px;padding:3px 8px">${['daily','weekdays','3x','2x','1x','monthly'].map(f => `<option value="${f}" ${habit.freq===f?'selected':''}>${f}</option>`).join('')}</select>
+      <select onchange="updateEnergy('${habit.id}', this.value)" style="font-size:11px;padding:3px 8px" title="Energy tier">${energyOpts}</select>
     </div></div><div class="habit-actions"><button class="btn-icon" onclick="openTweakModal('${habit.id}')" title="Tweak/Iterate Habit">🧪</button><button class="btn-icon ${habit.active?'active':''}" onclick="toggleHabitActive('${habit.id}')">${habit.active?'✓':'○'}</button><button class="btn-icon" onclick="promptDelete('habit', '${habit.id}')">🗑</button></div></div>`
   }).join('');
 }
-function updateFreq(id, val) { const h = state.habits.find(h => h.id === id); if (h) { h.freq = val; save(); } }
+function updateFreq(id, val) { const h = state.habits.find(h => h.id === id); if (h) { h.freq = val; save(); syncTodayFromAssignments(); renderToday(); } }
+function updateEnergy(id, val) {
+  const h = state.habits.find(h => h.id === id);
+  if (!h) return;
+  const oldTier = h.energy || 'med';
+  h.energy = val;
+  // Move any existing todayTask to the new tier
+  const todayStr = localDateStr(new Date());
+  const oldIdx = state.todayTasks[oldTier].findIndex(t => t.habitId === id);
+  if (oldIdx !== -1) {
+    const task = state.todayTasks[oldTier].splice(oldIdx, 1)[0];
+    if (state.todayTasks[val].findIndex(t => t.habitId === id) === -1) {
+      state.todayTasks[val].push(task);
+    }
+  }
+  save(); renderHabits(); renderToday();
+}
 function updateArea(id, val) { const h = state.habits.find(h => h.id === id); const area = state.lifeAreas.find(a => a.id === val); if (h && area) { h.areaId = val; h.cat = area.theme; save(); renderHabits(); renderLifeAreas(); } }
 function toggleHabitActive(id) { const h = state.habits.find(h => h.id === id); if (h) { h.active = !h.active; save(); renderHabits(); } }
 function openAddHabitModal() {
@@ -2241,7 +2273,12 @@ function openAddHabitModal() {
 function saveHabit() {
   const name = document.getElementById('habit-name-input').value.trim(); if (!name) return;
   const areaId = document.getElementById('habit-cat-input').value; const area = state.lifeAreas.find(a => a.id === areaId);
-  state.habits.push({ id: h(), name, areaId: areaId, cat: area.theme, freq: document.getElementById('habit-freq-input').value, energy: document.getElementById('habit-energy-input').value, tweaks: [], active: true });
+  const newHabit = { id: h(), name, areaId: areaId, cat: area.theme, freq: document.getElementById('habit-freq-input').value, energy: document.getElementById('habit-energy-input').value, tweaks: [], active: true };
+  state.habits.push(newHabit);
+  // Force-assign today so habit shows up in Today regardless of freq default
+  const dayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+  const wk = getWeekKey(0);
+  state.weeklyAssign[`assign_${wk}_${newHabit.id}_${dayIdx}`] = true;
   save(); closeModal('add-habit-modal'); renderHabits(); renderLifeAreas(); syncTodayFromAssignments(); renderToday(); dopamineHit('Habit added!');
 }
 
@@ -2799,7 +2836,15 @@ window._jsonbinCreateSyncId = async function() {
 };
 
 // Modal Helpers
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+function openModal(id) { 
+  document.getElementById(id).classList.add('open'); 
+  if (id === 'add-event-modal') {
+    document.getElementById('event-type-input').value = 'timed';
+    document.getElementById('event-subtype-row').style.display = 'none';
+    document.getElementById('event-time-preset-row').style.display = 'none';
+    document.getElementById('event-time-preset-input').value = '';
+  }
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 // Tweak Modal
@@ -2902,12 +2947,54 @@ function openDayDetail(dateStr, dayNum) {
    openModal('day-detail-modal');
 }
 
+function onEventTypeChange() {
+  const type = document.getElementById('event-type-input').value;
+  const subtypeRow = document.getElementById('event-subtype-row');
+  const subtypeInput = document.getElementById('event-subtype-input');
+  const presetRow = document.getElementById('event-time-preset-row');
+  presetRow.style.display = 'none';
+  document.getElementById('event-time-preset-input').value = '';
+  if (type === 'uni') {
+    subtypeRow.style.display = '';
+    subtypeInput.innerHTML = '<option value="lecture">📚 Lecture</option><option value="class">📝 Class</option><option value="pco">🏥 PCO (clinic observe)</option><option value="pcp">🦷 PCP (your patients)</option>';
+    onEventSubtypeChange();
+  } else if (type === 'social') {
+    subtypeRow.style.display = '';
+    subtypeInput.innerHTML = '<option value="hangout">👯 Hangout</option><option value="solo">🌸 Solo time</option><option value="solo-date">💅 Solo date</option>';
+    onEventSubtypeChange();
+  } else {
+    subtypeRow.style.display = 'none';
+  }
+}
+function onEventSubtypeChange() {
+  const subtype = document.getElementById('event-subtype-input').value;
+  const presetRow = document.getElementById('event-time-preset-row');
+  if (subtype === 'pco' || subtype === 'pcp') {
+    presetRow.style.display = '';
+  } else {
+    presetRow.style.display = 'none';
+    document.getElementById('event-time-preset-input').value = '';
+  }
+}
+function applyTimePreset() {
+  const preset = document.getElementById('event-time-preset-input').value;
+  if (preset === 'morning') {
+    document.getElementById('event-start-input').value = '08:45';
+    document.getElementById('event-end-input').value = '12:30';
+  } else if (preset === 'afternoon') {
+    document.getElementById('event-start-input').value = '13:30';
+    document.getElementById('event-end-input').value = '17:00';
+  }
+}
 function saveEvent() {
    const title = document.getElementById('event-title-input').value.trim();
    const dateStr = document.getElementById('event-date-input').value;
    const startTime = document.getElementById('event-start-input').value;
    const endTime = document.getElementById('event-end-input').value;
-   const type = document.getElementById('event-type-input').value;
+   const baseType = document.getElementById('event-type-input').value;
+   const subtypeRow = document.getElementById('event-subtype-row');
+   const subtype = subtypeRow.style.display !== 'none' ? document.getElementById('event-subtype-input').value : null;
+   const type = subtype || baseType;
    const cat = document.getElementById('event-cat-input').value;
    
    if (!title || !dateStr) return;
