@@ -3055,6 +3055,9 @@ function tickEvent(dateKey, evId, sourceEl) {
 window.addEventListener('DOMContentLoaded', () => {
    initFirebase();
    checkNewDay();
+   // Always re-sync Today from Weekly assignments / ladders on load,
+   // so tasks & rungs added later in the day actually show up.
+   try { syncTodayFromAssignments(); } catch(e) { console.warn('sync failed', e); }
    updateStats();
    updateSyncBtnUI();
    if (window.renderAll) window.renderAll();
