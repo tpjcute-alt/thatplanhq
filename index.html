@@ -393,6 +393,60 @@ body {
   .dash-content { padding: 20px; gap: 20px; }
 }
 
+
+/* === Todos / Dopamine / Pause === */
+.todos-list { display: grid; gap: 14px; }
+.todo-card { background: white; border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-card); border-left: 4px solid var(--pink-400); }
+.todo-card.done { opacity: 0.55; border-left-color: var(--gold); }
+.todo-head { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.todo-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text-dark); display:flex; align-items:center; gap:8px; }
+.todo-title.done { text-decoration: line-through; color: var(--text-light); }
+.todo-meta { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing:0.06em; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.todo-due { background: var(--pink-100); color: var(--pink-600); padding: 3px 10px; border-radius: var(--radius-pill); font-weight:600; }
+.todo-due.overdue { background:#ffe1e6; color:#c94f6d; }
+.todo-actions { display:flex; gap:6px; }
+.todo-actions .btn-icon { width:32px; height:32px; border-radius:50%; border:none; background:var(--pink-100); cursor:pointer; font-size:14px; transition:0.2s; }
+.todo-actions .btn-icon:hover { background:var(--pink-200); }
+.todo-notes { font-size:13px; color: var(--text-mid); margin-top:6px; }
+.todo-steps { margin-top: 12px; display: grid; gap: 6px; }
+.todo-step { display:flex; align-items:center; gap:10px; padding:8px 12px; background: var(--pink-100); border-radius: var(--radius-sm); }
+.todo-step.done { opacity: 0.55; }
+.todo-step .step-name { flex:1; font-size:13px; color: var(--text-dark); }
+.todo-step.done .step-name { text-decoration: line-through; color: var(--text-light); }
+.todo-step input[type=checkbox] { width:18px; height:18px; cursor:pointer; accent-color: var(--pink-500); }
+.todo-step .btn-x { background:transparent; border:none; color:var(--text-light); cursor:pointer; font-size:14px; }
+.todo-add-step { display:flex; gap:6px; margin-top:8px; }
+.todo-add-step input { flex:1; padding:8px 12px; border-radius:var(--radius-pill); border:1px solid var(--pink-200); font-family:inherit; font-size:12px; outline:none; }
+.todo-add-step button { padding:6px 14px; border-radius:var(--radius-pill); border:none; background:var(--pink-400); color:white; font-weight:600; cursor:pointer; font-size:12px; }
+.todo-progress-bar { height: 6px; background: var(--pink-100); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+.todo-progress-fill { height:100%; background: linear-gradient(90deg, var(--pink-400), var(--gold)); transition: width .4s; }
+
+.dopamine-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+.dopamine-tab { padding: 7px 16px; border-radius: var(--radius-pill); border: 1px solid var(--pink-200); background: white; color: var(--text-mid); font-size: 12px; font-weight:600; cursor: pointer; transition:0.2s; }
+.dopamine-tab.active { background: var(--pink-400); color: white; border-color: var(--pink-400); }
+.dopamine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.dopamine-card { background: white; padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow-card); display:flex; flex-direction:column; gap:8px; border-top: 3px solid var(--pink-300); transition:0.2s; cursor:pointer; }
+.dopamine-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(220,100,130,0.14); }
+.dopamine-card.done { opacity:0.5; border-top-color: var(--gold); }
+.dopamine-card-emoji { font-size:24px; }
+.dopamine-card-name { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text-dark); line-height:1.3; }
+.dopamine-card.done .dopamine-card-name { text-decoration: line-through; }
+.dopamine-card-note { font-size: 11px; color: var(--text-light); }
+.dopamine-card-bottom { display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:6px; }
+.dop-tag { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-light); font-weight:600; }
+.dop-actions { display:flex; gap:4px; }
+.dop-actions button { width:26px; height:26px; border-radius:50%; border:none; background:var(--pink-100); cursor:pointer; font-size:12px; }
+.dop-check { background:var(--pink-400) !important; color:white; }
+
+.habit-paused-pill { background: var(--purple); color: white; font-size: 10px; padding: 3px 9px; border-radius: var(--radius-pill); font-weight:700; margin-left:8px; text-transform:uppercase; letter-spacing:0.04em; }
+.habit-card.is-paused { opacity: 0.6; border-left-color: var(--purple) !important; }
+
+@media (max-width: 600px) {
+  /* tighten mobile nav for 7 tabs */
+  .nav-tabs { padding-left:4px !important; padding-right:4px !important; }
+  .nav-tab { padding: 6px 2px !important; font-size: 8px !important; }
+  .nav-tab span { font-size: 18px !important; }
+}
 </style>
 </head>
 <body>
@@ -417,6 +471,8 @@ body {
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="showSection('today', this)"><span>✨</span> <b>Today</b></button>
     <button class="nav-tab" onclick="showSection('weekly', this)"><span>📋</span> <b>Weekly</b></button>
+    <button class="nav-tab" onclick="showSection('todos', this)"><span>📝</span> <b>To-Dos</b></button>
+    <button class="nav-tab" onclick="showSection('dopamine', this)"><span>💖</span> <b>Dopamine</b></button>
     <button class="nav-tab" onclick="showSection('calendar', this)"><span>📅</span> <b>Calendar</b></button>
     <button class="nav-tab" onclick="showSection('habits', this)"><span>🗂</span> <b>Habits</b></button>
     <button class="nav-tab" onclick="showSection('reviews', this)"><span>🎯</span> <b>Reviews</b></button>
@@ -565,6 +621,75 @@ body {
     <div id="vault-quarterly-grid" class="vault-grid"></div>
   </div>
 </section>
+
+
+<section id="todos" class="section">
+  <div class="lib-header">
+    <div>
+      <div class="section-title">To-Do Projects 📝</div>
+      <div class="section-sub">One-off projects with sub-steps. Tick off the steps; the project auto-completes when they're all done.</div>
+    </div>
+    <button class="btn-primary" onclick="openAddTodoModal()">+ New Project</button>
+  </div>
+  <div id="todos-list" class="todos-list"></div>
+</section>
+
+<section id="dopamine" class="section">
+  <div class="lib-header">
+    <div>
+      <div class="section-title">Dopamine Menu 💖</div>
+      <div class="section-sub">A menu of joyful, restorative things you can choose to do. Not assigned — just available. Tick when you treat yourself.</div>
+    </div>
+    <button class="btn-primary" onclick="openAddDopamineModal()">+ Add Item</button>
+  </div>
+  <div class="dopamine-tabs" id="dopamine-cats"></div>
+  <div id="dopamine-grid" class="dopamine-grid"></div>
+</section>
+
+<!-- TODO MODALS -->
+<div class="modal-overlay" id="add-todo-modal">
+  <div class="modal">
+    <h2 id="todo-modal-title">New Project ✦</h2>
+    <div class="form-group"><label>Project name</label><input type="text" id="todo-name-input" placeholder="e.g. Noma case"></div>
+    <div class="form-group"><label>Notes (optional)</label><textarea id="todo-notes-input" class="reflection-textarea" rows="2" placeholder="Context, deadline, why it matters…"></textarea></div>
+    <div class="form-group"><label>Due date (optional)</label><input type="date" id="todo-due-input"></div>
+    <input type="hidden" id="todo-id-input">
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('add-todo-modal')">Cancel</button><button class="btn-primary" onclick="saveTodo()">Save Project</button></div>
+  </div>
+</div>
+
+<!-- DOPAMINE MODAL -->
+<div class="modal-overlay" id="add-dopamine-modal">
+  <div class="modal">
+    <h2 id="dop-modal-title">Add Dopamine Item ✦</h2>
+    <div class="form-group"><label>What's the treat?</label><input type="text" id="dop-name-input" placeholder="e.g. Walk in the park, K-drama episode…"></div>
+    <div class="form-group"><label>Vibe</label>
+      <select id="dop-cat-input">
+        <option value="quick">⚡ Quick (under 10 min)</option>
+        <option value="cozy">🧸 Cozy</option>
+        <option value="active">🏃 Active</option>
+        <option value="creative">🎨 Creative</option>
+        <option value="social">🫶 Social</option>
+        <option value="treat">🍰 Treat yo self</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Note (optional)</label><input type="text" id="dop-note-input" placeholder="Anything to remember about it"></div>
+    <input type="hidden" id="dop-id-input">
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('add-dopamine-modal')">Cancel</button><button class="btn-primary" onclick="saveDopamine()">Save</button></div>
+  </div>
+</div>
+
+<!-- PAUSE HABIT MODAL -->
+<div class="modal-overlay" id="pause-habit-modal">
+  <div class="modal" style="width:400px;">
+    <h2>⏸ Pause Habit</h2>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Hide this habit from Today and the Weekly planner without deleting it. Great for things that only happen during term time, summer, etc.</p>
+    <div id="pause-habit-current" style="font-weight:600;margin-bottom:14px;color:var(--text-dark);"></div>
+    <div class="form-group"><label>Auto-resume on (optional)</label><input type="date" id="pause-until-input"><p style="font-size:11px;color:var(--text-light);margin-top:4px;">Leave blank to pause indefinitely (you'll un-pause manually).</p></div>
+    <input type="hidden" id="pause-habit-id">
+    <div class="modal-actions" style="flex-wrap:wrap;gap:8px;"><button class="btn-cancel" onclick="closeModal('pause-habit-modal')">Cancel</button><button class="btn-primary" style="background:var(--purple)" onclick="confirmPauseHabit()">Pause Habit</button></div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="add-habit-modal">
   <div class="modal">
@@ -819,6 +944,8 @@ window.renderAll = function() {
   renderCalendar();
   renderHabits();
   renderLifeAreas();
+  renderTodos();
+  renderDopamine();
   updateStats();
   renderReviewVault();
 };
@@ -844,9 +971,28 @@ if(!state.todayTasks.med)  state.todayTasks.med  = [];
 if(!state.todayTasks.low)  state.todayTasks.low  = [];
 if(!state.lifeAreas)      state.lifeAreas      = [];
 if(!state.habits)         state.habits         = [];
+if(!state.todos)          state.todos          = [];
+if(!state.dopamineMenu)   state.dopamineMenu   = [];
+if(!state.dopamineDone)   state.dopamineDone   = {}; // { 'YYYY-MM-DD': [id, id] }
 if(state.totalVotes === undefined)  state.totalVotes  = 0;
+// Migrate habits: add paused fields
+state.habits.forEach(hb => { if (hb.paused === undefined) hb.paused = false; if (hb.pauseUntil === undefined) hb.pauseUntil = null; });
 
 function h() { return Math.random().toString(36).substr(2,9); }
+
+// === Pause helper ===
+function isHabitLive(hb) {
+  if (!hb || !hb.active) return false;
+  if (hb.paused) {
+    if (hb.pauseUntil) {
+      const today = localDateStr(new Date());
+      if (hb.pauseUntil <= today) { hb.paused = false; hb.pauseUntil = null; save(); return true; }
+    }
+    return false;
+  }
+  return true;
+}
+
 
 function repairLadders() { 
   (state.lifeAreas || []).forEach(a => { 
@@ -1201,7 +1347,7 @@ function renderLifeAreas() {
   if (cities.length === 0) html += `<div class="empty-state" style="grid-column:1/-1">No Sub-Goals here.</div>`;
   
   cities.forEach(city => {
-    const habits = state.habits.filter(h => h.areaId === city.id && h.active);
+    const habits = state.habits.filter(h => h.areaId === city.id && isHabitLive(h));
     const habitsHtml = habits.length ? habits.map(h => `<li><div style="display:flex;justify-content:space-between"><span>${h.name}</span><span style="font-size:9px;background:var(--pink-200);color:var(--pink-600);padding:2px 6px;border-radius:4px;font-weight:700">${h.freq}</span></div></li>`).join('') : '<li style="list-style:none;padding:0;color:var(--text-light)">No actions linked.</li>';
     
     const logs = city.outcomeLogs || []; 
@@ -1808,7 +1954,7 @@ function renderWeeklyPlanner() {
   
   const sidebarEl = document.getElementById('sidebar-habits'); sidebarEl.innerHTML = '';
   
-  state.habits.filter(h => h.active).forEach(habit => {
+  state.habits.filter(h => isHabitLive(h)).forEach(habit => {
     const card = document.createElement('div'); card.className = 'sidebar-habit';
     card.innerHTML = `<div class="sidebar-habit-name">${catEmoji(habit.cat)} ${habit.name}</div><div class="day-picker" id="dp-${habit.id}"></div>`;
     const picker = card.querySelector('.day-picker');
@@ -1894,7 +2040,7 @@ function renderWeeklyPlanner() {
     const itemsEl = col.querySelector('.week-col-items');
     const weekChipItems = [];
     
-    state.habits.filter(h => h.active).forEach(habit => {
+    state.habits.filter(h => isHabitLive(h)).forEach(habit => {
       const assignKey = `assign_${wk}_${habit.id}_${i}`;
       const isDefault = (habit.freq === 'daily') || (habit.freq === 'weekdays' && i < 5);
       const show = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
@@ -2024,7 +2170,7 @@ function getTasksForDate(targetDate) {
 
   const tasks = { high: [], med: [], low: [] };
 
-  state.habits.filter(h => h.active).forEach(habit => {
+  state.habits.filter(h => isHabitLive(h)).forEach(habit => {
     const assignKey = `assign_${wk}_${habit.id}_${dayIdx}`;
     const isDefault = (habit.freq === 'daily') || (habit.freq === 'weekdays' && dayIdx < 5);
     const isAssigned = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
@@ -2085,7 +2231,7 @@ function syncTodayFromAssignments() {
   const todayDate = new Date(); const todayStr = localDateStr(todayDate);
   const dayIdx = todayDate.getDay() === 0 ? 6 : todayDate.getDay() - 1; const wk = getWeekKey(0);
   
-  state.habits.filter(h => h.active).forEach(habit => {
+  state.habits.filter(h => isHabitLive(h)).forEach(habit => {
     const assignKey = `assign_${wk}_${habit.id}_${dayIdx}`;
     const isDefault = (habit.freq === 'daily') || (habit.freq === 'weekdays' && dayIdx < 5);
     const isAssigned = state.weeklyAssign[assignKey] !== undefined ? state.weeklyAssign[assignKey] : isDefault;
@@ -2239,11 +2385,11 @@ function renderHabits() {
   document.getElementById('habits-list').innerHTML = filtered.map(habit => {
     const updatedOptions = optionsHtml.replace(`value="${habit.areaId}"`, `value="${habit.areaId}" selected`);
     const energyOpts = ['high','med','low'].map(e => `<option value="${e}" ${habit.energy===e?'selected':''}>${e==='high'?'⚡ High':e==='med'?'🌤 Med':'🌙 Low'}</option>`).join('');
-    return `<div class="habit-card ${habit.cat}"><div class="habit-info"><h4>${habit.name}</h4><div class="freq-selector" style="margin-top:6px;gap:8px">
+    return `<div class="habit-card ${habit.cat} ${habit.paused?'is-paused':''}"><div class="habit-info"><h4>${habit.name}${habit.paused?'<span class="habit-paused-pill">Paused'+(habit.pauseUntil?' till '+habit.pauseUntil:'')+'</span>':''}</h4><div class="freq-selector" style="margin-top:6px;gap:8px">
       <select onchange="updateArea('${habit.id}', this.value)" style="max-width:130px;font-size:11px;padding:3px 8px">${updatedOptions}</select>
       <select onchange="updateFreq('${habit.id}', this.value)" style="font-size:11px;padding:3px 8px">${['daily','weekdays','3x','2x','1x','monthly'].map(f => `<option value="${f}" ${habit.freq===f?'selected':''}>${f}</option>`).join('')}</select>
       <select onchange="updateEnergy('${habit.id}', this.value)" style="font-size:11px;padding:3px 8px" title="Energy tier">${energyOpts}</select>
-    </div></div><div class="habit-actions"><button class="btn-icon" onclick="openTweakModal('${habit.id}')" title="Tweak/Iterate Habit">🧪</button><button class="btn-icon ${habit.active?'active':''}" onclick="toggleHabitActive('${habit.id}')">${habit.active?'✓':'○'}</button><button class="btn-icon" onclick="promptDelete('habit', '${habit.id}')">🗑</button></div></div>`
+    </div></div><div class="habit-actions"><button class="btn-icon" onclick="openTweakModal('${habit.id}')" title="Tweak/Iterate Habit">🧪</button><button class="btn-icon" onclick="openPauseHabitModal('${habit.id}')" title="${habit.paused ? 'Resume habit' : 'Pause habit'}">${habit.paused ? '▶' : '⏸'}</button><button class="btn-icon ${habit.active?'active':''}" onclick="toggleHabitActive('${habit.id}')">${habit.active?'✓':'○'}</button><button class="btn-icon" onclick="promptDelete('habit', '${habit.id}')">🗑</button></div></div>`
   }).join('');
 }
 function updateFreq(id, val) { const h = state.habits.find(h => h.id === id); if (h) { h.freq = val; save(); syncTodayFromAssignments(); renderToday(); } }
@@ -3049,6 +3195,219 @@ function tickEvent(dateKey, evId, sourceEl) {
          dopamineHit('Event checked off! ✨'); launchConfetti();
       }
    }
+}
+
+
+// =================== TO-DO PROJECTS ===================
+let _editingTodoId = null;
+function openAddTodoModal(id) {
+  _editingTodoId = id || null;
+  const t = id ? state.todos.find(x => x.id === id) : null;
+  document.getElementById('todo-modal-title').textContent = t ? 'Edit Project ✦' : 'New Project ✦';
+  document.getElementById('todo-name-input').value = t ? t.name : '';
+  document.getElementById('todo-notes-input').value = t ? (t.notes||'') : '';
+  document.getElementById('todo-due-input').value = t ? (t.due||'') : '';
+  document.getElementById('todo-id-input').value = id || '';
+  openModal('add-todo-modal');
+}
+function saveTodo() {
+  const name = document.getElementById('todo-name-input').value.trim();
+  if (!name) { dopamineHit('Project needs a name ✦'); return; }
+  const notes = document.getElementById('todo-notes-input').value.trim();
+  const due = document.getElementById('todo-due-input').value || null;
+  const id = document.getElementById('todo-id-input').value;
+  if (id) {
+    const t = state.todos.find(x => x.id === id);
+    if (t) { t.name = name; t.notes = notes; t.due = due; }
+  } else {
+    state.todos.unshift({ id: h(), name, notes, due, done: false, createdAt: Date.now(), steps: [] });
+  }
+  save(); closeModal('add-todo-modal'); renderTodos(); dopamineHit('Project saved! 📝');
+}
+function deleteTodo(id) {
+  if (!confirm('Delete this project and all its steps?')) return;
+  state.todos = state.todos.filter(t => t.id !== id);
+  save(); renderTodos();
+}
+function toggleTodoDone(id) {
+  const t = state.todos.find(x => x.id === id); if (!t) return;
+  t.done = !t.done;
+  if (t.done) { state.totalVotes++; launchConfetti(); dopamineHit('Project complete! 🎉'); }
+  save(); renderTodos(); updateStats();
+}
+function addTodoStep(id) {
+  const inp = document.getElementById('todo-step-input-' + id);
+  const name = inp.value.trim(); if (!name) return;
+  const t = state.todos.find(x => x.id === id); if (!t) return;
+  if (!t.steps) t.steps = [];
+  t.steps.push({ id: h(), name, done: false });
+  inp.value = '';
+  save(); renderTodos();
+}
+function toggleTodoStep(todoId, stepId) {
+  const t = state.todos.find(x => x.id === todoId); if (!t) return;
+  const s = t.steps.find(x => x.id === stepId); if (!s) return;
+  s.done = !s.done;
+  if (s.done) { state.totalVotes++; dopamineHit('Step done ✨'); }
+  // auto-complete
+  if (t.steps.length > 0 && t.steps.every(st => st.done) && !t.done) {
+    t.done = true; launchConfetti(); dopamineHit('Project complete! 🎉');
+  } else if (t.done && !t.steps.every(st => st.done)) {
+    t.done = false;
+  }
+  save(); renderTodos(); updateStats();
+}
+function deleteTodoStep(todoId, stepId) {
+  const t = state.todos.find(x => x.id === todoId); if (!t) return;
+  t.steps = (t.steps||[]).filter(s => s.id !== stepId);
+  save(); renderTodos();
+}
+function renderTodos() {
+  const el = document.getElementById('todos-list'); if (!el) return;
+  const todos = state.todos || [];
+  if (todos.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-light);"><div style="font-size:48px;margin-bottom:12px;">📝</div><p>No projects yet.</p><p style="font-size:13px;margin-top:6px;">Hit "+ New Project" to add your first one (like "Noma case" with steps).</p></div>';
+    return;
+  }
+  const today = localDateStr(new Date());
+  // Open ones first
+  const sorted = [...todos].sort((a,b) => (a.done?1:0) - (b.done?1:0));
+  el.innerHTML = sorted.map(t => {
+    const steps = t.steps || [];
+    const doneCount = steps.filter(s => s.done).length;
+    const pct = steps.length ? Math.round(doneCount/steps.length*100) : (t.done ? 100 : 0);
+    const overdue = t.due && t.due < today && !t.done;
+    return `<div class="todo-card ${t.done?'done':''}">
+      <div class="todo-head">
+        <div class="todo-title ${t.done?'done':''}">
+          <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodoDone('${t.id}')" style="width:20px;height:20px;accent-color:var(--pink-500);cursor:pointer;">
+          ${t.name}
+        </div>
+        <div class="todo-actions">
+          <button class="btn-icon" onclick="openAddTodoModal('${t.id}')" title="Edit">✏️</button>
+          <button class="btn-icon" onclick="deleteTodo('${t.id}')" title="Delete">🗑</button>
+        </div>
+      </div>
+      <div class="todo-meta">
+        ${t.due ? `<span class="todo-due ${overdue?'overdue':''}">📅 ${t.due}${overdue?' · overdue':''}</span>` : ''}
+        ${steps.length ? `<span>${doneCount} / ${steps.length} steps</span>` : '<span>No steps yet</span>'}
+      </div>
+      ${t.notes ? `<div class="todo-notes">${t.notes.replace(/</g,'&lt;')}</div>` : ''}
+      ${steps.length ? `<div class="todo-progress-bar"><div class="todo-progress-fill" style="width:${pct}%"></div></div>` : ''}
+      <div class="todo-steps">
+        ${steps.map(s => `<div class="todo-step ${s.done?'done':''}">
+          <input type="checkbox" ${s.done?'checked':''} onchange="toggleTodoStep('${t.id}','${s.id}')">
+          <span class="step-name">${s.name.replace(/</g,'&lt;')}</span>
+          <button class="btn-x" onclick="deleteTodoStep('${t.id}','${s.id}')" title="Remove step">✕</button>
+        </div>`).join('')}
+      </div>
+      <div class="todo-add-step">
+        <input id="todo-step-input-${t.id}" placeholder="+ Add a step (e.g. Look at the email)" onkeydown="if(event.key==='Enter')addTodoStep('${t.id}')">
+        <button onclick="addTodoStep('${t.id}')">Add</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// =================== DOPAMINE MENU ===================
+let _editingDopId = null;
+let _dopFilter = 'all';
+const DOP_CATS = { quick:'⚡', cozy:'🧸', active:'🏃', creative:'🎨', social:'🫶', treat:'🍰' };
+function openAddDopamineModal(id) {
+  _editingDopId = id || null;
+  const d = id ? state.dopamineMenu.find(x => x.id === id) : null;
+  document.getElementById('dop-modal-title').textContent = d ? 'Edit Dopamine Item ✦' : 'Add Dopamine Item ✦';
+  document.getElementById('dop-name-input').value = d ? d.name : '';
+  document.getElementById('dop-cat-input').value = d ? d.cat : 'quick';
+  document.getElementById('dop-note-input').value = d ? (d.note||'') : '';
+  document.getElementById('dop-id-input').value = id || '';
+  openModal('add-dopamine-modal');
+}
+function saveDopamine() {
+  const name = document.getElementById('dop-name-input').value.trim();
+  if (!name) { dopamineHit('Needs a name ✦'); return; }
+  const cat = document.getElementById('dop-cat-input').value;
+  const note = document.getElementById('dop-note-input').value.trim();
+  const id = document.getElementById('dop-id-input').value;
+  if (id) {
+    const d = state.dopamineMenu.find(x => x.id === id);
+    if (d) { d.name = name; d.cat = cat; d.note = note; }
+  } else {
+    state.dopamineMenu.push({ id: h(), name, cat, note });
+  }
+  save(); closeModal('add-dopamine-modal'); renderDopamine(); dopamineHit('Saved! 💖');
+}
+function deleteDopamine(id) {
+  if (!confirm('Remove from your dopamine menu?')) return;
+  state.dopamineMenu = state.dopamineMenu.filter(d => d.id !== id);
+  save(); renderDopamine();
+}
+function toggleDopamineDone(id) {
+  const today = localDateStr(new Date());
+  if (!state.dopamineDone) state.dopamineDone = {};
+  if (!state.dopamineDone[today]) state.dopamineDone[today] = [];
+  const arr = state.dopamineDone[today];
+  const idx = arr.indexOf(id);
+  if (idx === -1) { arr.push(id); state.totalVotes++; dopamineHit('Yes queen! 💖'); launchConfetti(); }
+  else { arr.splice(idx, 1); }
+  save(); renderDopamine(); updateStats();
+}
+function setDopFilter(cat) { _dopFilter = cat; renderDopamine(); }
+function renderDopamine() {
+  const grid = document.getElementById('dopamine-grid'); if (!grid) return;
+  const tabs = document.getElementById('dopamine-cats');
+  const cats = ['all', ...Object.keys(DOP_CATS)];
+  tabs.innerHTML = cats.map(c => `<button class="dopamine-tab ${_dopFilter===c?'active':''}" onclick="setDopFilter('${c}')">${c==='all'?'✦ All':DOP_CATS[c]+' '+c}</button>`).join('');
+  const items = state.dopamineMenu || [];
+  if (items.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--text-light);"><div style="font-size:48px;margin-bottom:12px;">💖</div><p>Your dopamine menu is empty.</p><p style="font-size:13px;margin-top:6px;">Add joyful little things you can pick from when you need a boost.</p></div>';
+    return;
+  }
+  const today = localDateStr(new Date());
+  const doneToday = (state.dopamineDone && state.dopamineDone[today]) || [];
+  const filtered = items.filter(d => _dopFilter === 'all' || d.cat === _dopFilter);
+  grid.innerHTML = filtered.map(d => {
+    const done = doneToday.includes(d.id);
+    return `<div class="dopamine-card ${done?'done':''}" onclick="toggleDopamineDone('${d.id}')">
+      <div class="dopamine-card-emoji">${DOP_CATS[d.cat]||'💖'}</div>
+      <div class="dopamine-card-name">${d.name.replace(/</g,'&lt;')}</div>
+      ${d.note ? `<div class="dopamine-card-note">${d.note.replace(/</g,'&lt;')}</div>` : ''}
+      <div class="dopamine-card-bottom">
+        <span class="dop-tag">${d.cat}</span>
+        <div class="dop-actions" onclick="event.stopPropagation()">
+          <button onclick="openAddDopamineModal('${d.id}')" title="Edit">✏️</button>
+          <button onclick="deleteDopamine('${d.id}')" title="Delete">🗑</button>
+          <button class="${done?'dop-check':''}" onclick="toggleDopamineDone('${d.id}')" title="Did it">${done?'✓':'○'}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// =================== PAUSE HABIT ===================
+function openPauseHabitModal(id) {
+  const hb = state.habits.find(x => x.id === id); if (!hb) return;
+  if (hb.paused) {
+    // Resume immediately
+    hb.paused = false; hb.pauseUntil = null;
+    save(); renderHabits(); syncTodayFromAssignments(); renderToday();
+    dopamineHit('Habit resumed ▶');
+    return;
+  }
+  document.getElementById('pause-habit-current').textContent = hb.name;
+  document.getElementById('pause-until-input').value = '';
+  document.getElementById('pause-habit-id').value = id;
+  openModal('pause-habit-modal');
+}
+function confirmPauseHabit() {
+  const id = document.getElementById('pause-habit-id').value;
+  const hb = state.habits.find(x => x.id === id); if (!hb) return;
+  const until = document.getElementById('pause-until-input').value || null;
+  hb.paused = true;
+  hb.pauseUntil = until;
+  save(); closeModal('pause-habit-modal');
+  renderHabits(); syncTodayFromAssignments(); renderToday();
+  dopamineHit(until ? 'Paused till ' + until + ' ⏸' : 'Paused indefinitely ⏸');
 }
 
 // Application Initialization
