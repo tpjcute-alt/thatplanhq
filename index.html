@@ -395,31 +395,74 @@ body {
 
 
 /* === Todos / Dopamine / Pause === */
+/* ===== TODOS - TABS ===== */
+.todos-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+.todos-tab-row { display:flex; gap:6px; background:var(--pink-100); border-radius:var(--radius-pill); padding:4px; }
+.todos-tab { padding:7px 20px; border-radius:var(--radius-pill); border:none; background:transparent; color:var(--text-mid); font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.todos-tab.active { background:white; color:var(--pink-600); box-shadow:0 2px 8px rgba(220,100,130,0.15); }
+
+/* ===== TASKS PANEL ===== */
+.tasks-input-row { display:flex; gap:8px; margin-bottom:14px; }
+.tasks-input { flex:1; padding:12px 18px; border-radius:var(--radius-pill); border:2px solid var(--pink-200); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; background:white; transition:border-color 0.2s; color:var(--text-dark); }
+.tasks-input:focus { border-color:var(--pink-400); }
+.tasks-add-btn { width:44px; height:44px; border-radius:50%; border:none; background:var(--pink-400); color:white; font-size:22px; font-weight:300; cursor:pointer; transition:all 0.2s; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.tasks-add-btn:hover { background:var(--pink-500); transform:scale(1.05); }
+.tasks-filters { display:flex; gap:6px; margin-bottom:16px; }
+.tasks-filter-btn { padding:5px 14px; border-radius:var(--radius-pill); border:1.5px solid var(--pink-200); background:white; color:var(--text-mid); font-size:12px; font-weight:600; cursor:pointer; transition:0.18s; font-family:'DM Sans',sans-serif; }
+.tasks-filter-btn.active { background:var(--pink-400); border-color:var(--pink-400); color:white; }
+.simple-task-item { display:flex; align-items:center; gap:12px; padding:13px 16px; background:white; border-radius:12px; box-shadow:0 2px 10px rgba(220,100,130,0.08); margin-bottom:8px; transition:all 0.2s; position:relative; overflow:hidden; }
+.simple-task-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--pink-400); border-radius:3px 0 0 3px; }
+.simple-task-item.done::before { background:var(--gold); }
+.simple-task-item:hover { box-shadow:0 4px 16px rgba(220,100,130,0.14); transform:translateY(-1px); }
+.simple-task-item.done { opacity:0.55; }
+.st-checkbox { width:20px; height:20px; accent-color:var(--pink-500); cursor:pointer; flex-shrink:0; border-radius:50%; }
+.st-label { flex:1; font-size:14px; color:var(--text-dark); font-family:'DM Sans',sans-serif; line-height:1.4; }
+.simple-task-item.done .st-label { text-decoration:line-through; color:var(--text-light); }
+.st-due { font-size:11px; color:var(--pink-600); font-weight:700; background:var(--pink-100); padding:3px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
+.st-due.overdue { background:#ffe1e6; color:#c94f6d; }
+.st-delete { background:transparent; border:none; color:var(--text-light); cursor:pointer; font-size:16px; padding:4px 6px; opacity:0; transition:opacity 0.15s; }
+.simple-task-item:hover .st-delete { opacity:1; }
+.tasks-empty { text-align:center; padding:40px 20px; color:var(--text-light); }
+.tasks-empty-icon { font-size:40px; margin-bottom:10px; }
+.tasks-clear-row { display:flex; justify-content:flex-end; margin-bottom:4px; }
+.tasks-clear-btn { background:none; border:none; color:var(--text-light); font-size:12px; font-weight:600; cursor:pointer; padding:4px 8px; transition:color 0.15s; }
+.tasks-clear-btn:hover { color:var(--pink-500); }
+
+/* ===== PROJECTS PANEL ===== */
 .todos-list { display: grid; gap: 14px; }
-.todo-card { background: white; border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-card); border-left: 4px solid var(--pink-400); }
-.todo-card.done { opacity: 0.55; border-left-color: var(--gold); }
-.todo-head { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-.todo-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text-dark); display:flex; align-items:center; gap:8px; }
+.todo-card { background: white; border-radius: 14px; padding: 20px; box-shadow: 0 2px 12px rgba(220,100,130,0.09); overflow:hidden; position:relative; transition:box-shadow 0.2s; }
+.todo-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:linear-gradient(180deg, var(--pink-400), var(--pink-300)); border-radius:4px 0 0 4px; }
+.todo-card.done::before { background:linear-gradient(180deg, var(--gold), #f0c060); }
+.todo-card:hover { box-shadow:0 4px 20px rgba(220,100,130,0.15); }
+.todo-card.done { opacity:0.6; }
+.todo-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.todo-title { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--text-dark); display:flex; align-items:center; gap:10px; }
 .todo-title.done { text-decoration: line-through; color: var(--text-light); }
-.todo-meta { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing:0.06em; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-.todo-due { background: var(--pink-100); color: var(--pink-600); padding: 3px 10px; border-radius: var(--radius-pill); font-weight:600; }
+.todo-title input[type=checkbox] { width:20px; height:20px; accent-color:var(--pink-500); cursor:pointer; flex-shrink:0; }
+.todo-meta { font-size: 11px; color: var(--text-light); display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:4px; }
+.todo-due { background: var(--pink-100); color: var(--pink-600); padding: 3px 10px; border-radius: var(--radius-pill); font-weight:700; font-size:11px; }
 .todo-due.overdue { background:#ffe1e6; color:#c94f6d; }
-.todo-actions { display:flex; gap:6px; }
-.todo-actions .btn-icon { width:32px; height:32px; border-radius:50%; border:none; background:var(--pink-100); cursor:pointer; font-size:14px; transition:0.2s; }
+.todo-actions { display:flex; gap:6px; flex-shrink:0; }
+.todo-actions .btn-icon { width:30px; height:30px; border-radius:50%; border:none; background:var(--pink-100); cursor:pointer; font-size:13px; transition:0.2s; display:flex;align-items:center;justify-content:center; }
 .todo-actions .btn-icon:hover { background:var(--pink-200); }
-.todo-notes { font-size:13px; color: var(--text-mid); margin-top:6px; }
+.todo-notes { font-size:13px; color: var(--text-mid); margin-top:8px; line-height:1.5; padding:8px 12px; background:var(--pink-50); border-radius:8px; }
+.todo-progress-bar { height: 5px; background: var(--pink-100); border-radius: 999px; overflow: hidden; margin-top: 12px; }
+.todo-progress-fill { height:100%; background: linear-gradient(90deg, var(--pink-400), var(--gold)); transition: width .4s; border-radius:999px; }
 .todo-steps { margin-top: 12px; display: grid; gap: 6px; }
-.todo-step { display:flex; align-items:center; gap:10px; padding:8px 12px; background: var(--pink-100); border-radius: var(--radius-sm); }
-.todo-step.done { opacity: 0.55; }
+.todo-step { display:flex; align-items:center; gap:10px; padding:9px 13px; background: var(--pink-50); border-radius: 9px; border:1px solid var(--pink-100); transition:0.15s; }
+.todo-step:hover { background:var(--pink-100); }
+.todo-step.done { opacity: 0.5; }
 .todo-step .step-name { flex:1; font-size:13px; color: var(--text-dark); }
 .todo-step.done .step-name { text-decoration: line-through; color: var(--text-light); }
-.todo-step input[type=checkbox] { width:18px; height:18px; cursor:pointer; accent-color: var(--pink-500); }
-.todo-step .btn-x { background:transparent; border:none; color:var(--text-light); cursor:pointer; font-size:14px; }
-.todo-add-step { display:flex; gap:6px; margin-top:8px; }
-.todo-add-step input { flex:1; padding:8px 12px; border-radius:var(--radius-pill); border:1px solid var(--pink-200); font-family:inherit; font-size:12px; outline:none; }
-.todo-add-step button { padding:6px 14px; border-radius:var(--radius-pill); border:none; background:var(--pink-400); color:white; font-weight:600; cursor:pointer; font-size:12px; }
-.todo-progress-bar { height: 6px; background: var(--pink-100); border-radius: 999px; overflow: hidden; margin-top: 10px; }
-.todo-progress-fill { height:100%; background: linear-gradient(90deg, var(--pink-400), var(--gold)); transition: width .4s; }
+.todo-step input[type=checkbox] { width:17px; height:17px; cursor:pointer; accent-color: var(--pink-500); flex-shrink:0; }
+.todo-step .btn-x { background:transparent; border:none; color:var(--text-light); cursor:pointer; font-size:14px; opacity:0; transition:opacity 0.15s; }
+.todo-step:hover .btn-x { opacity:1; }
+.todo-add-step { display:flex; gap:6px; margin-top:10px; }
+.todo-add-step input { flex:1; padding:9px 14px; border-radius:var(--radius-pill); border:1.5px solid var(--pink-200); font-family:inherit; font-size:13px; outline:none; transition:border-color 0.2s; }
+.todo-add-step input:focus { border-color:var(--pink-400); }
+.todo-add-step button { padding:8px 16px; border-radius:var(--radius-pill); border:none; background:var(--pink-400); color:white; font-weight:700; cursor:pointer; font-size:12px; transition:0.2s; }
+.todo-add-step button:hover { background:var(--pink-500); }
+.todo-step-count { font-size:12px; font-weight:700; color:var(--pink-600); background:var(--pink-100); padding:2px 9px; border-radius:var(--radius-pill); }
 
 .dopamine-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
 .dopamine-tab { padding: 7px 16px; border-radius: var(--radius-pill); border: 1px solid var(--pink-200); background: white; color: var(--text-mid); font-size: 12px; font-weight:600; cursor: pointer; transition:0.2s; }
@@ -624,14 +667,35 @@ body {
 
 
 <section id="todos" class="section">
-  <div class="lib-header">
-    <div>
-      <div class="section-title">To-Do Projects 📝</div>
-      <div class="section-sub">One-off projects with sub-steps. Tick off the steps; the project auto-completes when they're all done.</div>
+  <div class="todos-header">
+    <div class="section-title" style="margin-bottom:0">To-Dos ✦</div>
+    <div class="todos-tab-row">
+      <button class="todos-tab active" id="todos-tab-tasks" onclick="switchTodosTab('tasks')">✅ Tasks</button>
+      <button class="todos-tab" id="todos-tab-projects" onclick="switchTodosTab('projects')">📁 Projects</button>
     </div>
-    <button class="btn-primary" onclick="openAddTodoModal()">+ New Project</button>
   </div>
-  <div id="todos-list" class="todos-list"></div>
+
+  <!-- TASKS PANEL -->
+  <div id="todos-panel-tasks">
+    <div class="tasks-input-row">
+      <input id="simple-task-quick-input" class="tasks-input" placeholder="Add a task… press Enter to save" onkeydown="if(event.key==='Enter')addSimpleTaskQuick()">
+      <button class="tasks-add-btn" onclick="addSimpleTaskQuick()">+</button>
+    </div>
+    <div class="tasks-filters">
+      <button class="tasks-filter-btn active" id="tf-all" onclick="setTaskFilter('all')">All</button>
+      <button class="tasks-filter-btn" id="tf-open" onclick="setTaskFilter('open')">Open</button>
+      <button class="tasks-filter-btn" id="tf-done" onclick="setTaskFilter('done')">Done</button>
+    </div>
+    <div id="simple-tasks-list"></div>
+  </div>
+
+  <!-- PROJECTS PANEL -->
+  <div id="todos-panel-projects" style="display:none">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <button class="btn-primary" onclick="openAddTodoModal()">+ New Project</button>
+    </div>
+    <div id="todos-list" class="todos-list"></div>
+  </div>
 </section>
 
 <section id="dopamine" class="section">
@@ -945,6 +1009,7 @@ window.renderAll = function() {
   renderHabits();
   renderLifeAreas();
   renderTodos();
+  renderSimpleTasks();
   renderDopamine();
   updateStats();
   renderReviewVault();
@@ -973,6 +1038,7 @@ if(!state.lifeAreas)      state.lifeAreas      = [];
 if(!state.habits)         state.habits         = [];
 if(!state.todos)          state.todos          = [];
 if(!state.dopamineMenu)   state.dopamineMenu   = [];
+if(!state.simpleTasks)     state.simpleTasks    = [];
 if(!state.dopamineDone)   state.dopamineDone   = {}; // { 'YYYY-MM-DD': [id, id] }
 if(state.totalVotes === undefined)  state.totalVotes  = 0;
 // Migrate habits: add paused fields
@@ -1206,7 +1272,7 @@ function showSection(id, btn) {
   if (id === 'calendar') renderCalendar();
   if (id === 'habits') renderHabits();
   if (id === 'reviews') { renderLifeAreas(); renderReviewVault(); }
-  if (id === 'todos') renderTodos();
+  if (id === 'todos') { renderTodos(); renderSimpleTasks(); }
   if (id === 'dopamine') renderDopamine();
 }
 
@@ -3209,6 +3275,85 @@ function tickEvent(dateKey, evId, sourceEl) {
 
 
 // =================== TO-DO PROJECTS ===================
+
+// =================== SIMPLE TASKS ===================
+function addSimpleTaskQuick() {
+  const inp = document.getElementById('simple-task-quick-input');
+  const name = inp.value.trim(); if (!name) return;
+  if (!state.simpleTasks) state.simpleTasks = [];
+  state.simpleTasks.unshift({ id: h(), name, done: false, createdAt: Date.now(), due: null });
+  inp.value = '';
+  save(); renderSimpleTasks();
+}
+
+function toggleSimpleTask(id) {
+  const t = state.simpleTasks.find(x => x.id === id); if (!t) return;
+  t.done = !t.done;
+  if (t.done) { dopamineHit('Done ✓'); }
+  save(); renderSimpleTasks();
+}
+
+function deleteSimpleTask(id) {
+  state.simpleTasks = (state.simpleTasks || []).filter(t => t.id !== id);
+  save(); renderSimpleTasks();
+}
+
+function clearDoneSimpleTasks() {
+  state.simpleTasks = (state.simpleTasks || []).filter(t => !t.done);
+  save(); renderSimpleTasks();
+}
+
+let _taskFilter = 'all';
+
+function switchTodosTab(tab) {
+  document.getElementById('todos-panel-tasks').style.display = tab === 'tasks' ? '' : 'none';
+  document.getElementById('todos-panel-projects').style.display = tab === 'projects' ? '' : 'none';
+  document.getElementById('todos-tab-tasks').classList.toggle('active', tab === 'tasks');
+  document.getElementById('todos-tab-projects').classList.toggle('active', tab === 'projects');
+  if (tab === 'projects') renderTodos();
+  if (tab === 'tasks') renderSimpleTasks();
+}
+
+function setTaskFilter(f) {
+  _taskFilter = f;
+  ['all','open','done'].forEach(x => {
+    const btn = document.getElementById('tf-' + x);
+    if (btn) btn.classList.toggle('active', x === f);
+  });
+  renderSimpleTasks();
+}
+
+function renderSimpleTasks() {
+  const el = document.getElementById('simple-tasks-list'); if (!el) return;
+  const all = state.simpleTasks || [];
+  const today = localDateStr(new Date());
+
+  let tasks = all;
+  if (_taskFilter === 'open') tasks = all.filter(t => !t.done);
+  if (_taskFilter === 'done') tasks = all.filter(t => t.done);
+
+  if (tasks.length === 0) {
+    const emptyMsg = _taskFilter === "done" ? "No completed tasks yet." : _taskFilter === "open" ? "Nothing open — clear ✨" : "Type above and press Enter to add your first task ♆";
+    el.innerHTML = `<div class="tasks-empty"><div class="tasks-empty-icon">✅</div><p>${emptyMsg}</p></div>`;
+    return;
+  }
+
+  const sorted = [...tasks].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+  const doneCount = all.filter(t => t.done).length;
+  const clearRow = doneCount > 0 ? `<div class="tasks-clear-row"><button class="tasks-clear-btn" onclick="clearDoneSimpleTasks()">Clear ${doneCount} done ✕</button></div>` : '';
+
+  el.innerHTML = clearRow + sorted.map(t => {
+    const overdue = t.due && t.due < today && !t.done;
+    const dueTag = t.due ? `<span class="st-due ${overdue ? 'overdue' : ''}">📅 ${t.due}</span>` : '';
+    return `<div class="simple-task-item ${t.done ? 'done' : ''}">
+      <input type="checkbox" class="st-checkbox" ${t.done ? 'checked' : ''} onchange="toggleSimpleTask('${t.id}')">
+      <span class="st-label">${t.name.replace(/</g,'&lt;')}</span>
+      ${dueTag}
+      <button class="st-delete" onclick="deleteSimpleTask('${t.id}')" title="Delete">✕</button>
+    </div>`;
+  }).join('');
+}
+
 let _editingTodoId = null;
 function openAddTodoModal(id) {
   _editingTodoId = id || null;
@@ -3276,22 +3421,27 @@ function renderTodos() {
   const el = document.getElementById('todos-list'); if (!el) return;
   const todos = state.todos || [];
   if (todos.length === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-light);"><div style="font-size:48px;margin-bottom:12px;">📝</div><p>No projects yet.</p><p style="font-size:13px;margin-top:6px;">Hit "+ New Project" to add your first one (like "Noma case" with steps).</p></div>';
+    el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-light);">
+      <div style="font-size:44px;margin-bottom:12px;">📁</div>
+      <p style="font-size:15px;font-weight:600;margin-bottom:6px;">No projects yet</p>
+      <p style="font-size:13px;">Hit "+ New Project" to add multi-step things<br>like "Noma case" or "Move into studio".</p>
+    </div>`;
     return;
   }
   const today = localDateStr(new Date());
-  // Open ones first
   const sorted = [...todos].sort((a,b) => (a.done?1:0) - (b.done?1:0));
   el.innerHTML = sorted.map(t => {
     const steps = t.steps || [];
     const doneCount = steps.filter(s => s.done).length;
     const pct = steps.length ? Math.round(doneCount/steps.length*100) : (t.done ? 100 : 0);
     const overdue = t.due && t.due < today && !t.done;
+    const stepCountBadge = steps.length ? `<span class="todo-step-count">${doneCount}/${steps.length}</span>` : '';
     return `<div class="todo-card ${t.done?'done':''}">
       <div class="todo-head">
         <div class="todo-title ${t.done?'done':''}">
-          <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodoDone('${t.id}')" style="width:20px;height:20px;accent-color:var(--pink-500);cursor:pointer;">
-          ${t.name}
+          <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodoDone('${t.id}')">
+          <span>${t.name.replace(/</g,'&lt;')}</span>
+          ${stepCountBadge}
         </div>
         <div class="todo-actions">
           <button class="btn-icon" onclick="openAddTodoModal('${t.id}')" title="Edit">✏️</button>
@@ -3300,7 +3450,7 @@ function renderTodos() {
       </div>
       <div class="todo-meta">
         ${t.due ? `<span class="todo-due ${overdue?'overdue':''}">📅 ${t.due}${overdue?' · overdue':''}</span>` : ''}
-        ${steps.length ? `<span>${doneCount} / ${steps.length} steps</span>` : '<span>No steps yet</span>'}
+        ${!steps.length ? '<span style="font-style:italic">No steps yet — add one below</span>' : ''}
       </div>
       ${t.notes ? `<div class="todo-notes">${t.notes.replace(/</g,'&lt;')}</div>` : ''}
       ${steps.length ? `<div class="todo-progress-bar"><div class="todo-progress-fill" style="width:${pct}%"></div></div>` : ''}
@@ -3312,7 +3462,7 @@ function renderTodos() {
         </div>`).join('')}
       </div>
       <div class="todo-add-step">
-        <input id="todo-step-input-${t.id}" placeholder="+ Add a step (e.g. Look at the email)" onkeydown="if(event.key==='Enter')addTodoStep('${t.id}')">
+        <input id="todo-step-input-${t.id}" placeholder="+ Add a step…" onkeydown="if(event.key==='Enter')addTodoStep('${t.id}')">
         <button onclick="addTodoStep('${t.id}')">Add</button>
       </div>
     </div>`;
