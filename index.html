@@ -1287,6 +1287,14 @@ function renderToday() {
 
   let viewTasks = { high: [], med: [], low: [] };
   if (isActualToday) {
+    // Safety: if todayTasks is empty but schedulable items exist, rebuild
+    const totalStored = (state.todayTasks.high||[]).length + (state.todayTasks.med||[]).length + (state.todayTasks.low||[]).length;
+    const hasSchedulable = state.habits.filter(h => isHabitLive(h)).length > 0 ||
+      state.lifeAreas.some(a => (a.ladders||[]).some(l => (l.steps||[]).some(s => !s.completed)));
+    if (totalStored === 0 && hasSchedulable) {
+      syncTodayFromAssignments(); // will call renderToday again after rebuilding
+      return;
+    }
     viewTasks = state.todayTasks;
   } else {
     const snap = (state.daySnapshots && state.daySnapshots[viewDateStr]);
@@ -1672,7 +1680,7 @@ function saveLadderStep() {
   dopamineHit('Step saved! 🪜');
 }
 
-function toggleLadderStep(areaId, ladderId, stepId) {
+function toggleLadderStep(areaId, ladderId, stepId, suppressRungConfirm) {
   const city = state.lifeAreas.find(a => a.id === areaId);
   if (!city || !city.ladders) return;
   const ladder = city.ladders.find(l => l.id === ladderId);
@@ -1698,7 +1706,7 @@ function toggleLadderStep(areaId, ladderId, stepId) {
 
     const isLastRung = ladder.steps.indexOf(step) === ladder.steps.length - 1;
     const allDone = ladder.steps.every(s => s.completed);
-    if (isLastRung && allDone) {
+    if (!suppressRungConfirm && isLastRung && allDone) {
       setTimeout(() => {
         if (confirm('🪜 You just topped this ladder! Want to add the next rung now?')) {
           openAddLadderStep(city.id, ladder.id);
@@ -1781,7 +1789,7 @@ function resolveLadderReview(action) {
 
   if (action === 'master') {
     closeModal('ladder-review-modal');
-    toggleLadderStep(areaId, ladderId, stepId);
+    toggleLadderStep(areaId, ladderId, stepId, true);
   } else if (action === 'extend') {
     const end = new Date(step.endDate + 'T00:00:00');
     end.setDate(end.getDate() + 7);
